@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "gh-pilot",
+    "cli",
+    "github"
+]

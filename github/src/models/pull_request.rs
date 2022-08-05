@@ -1,0 +1,485 @@
+use crate::models::common::Url;
+use crate::models::git::GitReference;
+use crate::models::labels::Label;
+use crate::models::links::Links;
+use crate::models::team::SimpleTeam;
+use crate::models::user::SimpleUser;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all(deserialize = "lowercase"))]
+pub enum State {
+    Open,
+    Closed,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all(deserialize = "UPPERCASE"))]
+pub enum AuthorAssociation {
+    Collaborator,
+    Contributor,
+    FirstTimer,
+    FirstTimeContributor,
+    Mannequin,
+    Member,
+    None,
+    Owner,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PullRequest {
+    pub url: Url,
+    pub id: u64,
+    pub node_id: String,
+    pub html_url: Url,
+    pub diff_url: Url,
+    pub patch_url: Url,
+    pub issue_url: Url,
+    pub commits_url: Url,
+    pub review_comments_url: Url,
+    pub review_comment_url: Url,
+    pub comments_url: Url,
+    pub statuses_url: Url,
+    pub number: usize,
+    pub state: State,
+    pub locked: bool,
+    pub title: String,
+    pub user: Option<SimpleUser>,
+    pub body: String,
+    pub labels: Vec<Label>,
+    pub milestone: Option<String>,
+    pub active_lock_reason: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub closed_at: String,
+    pub merged_at: String,
+    pub merge_commit_sha: String,
+    pub assignee: Option<SimpleUser>,
+    pub assignees: Vec<SimpleUser>,
+    pub requested_reviewers: Vec<SimpleUser>,
+    pub requested_teams: Option<Vec<SimpleTeam>>,
+    pub head: GitReference,
+    pub base: GitReference,
+    #[serde(rename(deserialize = "_links"))]
+    pub links: Links,
+    pub author_association: AuthorAssociation,
+    pub auto_merge: Option<bool>,
+    pub draft: bool,
+    pub merged: bool,
+    pub mergeable: Option<bool>,
+    pub rebaseable: Option<bool>,
+    pub mergeable_state: String,
+    pub merged_by: Option<SimpleUser>,
+    pub comments: usize,
+    pub review_comments: usize,
+    pub maintainer_can_modify: bool,
+    pub commits: usize,
+    pub additions: usize,
+    pub deletions: usize,
+    pub changed_files: usize,
+}
+
+#[cfg(test)]
+mod test {
+    use crate::models::pull_request::PullRequest;
+    use crate::models::repository::Repository;
+    use crate::models::user::SimpleUser;
+
+    const TARI_PR_1K: &str = r#"
+{
+    "url": "https://api.github.com/repos/tari-project/tari/pulls/1000",
+    "id": 338616778,
+    "node_id": "MDExOlB1bGxSZXF1ZXN0MzM4NjE2Nzc4",
+    "html_url": "https://github.com/tari-project/tari/pull/1000",
+    "diff_url": "https://github.com/tari-project/tari/pull/1000.diff",
+    "patch_url": "https://github.com/tari-project/tari/pull/1000.patch",
+    "issue_url": "https://api.github.com/repos/tari-project/tari/issues/1000",
+    "number": 1000,
+    "state": "closed",
+    "locked": false,
+    "title": "Check that 1st block into DB is the Genesis block",
+    "user": {
+        "login": "CjS77",
+        "id": 7573551,
+        "node_id": "MDQ6VXNlcjc1NzM1NTE=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/7573551?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/CjS77",
+        "html_url": "https://github.com/CjS77",
+        "followers_url": "https://api.github.com/users/CjS77/followers",
+        "following_url": "https://api.github.com/users/CjS77/following{/other_user}",
+        "gists_url": "https://api.github.com/users/CjS77/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/CjS77/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/CjS77/subscriptions",
+        "organizations_url": "https://api.github.com/users/CjS77/orgs",
+        "repos_url": "https://api.github.com/users/CjS77/repos",
+        "events_url": "https://api.github.com/users/CjS77/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/CjS77/received_events",
+        "type": "User",
+        "site_admin": false
+    },
+    "body": "When adding a new block, if the DB is empty,\r\n`is_best_block` should only return true if\r\nthe block is the Gensis block\r\n\r\n",
+    "created_at": "2019-11-08T10:42:52Z",
+    "updated_at": "2019-11-11T11:15:46Z",
+    "closed_at": "2019-11-11T11:15:20Z",
+    "merged_at": "2019-11-11T11:15:20Z",
+    "merge_commit_sha": "f862e3d6ed6c9158ad51d77c14af839b1e45489f",
+    "assignee": null,
+    "assignees": [],
+    "requested_reviewers": [],
+    "requested_teams": [],
+    "labels": [],
+    "milestone": null,
+    "draft": false,
+    "commits_url": "https://api.github.com/repos/tari-project/tari/pulls/1000/commits",
+    "review_comments_url": "https://api.github.com/repos/tari-project/tari/pulls/1000/comments",
+    "review_comment_url": "https://api.github.com/repos/tari-project/tari/pulls/comments{/number}",
+    "comments_url": "https://api.github.com/repos/tari-project/tari/issues/1000/comments",
+    "statuses_url": "https://api.github.com/repos/tari-project/tari/statuses/f862e3d6ed6c9158ad51d77c14af839b1e45489f",
+    "head": {
+        "label": "tari-project:genesis_block_check",
+        "ref": "genesis_block_check",
+        "sha": "f862e3d6ed6c9158ad51d77c14af839b1e45489f",
+        "user": {
+            "login": "tari-project",
+            "id": 37560539,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjM3NTYwNTM5",
+            "avatar_url": "https://avatars.githubusercontent.com/u/37560539?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/tari-project",
+            "html_url": "https://github.com/tari-project",
+            "followers_url": "https://api.github.com/users/tari-project/followers",
+            "following_url": "https://api.github.com/users/tari-project/following{/other_user}",
+            "gists_url": "https://api.github.com/users/tari-project/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/tari-project/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/tari-project/subscriptions",
+            "organizations_url": "https://api.github.com/users/tari-project/orgs",
+            "repos_url": "https://api.github.com/users/tari-project/repos",
+            "events_url": "https://api.github.com/users/tari-project/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/tari-project/received_events",
+            "type": "Organization",
+            "site_admin": false
+        },
+        "repo": {
+            "id": 136459099,
+            "node_id": "MDEwOlJlcG9zaXRvcnkxMzY0NTkwOTk=",
+            "name": "tari",
+            "full_name": "tari-project/tari",
+            "private": false,
+            "owner": {
+                "login": "tari-project",
+                "id": 37560539,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjM3NTYwNTM5",
+                "avatar_url": "https://avatars.githubusercontent.com/u/37560539?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/tari-project",
+                "html_url": "https://github.com/tari-project",
+                "followers_url": "https://api.github.com/users/tari-project/followers",
+                "following_url": "https://api.github.com/users/tari-project/following{/other_user}",
+                "gists_url": "https://api.github.com/users/tari-project/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/tari-project/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/tari-project/subscriptions",
+                "organizations_url": "https://api.github.com/users/tari-project/orgs",
+                "repos_url": "https://api.github.com/users/tari-project/repos",
+                "events_url": "https://api.github.com/users/tari-project/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/tari-project/received_events",
+                "type": "Organization",
+                "site_admin": false
+            },
+            "html_url": "https://github.com/tari-project/tari",
+            "description": "The Tari protocol",
+            "fork": false,
+            "url": "https://api.github.com/repos/tari-project/tari",
+            "forks_url": "https://api.github.com/repos/tari-project/tari/forks",
+            "keys_url": "https://api.github.com/repos/tari-project/tari/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/tari-project/tari/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/tari-project/tari/teams",
+            "hooks_url": "https://api.github.com/repos/tari-project/tari/hooks",
+            "issue_events_url": "https://api.github.com/repos/tari-project/tari/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/tari-project/tari/events",
+            "assignees_url": "https://api.github.com/repos/tari-project/tari/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/tari-project/tari/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/tari-project/tari/tags",
+            "blobs_url": "https://api.github.com/repos/tari-project/tari/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/tari-project/tari/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/tari-project/tari/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/tari-project/tari/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/tari-project/tari/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/tari-project/tari/languages",
+            "stargazers_url": "https://api.github.com/repos/tari-project/tari/stargazers",
+            "contributors_url": "https://api.github.com/repos/tari-project/tari/contributors",
+            "subscribers_url": "https://api.github.com/repos/tari-project/tari/subscribers",
+            "subscription_url": "https://api.github.com/repos/tari-project/tari/subscription",
+            "commits_url": "https://api.github.com/repos/tari-project/tari/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/tari-project/tari/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/tari-project/tari/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/tari-project/tari/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/tari-project/tari/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/tari-project/tari/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/tari-project/tari/merges",
+            "archive_url": "https://api.github.com/repos/tari-project/tari/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/tari-project/tari/downloads",
+            "issues_url": "https://api.github.com/repos/tari-project/tari/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/tari-project/tari/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/tari-project/tari/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/tari-project/tari/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/tari-project/tari/labels{/name}",
+            "releases_url": "https://api.github.com/repos/tari-project/tari/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/tari-project/tari/deployments",
+            "created_at": "2018-06-07T10:09:08Z",
+            "updated_at": "2022-08-03T01:21:52Z",
+            "pushed_at": "2022-08-05T14:00:50Z",
+            "git_url": "git://github.com/tari-project/tari.git",
+            "ssh_url": "git@github.com:tari-project/tari.git",
+            "clone_url": "https://github.com/tari-project/tari.git",
+            "svn_url": "https://github.com/tari-project/tari",
+            "homepage": "https://tari.com",
+            "size": 115832,
+            "stargazers_count": 275,
+            "watchers_count": 275,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": true,
+            "forks_count": 530,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 109,
+            "license": {
+                "key": "bsd-3-clause",
+                "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+                "spdx_id": "BSD-3-Clause",
+                "url": "https://api.github.com/licenses/bsd-3-clause",
+                "node_id": "MDc6TGljZW5zZTU="
+            },
+            "allow_forking": true,
+            "is_template": false,
+            "web_commit_signoff_required": false,
+            "topics": [
+                "hacktoberfest",
+                "rust",
+                "tari"
+            ],
+            "visibility": "public",
+            "forks": 530,
+            "open_issues": 109,
+            "watchers": 275,
+            "default_branch": "development"
+        }
+    },
+    "base": {
+        "label": "tari-project:development",
+        "ref": "development",
+        "sha": "e2ac38bcc464d87147ac813a8b99c439c5cf35cb",
+        "user": {
+            "login": "tari-project",
+            "id": 37560539,
+            "node_id": "MDEyOk9yZ2FuaXphdGlvbjM3NTYwNTM5",
+            "avatar_url": "https://avatars.githubusercontent.com/u/37560539?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/tari-project",
+            "html_url": "https://github.com/tari-project",
+            "followers_url": "https://api.github.com/users/tari-project/followers",
+            "following_url": "https://api.github.com/users/tari-project/following{/other_user}",
+            "gists_url": "https://api.github.com/users/tari-project/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/tari-project/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/tari-project/subscriptions",
+            "organizations_url": "https://api.github.com/users/tari-project/orgs",
+            "repos_url": "https://api.github.com/users/tari-project/repos",
+            "events_url": "https://api.github.com/users/tari-project/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/tari-project/received_events",
+            "type": "Organization",
+            "site_admin": false
+        },
+        "repo": {
+            "id": 136459099,
+            "node_id": "MDEwOlJlcG9zaXRvcnkxMzY0NTkwOTk=",
+            "name": "tari",
+            "full_name": "tari-project/tari",
+            "private": false,
+            "owner": {
+                "login": "tari-project",
+                "id": 37560539,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjM3NTYwNTM5",
+                "avatar_url": "https://avatars.githubusercontent.com/u/37560539?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/tari-project",
+                "html_url": "https://github.com/tari-project",
+                "followers_url": "https://api.github.com/users/tari-project/followers",
+                "following_url": "https://api.github.com/users/tari-project/following{/other_user}",
+                "gists_url": "https://api.github.com/users/tari-project/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/tari-project/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/tari-project/subscriptions",
+                "organizations_url": "https://api.github.com/users/tari-project/orgs",
+                "repos_url": "https://api.github.com/users/tari-project/repos",
+                "events_url": "https://api.github.com/users/tari-project/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/tari-project/received_events",
+                "type": "Organization",
+                "site_admin": false
+            },
+            "html_url": "https://github.com/tari-project/tari",
+            "description": "The Tari protocol",
+            "fork": false,
+            "url": "https://api.github.com/repos/tari-project/tari",
+            "forks_url": "https://api.github.com/repos/tari-project/tari/forks",
+            "keys_url": "https://api.github.com/repos/tari-project/tari/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/tari-project/tari/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/tari-project/tari/teams",
+            "hooks_url": "https://api.github.com/repos/tari-project/tari/hooks",
+            "issue_events_url": "https://api.github.com/repos/tari-project/tari/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/tari-project/tari/events",
+            "assignees_url": "https://api.github.com/repos/tari-project/tari/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/tari-project/tari/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/tari-project/tari/tags",
+            "blobs_url": "https://api.github.com/repos/tari-project/tari/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/tari-project/tari/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/tari-project/tari/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/tari-project/tari/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/tari-project/tari/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/tari-project/tari/languages",
+            "stargazers_url": "https://api.github.com/repos/tari-project/tari/stargazers",
+            "contributors_url": "https://api.github.com/repos/tari-project/tari/contributors",
+            "subscribers_url": "https://api.github.com/repos/tari-project/tari/subscribers",
+            "subscription_url": "https://api.github.com/repos/tari-project/tari/subscription",
+            "commits_url": "https://api.github.com/repos/tari-project/tari/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/tari-project/tari/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/tari-project/tari/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/tari-project/tari/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/tari-project/tari/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/tari-project/tari/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/tari-project/tari/merges",
+            "archive_url": "https://api.github.com/repos/tari-project/tari/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/tari-project/tari/downloads",
+            "issues_url": "https://api.github.com/repos/tari-project/tari/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/tari-project/tari/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/tari-project/tari/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/tari-project/tari/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/tari-project/tari/labels{/name}",
+            "releases_url": "https://api.github.com/repos/tari-project/tari/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/tari-project/tari/deployments",
+            "created_at": "2018-06-07T10:09:08Z",
+            "updated_at": "2022-08-03T01:21:52Z",
+            "pushed_at": "2022-08-05T14:00:50Z",
+            "git_url": "git://github.com/tari-project/tari.git",
+            "ssh_url": "git@github.com:tari-project/tari.git",
+            "clone_url": "https://github.com/tari-project/tari.git",
+            "svn_url": "https://github.com/tari-project/tari",
+            "homepage": "https://tari.com",
+            "size": 115832,
+            "stargazers_count": 275,
+            "watchers_count": 275,
+            "language": "Rust",
+            "has_issues": true,
+            "has_projects": true,
+            "has_downloads": true,
+            "has_wiki": false,
+            "has_pages": true,
+            "forks_count": 530,
+            "mirror_url": null,
+            "archived": false,
+            "disabled": false,
+            "open_issues_count": 109,
+            "license": {
+                "key": "bsd-3-clause",
+                "name": "BSD 3-Clause \"New\" or \"Revised\" License",
+                "spdx_id": "BSD-3-Clause",
+                "url": "https://api.github.com/licenses/bsd-3-clause",
+                "node_id": "MDc6TGljZW5zZTU="
+            },
+            "allow_forking": true,
+            "is_template": false,
+            "web_commit_signoff_required": false,
+            "topics": [
+                "hacktoberfest",
+                "rust",
+                "tari"
+            ],
+            "visibility": "public",
+            "forks": 530,
+            "open_issues": 109,
+            "watchers": 275,
+            "default_branch": "development"
+        }
+    },
+    "_links": {
+        "self": {
+            "href": "https://api.github.com/repos/tari-project/tari/pulls/1000"
+        },
+        "html": {
+            "href": "https://github.com/tari-project/tari/pull/1000"
+        },
+        "issue": {
+            "href": "https://api.github.com/repos/tari-project/tari/issues/1000"
+        },
+        "comments": {
+            "href": "https://api.github.com/repos/tari-project/tari/issues/1000/comments"
+        },
+        "review_comments": {
+            "href": "https://api.github.com/repos/tari-project/tari/pulls/1000/comments"
+        },
+        "review_comment": {
+            "href": "https://api.github.com/repos/tari-project/tari/pulls/comments{/number}"
+        },
+        "commits": {
+            "href": "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"
+        },
+        "statuses": {
+            "href": "https://api.github.com/repos/tari-project/tari/statuses/f862e3d6ed6c9158ad51d77c14af839b1e45489f"
+        }
+    },
+    "author_association": "COLLABORATOR",
+    "auto_merge": null,
+    "active_lock_reason": null,
+    "merged": true,
+    "mergeable": null,
+    "rebaseable": null,
+    "mergeable_state": "unknown",
+    "merged_by": {
+        "login": "CjS77",
+        "id": 7573551,
+        "node_id": "MDQ6VXNlcjc1NzM1NTE=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/7573551?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/CjS77",
+        "html_url": "https://github.com/CjS77",
+        "followers_url": "https://api.github.com/users/CjS77/followers",
+        "following_url": "https://api.github.com/users/CjS77/following{/other_user}",
+        "gists_url": "https://api.github.com/users/CjS77/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/CjS77/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/CjS77/subscriptions",
+        "organizations_url": "https://api.github.com/users/CjS77/orgs",
+        "repos_url": "https://api.github.com/users/CjS77/repos",
+        "events_url": "https://api.github.com/users/CjS77/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/CjS77/received_events",
+        "type": "User",
+        "site_admin": false
+    },
+    "comments": 2,
+    "review_comments": 3,
+    "maintainer_can_modify": false,
+    "commits": 1,
+    "additions": 2,
+    "deletions": 1,
+    "changed_files": 1
+}
+    "#;
+
+    #[test]
+    fn tari_pr_1000() {
+        let pr: PullRequest = serde_json::from_str(TARI_PR_1K).unwrap();
+        assert_eq!(pr.comments, 2);
+        assert_eq!(pr.id, 338616778);
+        assert_eq!(pr.merged, true);
+        assert!(matches!(pr.merged_by, Some(SimpleUser{login, ..}) if login == "CjS77"));
+        assert_eq!(
+            pr.links.commits.href,
+            "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"
+        );
+        assert!(
+            matches!(pr.base.repo, Some(Repository { description, ..}) if description == "The Tari protocol")
+        );
+    }
+}
