@@ -1,4 +1,5 @@
 mod common;
+mod comments;
 mod git;
 mod labels;
 mod links;
