@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use crate::models::common::Url;
-use crate::models::links::Links;
 use crate::models::pull_request::AuthorAssociation;
 use crate::models::user::SimpleUser;
 
@@ -11,7 +10,7 @@ pub struct Reactions {
     #[serde(rename(deserialize="+1"))]
     pub plus1: u64,
     #[serde(rename(deserialize="-1"))]
-    pub minus10: u64,
+    pub minus1: u64,
     pub laugh: u64,
     pub hooray: u64,
     pub confused: u64,
@@ -21,7 +20,7 @@ pub struct Reactions {
 }
 
 #[derive(Debug, Deserialize)]
-struct IssueComment {
+pub struct IssueComment {
     pub id: i64,
     pub node_id: String,
     pub url: Url,
