@@ -19,6 +19,7 @@ pub use common::*;
 pub use git::GitReference;
 pub use labels::Label;
 pub use links::Links;
+pub use issues::Issue;
 pub use organization::Organization;
 pub use pull_request::*;
 pub use repository::*;

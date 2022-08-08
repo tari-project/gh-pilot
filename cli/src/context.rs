@@ -1,41 +1,34 @@
-use gh_pilot::data_provider::PullRequestProvider;
-use gh_pilot::data_provider::UserStatsProvider;
-use gh_pilot::mock_provider::{MockPRProvider, MockUserProvider};
-use gh_pilot::GithubProvider;
+use gh_pilot::data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider};
 
-pub struct Context {
-    user_stats_provider: Box<dyn UserStatsProvider>,
-    pr_provider: Box<dyn PullRequestProvider>,
-    github_provider: Option<GithubProvider>,
+#[derive(Default)]
+pub struct Context<'app> {
+    user_provider: Option<&'app dyn UserStatsProvider>,
+    pr_provider: Option<&'app dyn PullRequestProvider>,
+    issue_provider: Option<&'app dyn IssueProvider>,
 }
 
-impl Context {
-    pub fn mock() -> Self {
-        let user_stats_provider = Box::new(MockUserProvider::default());
-        let pr_provider = Box::new(MockPRProvider {});
-        Self {
-            user_stats_provider,
-            pr_provider,
-            github_provider: None,
-        }
+impl<'app> Context<'app> {
+    pub fn use_user_provider(&mut self, provider: &'app dyn UserStatsProvider) {
+        self.user_provider = Some(provider);
     }
 
-    pub fn custom_context() -> Self {
-        let mut this = Self::mock();
-        let github_provider = GithubProvider::default();
-        this.github_provider = Some(github_provider);
-        this
+    pub fn user_provider(&self) -> Option<&dyn UserStatsProvider> {
+        self.user_provider
     }
 
-    pub fn user_provider(&self) -> &dyn UserStatsProvider {
-        self.user_stats_provider.as_ref()
+    pub fn use_pr_provider(&mut self, provider: &'app dyn PullRequestProvider) {
+        self.pr_provider = Some(provider);
     }
 
-    pub fn pull_request_provider(&self) -> &dyn PullRequestProvider {
-        if let Some(gh) = &self.github_provider {
-            gh as &dyn PullRequestProvider
-        } else {
-            self.pr_provider.as_ref()
-        }
+    pub fn pull_request_provider(&self) -> Option<&dyn PullRequestProvider> {
+        self.pr_provider
+    }
+
+    pub fn use_isue_provider(&mut self, provider: &'app dyn IssueProvider) {
+        self.issue_provider = Some(provider);
+    }
+
+    pub fn issue_provider(&self) -> Option<&dyn IssueProvider> {
+        self.issue_provider
     }
 }

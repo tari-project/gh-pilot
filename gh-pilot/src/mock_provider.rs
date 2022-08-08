@@ -1,9 +1,9 @@
-use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 use crate::error::GithubPilotError;
 use crate::models::{GithubHandle, UserDetails};
 use async_trait::async_trait;
 use github::models::static_data::users::*;
 use github::models::PullRequest;
+use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 
 pub struct MockUserProvider {
     users: Vec<UserDetails>,

@@ -5,6 +5,10 @@ use clap::{Parser, Subcommand};
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Option<Commands>,
+    #[clap(short, long, default_value = "tari-project")]
+    pub owner: String,
+    #[clap(short, long, default_value = "tari")]
+    pub repo: String,
 }
 
 #[derive(Debug, Subcommand)]
@@ -17,10 +21,6 @@ pub enum Commands {
     },
     /// Fetches a pull request
     PullRequest {
-        #[clap(short, long, default_value = "tari-project")]
-        owner: String,
-        #[clap(short, long, default_value = "tari")]
-        repo: String,
         #[clap(short, long)]
         number: u64,
     },
