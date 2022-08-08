@@ -1,5 +1,5 @@
 use crate::models::issues::Issue;
-use crate::models::{Organization, RepositoryReference, SimpleUser};
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]

@@ -39,12 +39,12 @@ impl ClientProxy {
     pub fn request<S: AsRef<str>>(&self, method: Method, path: S, auth: bool) -> RequestBuilder {
         let url = [BASE_URL, path.as_ref()].join("");
         let request = self.client.request(method, url);
-        let request = if auth {
+        
+        if auth {
             self.apply_auth(request)
         } else {
             request
-        };
-        request
+        }
     }
 
     pub fn get<S: AsRef<str>>(&self, url: S, auth: bool) -> RequestBuilder {
