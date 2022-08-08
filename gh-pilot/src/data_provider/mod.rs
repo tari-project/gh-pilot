@@ -1,5 +1,5 @@
-mod user_stats;
 mod pull_requests;
+mod user_stats;
 
-pub use user_stats::UserStatsProvider;
 pub use pull_requests::PullRequestProvider;
+pub use user_stats::UserStatsProvider;

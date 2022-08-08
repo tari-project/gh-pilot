@@ -1,15 +1,15 @@
-use serde::Deserialize;
 use crate::models::common::Url;
 use crate::models::pull_request::AuthorAssociation;
 use crate::models::user::SimpleUser;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Reactions {
     pub url: Url,
     pub total_count: u64,
-    #[serde(rename(deserialize="+1"))]
+    #[serde(rename(deserialize = "+1"))]
     pub plus1: u64,
-    #[serde(rename(deserialize="-1"))]
+    #[serde(rename(deserialize = "-1"))]
     pub minus1: u64,
     pub laugh: u64,
     pub hooray: u64,
@@ -57,9 +57,18 @@ mod test {
     #[test]
     fn comment1() {
         let comment: IssueComment = serde_json::from_str(COMMENT).unwrap();
-        assert_eq!(comment.node_id, "MDI0OlB1bGxSZXF1ZXN0UmV2aWV3Q29tbWVudDM0NDExNjkzNA==");
-        assert_eq!(comment.body.unwrap(), "Current RFC says Gen is height 1, not 0");
-        assert_eq!(comment.pull_request_url.unwrap(), "https://api.github.com/repos/tari-project/tari/pulls/1000");
+        assert_eq!(
+            comment.node_id,
+            "MDI0OlB1bGxSZXF1ZXN0UmV2aWV3Q29tbWVudDM0NDExNjkzNA=="
+        );
+        assert_eq!(
+            comment.body.unwrap(),
+            "Current RFC says Gen is height 1, not 0"
+        );
+        assert_eq!(
+            comment.pull_request_url.unwrap(),
+            "https://api.github.com/repos/tari-project/tari/pulls/1000"
+        );
         assert_eq!(comment.reactions.plus1, 12);
     }
 }

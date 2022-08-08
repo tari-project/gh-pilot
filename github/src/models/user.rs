@@ -24,7 +24,6 @@ pub struct SimpleUser {
     pub site_admin: Option<bool>,
     pub starred_url: Option<String>,
     pub subscriptions_url: Option<Url>,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub user_type: Option<String>,
 }
-

@@ -1,12 +1,12 @@
+use gh_pilot::data_provider::PullRequestProvider;
 use gh_pilot::data_provider::UserStatsProvider;
 use gh_pilot::mock_provider::{MockPRProvider, MockUserProvider};
-use gh_pilot::data_provider::PullRequestProvider;
 use gh_pilot::GithubProvider;
 
 pub struct Context {
     user_stats_provider: Box<dyn UserStatsProvider>,
     pr_provider: Box<dyn PullRequestProvider>,
-    github_provider: Option<GithubProvider>
+    github_provider: Option<GithubProvider>,
 }
 
 impl Context {
@@ -16,7 +16,7 @@ impl Context {
         Self {
             user_stats_provider,
             pr_provider,
-            github_provider: None
+            github_provider: None,
         }
     }
 

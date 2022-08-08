@@ -2,7 +2,6 @@ use crate::models::common::{License, Permissions, Url, Visibility};
 use crate::models::user::SimpleUser;
 use serde::Deserialize;
 
-
 #[derive(Debug, Deserialize)]
 pub struct RepositoryReference {
     pub id: u64,
@@ -101,7 +100,6 @@ pub struct Repository {
 mod test {
     use crate::models::repository::Repository;
     use crate::models::static_data::repositories::TARI_REPO;
-
 
     #[test]
     fn tari_repo_deserializes() {

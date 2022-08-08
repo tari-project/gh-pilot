@@ -1,7 +1,9 @@
-use serde::Deserialize;
-use crate::models::{AuthorAssociation, IssuePullRequest, Label, Reactions, Repository, SimpleUser, State, Url};
 use crate::models::integration::Integration;
 use crate::models::milestone::Milestone;
+use crate::models::{
+    AuthorAssociation, IssuePullRequest, Label, Reactions, Repository, SimpleUser, State, Url,
+};
+use serde::Deserialize;
 
 /// Issue : Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
 #[derive(Debug, Deserialize)]
@@ -72,8 +74,8 @@ impl Issue {
 #[cfg(test)]
 mod test {
     use crate::models::issues::Issue;
-    use crate::models::{SimpleUser, State};
     use crate::models::static_data::issues::ISSUE;
+    use crate::models::{SimpleUser, State};
 
     #[test]
     fn deserialize_issue() {
@@ -84,4 +86,3 @@ mod test {
         assert!(matches!(issue.user(), Some(SimpleUser { login, ..}) if login == "CjS77"));
     }
 }
-

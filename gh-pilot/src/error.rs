@@ -1,5 +1,5 @@
-use thiserror::Error;
 use github::api::GithubApiError;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum GithubPilotError {

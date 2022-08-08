@@ -1,5 +1,5 @@
 use crate::api::{ClientProxy, GithubApiError};
-use crate::models::{PullRequest};
+use crate::models::PullRequest;
 
 pub struct PullRequestRequest {
     owner: String,
@@ -14,7 +14,7 @@ impl PullRequestRequest {
             owner: owner.as_ref().into(),
             repo: repo.as_ref().into(),
             pull,
-            url: Self::url(owner, repo, pull)
+            url: Self::url(owner, repo, pull),
         }
     }
 

@@ -2,8 +2,8 @@ use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 use crate::error::GithubPilotError;
 use crate::models::{GithubHandle, UserDetails};
 use async_trait::async_trait;
-use github::models::PullRequest;
 use github::models::static_data::users::*;
+use github::models::PullRequest;
 
 pub struct MockUserProvider {
     users: Vec<UserDetails>,
@@ -28,7 +28,7 @@ impl Default for MockUserProvider {
     fn default() -> Self {
         let users: Vec<UserDetails> = vec![
             serde_json::from_str(CJS77).unwrap(),
-            serde_json::from_str(STRINGHANDLER).unwrap()
+            serde_json::from_str(STRINGHANDLER).unwrap(),
         ];
         Self { users }
     }
@@ -38,9 +38,15 @@ pub struct MockPRProvider;
 
 #[async_trait]
 impl PullRequestProvider for MockPRProvider {
-    async fn fetch_pull_request(&self, _owner: &str, _repo: &str, _number: u64) -> Result<PullRequest,
-        GithubPilotError> {
-        Err(GithubPilotError::GeneralError("Not implemented".to_string()))
+    async fn fetch_pull_request(
+        &self,
+        _owner: &str,
+        _repo: &str,
+        _number: u64,
+    ) -> Result<PullRequest, GithubPilotError> {
+        Err(GithubPilotError::GeneralError(
+            "Not implemented".to_string(),
+        ))
     }
 }
 

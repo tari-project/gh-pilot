@@ -17,9 +17,9 @@ pub enum Commands {
     },
     /// Fetches a pull request
     PullRequest {
-        #[clap(short, long, default_value="tari-project")]
+        #[clap(short, long, default_value = "tari-project")]
         owner: String,
-        #[clap(short, long, default_value="tari")]
+        #[clap(short, long, default_value = "tari")]
         repo: String,
         #[clap(short, long)]
         number: u64,
@@ -27,5 +27,5 @@ pub enum Commands {
     Issue {
         #[clap(short, long)]
         number: u64,
-    }
+    },
 }

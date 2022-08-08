@@ -13,5 +13,5 @@ pub enum GithubApiError {
     #[error("The server said that this is not the URL you are looking for. {0}")]
     NotFound(String),
     #[error("HTTP Code response. {0}")]
-    HttpResponse(StatusCode)
+    HttpResponse(StatusCode),
 }

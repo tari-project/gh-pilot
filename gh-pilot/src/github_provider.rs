@@ -1,8 +1,8 @@
-use github::api::{ClientProxy, PullRequestRequest};
-use github::models::PullRequest;
 use crate::data_provider::PullRequestProvider;
 use crate::error::GithubPilotError;
 use async_trait::async_trait;
+use github::api::{ClientProxy, PullRequestRequest};
+use github::models::PullRequest;
 
 #[derive(Clone, Default)]
 pub struct GithubProvider {
@@ -18,7 +18,12 @@ impl GithubProvider {
 
 #[async_trait]
 impl PullRequestProvider for GithubProvider {
-    async fn fetch_pull_request(&self, owner: &str, repo: &str, number: u64) -> Result<PullRequest, GithubPilotError> {
+    async fn fetch_pull_request(
+        &self,
+        owner: &str,
+        repo: &str,
+        number: u64,
+    ) -> Result<PullRequest, GithubPilotError> {
         let pr = PullRequestRequest::new(owner, repo, number);
         let result = pr.fetch(&self.client).await?;
         Ok(result)

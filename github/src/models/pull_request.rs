@@ -1,4 +1,3 @@
-use std::fmt::{Display, Formatter};
 use crate::models::common::Url;
 use crate::models::git::GitReference;
 use crate::models::labels::Label;
@@ -6,6 +5,7 @@ use crate::models::links::Links;
 use crate::models::team::SimpleTeam;
 use crate::models::user::SimpleUser;
 use serde::Deserialize;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "lowercase"))]
@@ -105,7 +105,6 @@ mod test {
     use crate::models::repository::Repository;
     use crate::models::static_data::pull_requests::TARI_PR_1K;
     use crate::models::user::SimpleUser;
-
 
     #[test]
     fn tari_pr_1000() {
