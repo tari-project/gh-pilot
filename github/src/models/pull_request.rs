@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use crate::models::common::Url;
 use crate::models::git::GitReference;
 use crate::models::labels::Label;
@@ -11,6 +12,15 @@ use serde::Deserialize;
 pub enum State {
     Open,
     Closed,
+}
+
+impl Display for State {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            State::Closed => f.write_str("Closed"),
+            State::Open => f.write_str("Open"),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

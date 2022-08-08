@@ -15,4 +15,13 @@ pub enum Commands {
         #[clap(short, long, action)]
         profile: String,
     },
+    /// Fetches a pull request
+    PullRequest {
+        #[clap(short, long, default_value="tari-project")]
+        owner: String,
+        #[clap(short, long, default_value="tari")]
+        repo: String,
+        #[clap(short, long)]
+        number: u64,
+    }
 }

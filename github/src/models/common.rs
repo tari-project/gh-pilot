@@ -1,7 +1,20 @@
+use std::fmt::{Display, Formatter};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Url(String);
+
+impl Display for Url {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0.as_str())
+    }
+}
+
+impl AsRef<str> for Url {
+    fn as_ref(&self) -> &str {
+        self.0.as_str()
+    }
+}
 
 #[derive(Debug, Deserialize)]
 pub struct License {

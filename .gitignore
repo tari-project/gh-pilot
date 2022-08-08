@@ -3,3 +3,8 @@
 .DS_Store
 
 Cargo.lock
+
+github/swagger/rust
+github/swagger/rust
+github/swagger/*.jar
+github/swagger/.swagger-codegen-ignore

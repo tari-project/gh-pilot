@@ -1,15 +1,16 @@
-use crate::data_provider::UserStatsProvider;
+use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 use crate::error::GithubPilotError;
 use crate::models::{GithubHandle, UserDetails};
 use async_trait::async_trait;
+use github::models::PullRequest;
 use github::models::static_data::users::*;
 
-pub struct MockProvider {
+pub struct MockUserProvider {
     users: Vec<UserDetails>,
 }
 
 #[async_trait]
-impl UserStatsProvider for MockProvider {
+impl UserStatsProvider for MockUserProvider {
     async fn fetch_details(
         &self,
         handle: &GithubHandle,
@@ -23,7 +24,7 @@ impl UserStatsProvider for MockProvider {
     }
 }
 
-impl Default for MockProvider {
+impl Default for MockUserProvider {
     fn default() -> Self {
         let users: Vec<UserDetails> = vec![
             serde_json::from_str(CJS77).unwrap(),
@@ -33,14 +34,24 @@ impl Default for MockProvider {
     }
 }
 
+pub struct MockPRProvider;
+
+#[async_trait]
+impl PullRequestProvider for MockPRProvider {
+    async fn fetch_pull_request(&self, _owner: &str, _repo: &str, _number: u64) -> Result<PullRequest,
+        GithubPilotError> {
+        Err(GithubPilotError::GeneralError("Not implemented".to_string()))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::data_provider::UserStatsProvider;
-    use crate::mock_provider::MockProvider;
+    use crate::mock_provider::MockUserProvider;
 
     #[tokio::test]
     async fn users_deserialize_correctly() {
-        let provider = MockProvider::default();
+        let provider = MockUserProvider::default();
         let user = provider
             .fetch_details(&"CjS77".into())
             .await
