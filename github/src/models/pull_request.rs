@@ -89,6 +89,16 @@ pub struct PullRequest {
     pub changed_files: usize,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct IssuePullRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merged_at: Option<String>,
+    pub diff_url: Option<Url>,
+    pub html_url: Option<Url>,
+    pub patch_url: Option<Url>,
+    pub url: Option<Url>,
+}
+
 #[cfg(test)]
 mod test {
     use crate::models::pull_request::PullRequest;

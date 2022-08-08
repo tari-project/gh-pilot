@@ -23,5 +23,9 @@ pub enum Commands {
         repo: String,
         #[clap(short, long)]
         number: u64,
+    },
+    Issue {
+        #[clap(short, long)]
+        number: u64,
     }
 }

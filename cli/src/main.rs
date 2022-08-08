@@ -2,6 +2,7 @@ mod cli_def;
 mod context;
 mod user;
 mod pull_request;
+mod issue;
 mod pretty_print;
 
 use crate::context::Context;
