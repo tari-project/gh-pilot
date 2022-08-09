@@ -1,8 +1,8 @@
 #[macro_use]
 mod newtype;
 // github models
-mod user;
 mod issues;
+mod user;
 
 newtype!(GithubHandle, String, str);
 

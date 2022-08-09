@@ -1,5 +1,6 @@
-use serde::Deserialize;
 use std::fmt::{Display, Formatter};
+
+use serde::Deserialize;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Url(String);

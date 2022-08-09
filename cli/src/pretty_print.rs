@@ -1,5 +1,4 @@
-use comfy_table::presets::UTF8_BORDERS_ONLY;
-use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
+use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
 use gh_pilot::ghp_api::models::Label;
 use hex;
 
@@ -20,13 +19,8 @@ pub fn add_labels(table: &mut Table, labels: &[Label]) {
     labels.iter().for_each(|label| {
         let mut row = Row::new();
         let color = color_from_hex(label.color.as_str());
-        let desc = label
-            .description
-            .as_ref()
-            .map(|d| d.as_str())
-            .unwrap_or_default();
-        row.add_cell(cc(color, label.name.as_str()))
-            .add_cell(Cell::new(desc));
+        let desc = label.description.as_ref().map(|d| d.as_str()).unwrap_or_default();
+        row.add_cell(cc(color, label.name.as_str())).add_cell(Cell::new(desc));
         table.add_row(row);
     })
 }
@@ -39,7 +33,7 @@ pub fn color_from_hex(hex_code: &str) -> Color {
     if hex_code.len() < 6 {
         return Color::White;
     }
-    hex::decode(hex_code).map(|v| {
-        Color::from((v[0], v[1], v[2]))
-    }).unwrap_or_else(|_| Color::White)
+    hex::decode(hex_code)
+        .map(|v| Color::from((v[0], v[1], v[2])))
+        .unwrap_or_else(|_| Color::White)
 }

@@ -1,5 +1,4 @@
-use ghp_server::config::ServerConfig;
-use ghp_server::server::run_server;
+use ghp_server::{config::ServerConfig, server::run_server};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

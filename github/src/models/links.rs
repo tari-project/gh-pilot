@@ -1,5 +1,6 @@
-use crate::models::common::Link;
 use serde::Deserialize;
+
+use crate::models::common::Link;
 
 #[derive(Debug, Deserialize)]
 pub struct Links {

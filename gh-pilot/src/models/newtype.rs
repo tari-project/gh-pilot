@@ -3,8 +3,7 @@ macro_rules! newtype {
         pub struct $name($wrap);
 
         impl<T> From<T> for $name
-        where
-            T: Into<$wrap>,
+        where T: Into<$wrap>
         {
             fn from(v: T) -> Self {
                 Self(v.into())

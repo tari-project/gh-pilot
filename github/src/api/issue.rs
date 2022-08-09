@@ -1,6 +1,9 @@
-use crate::api::{ClientProxy, GithubApiError};
-use crate::models::{Issue, Label};
 use serde::Serialize;
+
+use crate::{
+    api::{ClientProxy, GithubApiError},
+    models::{Issue, Label},
+};
 
 pub struct IssueRequest {
     owner: String,
@@ -22,7 +25,11 @@ impl From<&[&str]> for LabelBody {
 
 impl IssueRequest {
     pub fn new<S: Into<String>>(owner: S, repo: S, number: u64) -> Self {
-        Self { owner: owner.into(), repo: repo.into(), number }
+        Self {
+            owner: owner.into(),
+            repo: repo.into(),
+            number,
+        }
     }
 
     fn fetch_path(&self) -> String {
@@ -34,7 +41,10 @@ impl IssueRequest {
     }
 
     fn remove_label_path(&self, label: &str) -> String {
-        format!("/repos/{}/{}/issues/{}/labels/{}", self.owner, self.repo, self.number, label)
+        format!(
+            "/repos/{}/{}/issues/{}/labels/{}",
+            self.owner, self.repo, self.number, label
+        )
     }
 
     pub async fn fetch(&self, proxy: &ClientProxy) -> Result<Issue, GithubApiError> {
@@ -44,11 +54,8 @@ impl IssueRequest {
 
     pub async fn add_labels(&self, labels: &[&str], proxy: &ClientProxy) -> Result<Vec<Label>, GithubApiError> {
         let body = LabelBody::from(labels);
-        let body = serde_json::to_string(&body)
-            .map_err(|e| GithubApiError::SerializationError(e.to_string()))?;
-        let req = proxy
-            .post(self.add_label_path().as_str())
-            .body(body);
+        let body = serde_json::to_string(&body).map_err(|e| GithubApiError::SerializationError(e.to_string()))?;
+        let req = proxy.post(self.add_label_path().as_str()).body(body);
         proxy.send(req).await
     }
 

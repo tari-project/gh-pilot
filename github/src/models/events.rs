@@ -1,6 +1,6 @@
-use crate::models::issues::Issue;
-
 use serde::Deserialize;
+
+use crate::models::issues::Issue;
 
 #[derive(Debug, Deserialize)]
 pub enum Payload {

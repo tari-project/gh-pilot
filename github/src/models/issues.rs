@@ -1,9 +1,17 @@
-use crate::models::integration::Integration;
-use crate::models::milestone::Milestone;
-use crate::models::{
-    AuthorAssociation, IssuePullRequest, Label, Reactions, Repository, SimpleUser, State, Url,
-};
 use serde::Deserialize;
+
+use crate::models::{
+    integration::Integration,
+    milestone::Milestone,
+    AuthorAssociation,
+    IssuePullRequest,
+    Label,
+    Reactions,
+    Repository,
+    SimpleUser,
+    State,
+    Url,
+};
 
 /// Issue : Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
 #[derive(Debug, Deserialize)]
@@ -30,7 +38,9 @@ pub struct Issue {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
     pub user: Option<Box<SimpleUser>>,
-    /// Labels to associate with this issue; pass one or more label names to replace the set of labels on this issue; send an empty array to clear all labels from the issue; note that the labels are silently dropped for users without push access to the repository
+    /// Labels to associate with this issue; pass one or more label names to replace the set of labels on this issue;
+    /// send an empty array to clear all labels from the issue; note that the labels are silently dropped for users
+    /// without push access to the repository
     pub labels: Vec<Label>,
     pub assignee: Option<Box<SimpleUser>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,9 +83,7 @@ impl Issue {
 
 #[cfg(test)]
 mod test {
-    use crate::models::issues::Issue;
-    use crate::models::static_data::issues::ISSUE;
-    use crate::models::{SimpleUser, State};
+    use crate::models::{issues::Issue, static_data::issues::ISSUE, SimpleUser, State};
 
     #[test]
     fn deserialize_issue() {

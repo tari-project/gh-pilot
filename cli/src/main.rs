@@ -7,15 +7,12 @@ mod pretty_print;
 mod pull_request;
 mod user;
 
-use crate::context::Context;
-use crate::pull_request::run_pr_cmd;
-use crate::user::run_user_cmd;
 use clap::Parser;
 use cli_def::{Cli, Commands};
-use gh_pilot::GithubProvider;
-use gh_pilot::mock_provider::MockUserProvider;
-use crate::issue::run_issue_cmd;
+use gh_pilot::{mock_provider::MockUserProvider, GithubProvider};
 use log::*;
+
+use crate::{context::Context, issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
@@ -38,12 +35,12 @@ async fn main() -> Result<(), ()> {
     let repo = cli.repo.as_str();
     match &cli.command {
         Commands::User { profile } => run_user_cmd(&ctx, profile).await,
-        Commands::PullRequest { number, } => run_pr_cmd(&ctx, owner,repo, *number).await,
-        Commands::Issue { number, sub_command} => run_issue_cmd(&ctx, owner, repo, *number, sub_command).await,
+        Commands::PullRequest { number } => run_pr_cmd(&ctx, owner, repo, *number).await,
+        Commands::Issue { number, sub_command } => run_issue_cmd(&ctx, owner, repo, *number, sub_command).await,
     }
 }
 
-fn setup_github_api(cli :&Cli) -> GithubProvider {
+fn setup_github_api(cli: &Cli) -> GithubProvider {
     match (cli.user_name.as_ref(), cli.auth_token.as_ref()) {
         (Some(u), Some(a)) => {
             info!("Ignition! Launching Github Pilot in Authenticated Mode.");
@@ -60,8 +57,6 @@ fn setup_github_api(cli :&Cli) -> GithubProvider {
         (None, None) => {
             info!("No credentials provided. Launching Github Pilot in unauthenticated mode.");
             GithubProvider::default()
-        }
+        },
     }
 }
-
-

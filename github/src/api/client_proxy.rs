@@ -1,6 +1,7 @@
-use crate::api::{AuthToken, GithubApiError};
 use reqwest::{Client, Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
+
+use crate::api::{AuthToken, GithubApiError};
 
 pub const USER_AGENT: &str = "GithubPilot_v1.0";
 pub const BASE_URL: &str = "https://api.github.com";
@@ -39,7 +40,7 @@ impl ClientProxy {
     pub fn request<S: AsRef<str>>(&self, method: Method, path: S, auth: bool) -> RequestBuilder {
         let url = [BASE_URL, path.as_ref()].join("");
         let request = self.client.request(method, url);
-        
+
         if auth {
             self.apply_auth(request)
         } else {
@@ -63,11 +64,7 @@ impl ClientProxy {
         self.request(Method::PUT, url, true)
     }
 
-
-    pub async fn send<T: DeserializeOwned>(
-        &self,
-        request: RequestBuilder,
-    ) -> Result<T, GithubApiError> {
+    pub async fn send<T: DeserializeOwned>(&self, request: RequestBuilder) -> Result<T, GithubApiError> {
         let response = request
             .send()
             .await

@@ -5,8 +5,10 @@ use thiserror::Error;
 pub enum GithubApiError {
     #[error("You need to provide an authorization token to access this endpoint. {0}")]
     Unauthorized(String),
-    #[error("The HTTP client returned an error. This is probably an issue with Github Pilot rather than the Github \
-    server itself. {0}")]
+    #[error(
+        "The HTTP client returned an error. This is probably an issue with Github Pilot rather than the Github server \
+         itself. {0}"
+    )]
     HttpClientError(String),
     #[error("The request returned successfully, but deserialization from JSON failed. {0}")]
     DeserializationError(String),

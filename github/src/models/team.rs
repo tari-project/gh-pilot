@@ -1,5 +1,6 @@
-use crate::models::common::Url;
 use serde::Deserialize;
+
+use crate::models::common::Url;
 
 #[derive(Debug, Deserialize)]
 pub struct SimpleTeam {

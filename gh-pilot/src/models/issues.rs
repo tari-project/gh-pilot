@@ -9,7 +9,7 @@ impl IssueId {
         Self {
             owner: owner.into(),
             repo: repo.into(),
-            number
+            number,
         }
     }
 }

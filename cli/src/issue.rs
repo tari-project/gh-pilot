@@ -1,11 +1,19 @@
-use crate::pretty_print::{add_labels, pretty_table};
-use crate::Context;
-use gh_pilot::ghp_api::models::{Issue};
-use gh_pilot::models::IssueId;
-use crate::cli_def::IssueCommand;
+use gh_pilot::{ghp_api::models::Issue, models::IssueId};
 use log::*;
 
-pub async fn run_issue_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u64, cmd: &IssueCommand) -> Result<(), ()> {
+use crate::{
+    cli_def::IssueCommand,
+    pretty_print::{add_labels, pretty_table},
+    Context,
+};
+
+pub async fn run_issue_cmd(
+    ctx: &Context<'_>,
+    owner: &str,
+    repo: &str,
+    number: u64,
+    cmd: &IssueCommand,
+) -> Result<(), ()> {
     if ctx.issue_provider().is_none() {
         warn!("No Issue provider was installed");
         return Err(());
@@ -38,5 +46,3 @@ fn pretty_print(issue: Issue) {
     println!("{table}");
     println!("{}", issue.body.unwrap_or_default());
 }
-
-

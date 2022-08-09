@@ -1,9 +1,8 @@
-use crate::Context;
-use comfy_table::presets::UTF8_BORDERS_ONLY;
-use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::ghp_api::models::SimpleUser;
-use gh_pilot::models::{GithubHandle};
+use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
+use gh_pilot::{ghp_api::models::SimpleUser, models::GithubHandle};
 use log::*;
+
+use crate::Context;
 
 pub async fn run_user_cmd<S: AsRef<str>>(ctx: &Context<'_>, profile: S) -> Result<(), ()> {
     if let Some(provider) = ctx.user_provider() {
@@ -31,7 +30,10 @@ fn pretty_print(user: &SimpleUser) {
         .add_cell(cc(Color::Green, user.login.as_str()));
     table
         .add_row(name_row)
-        .add_row(&["Type", user.name.as_ref().map(|s| s.as_str()).unwrap_or_else(|| "Unavailable")])
+        .add_row(&[
+            "Type",
+            user.name.as_ref().map(|s| s.as_str()).unwrap_or_else(|| "Unavailable"),
+        ])
         .add_row(&["URL", user.url.as_ref()]);
     println!("{table}");
 }

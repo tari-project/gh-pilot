@@ -1,7 +1,6 @@
-use crate::models::common::Url;
-use crate::models::pull_request::AuthorAssociation;
-use crate::models::user::SimpleUser;
 use serde::Deserialize;
+
+use crate::models::{common::Url, pull_request::AuthorAssociation, user::SimpleUser};
 
 #[derive(Debug, Deserialize)]
 pub struct Reactions {
@@ -52,19 +51,12 @@ pub struct IssueComment {
 
 #[cfg(test)]
 mod test {
-    use crate::models::comments::IssueComment;
-    use crate::models::static_data::comments::COMMENT;
+    use crate::models::{comments::IssueComment, static_data::comments::COMMENT};
     #[test]
     fn comment1() {
         let comment: IssueComment = serde_json::from_str(COMMENT).unwrap();
-        assert_eq!(
-            comment.node_id,
-            "MDI0OlB1bGxSZXF1ZXN0UmV2aWV3Q29tbWVudDM0NDExNjkzNA=="
-        );
-        assert_eq!(
-            comment.body.unwrap(),
-            "Current RFC says Gen is height 1, not 0"
-        );
+        assert_eq!(comment.node_id, "MDI0OlB1bGxSZXF1ZXN0UmV2aWV3Q29tbWVudDM0NDExNjkzNA==");
+        assert_eq!(comment.body.unwrap(), "Current RFC says Gen is height 1, not 0");
         assert_eq!(
             comment.pull_request_url.unwrap(),
             "https://api.github.com/repos/tari-project/tari/pulls/1000"

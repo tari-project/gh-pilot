@@ -1,5 +1,7 @@
-use crate::api::{ClientProxy, GithubApiError};
-use crate::models::PullRequest;
+use crate::{
+    api::{ClientProxy, GithubApiError},
+    models::PullRequest,
+};
 
 pub struct PullRequestRequest {
     owner: String,
@@ -33,6 +35,7 @@ impl PullRequestRequest {
     fn url<S: AsRef<str>>(owner: S, repo: S, pull: u64) -> String {
         format!("/repos/{}/{}/pulls/{}", owner.as_ref(), repo.as_ref(), pull)
     }
+
     pub async fn fetch(&self, proxy: &ClientProxy) -> Result<PullRequest, GithubApiError> {
         let req = proxy.get(self.url.as_str(), false);
         proxy.send(req).await

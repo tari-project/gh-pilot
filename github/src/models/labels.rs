@@ -1,5 +1,6 @@
-use crate::models::common::Url;
 use serde::Deserialize;
+
+use crate::models::common::Url;
 
 #[derive(Debug, Deserialize)]
 pub struct Label {
@@ -14,8 +15,7 @@ pub struct Label {
 
 #[cfg(test)]
 mod test {
-    use crate::models::labels::Label;
-    use crate::models::static_data::labels::LABELS;
+    use crate::models::{labels::Label, static_data::labels::LABELS};
 
     #[test]
     fn deserialize_labels() {

@@ -1,6 +1,6 @@
-use crate::models::common::Url;
-
 use serde::Deserialize;
+
+use crate::models::common::Url;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SimpleUser {

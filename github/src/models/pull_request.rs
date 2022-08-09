@@ -1,11 +1,8 @@
-use crate::models::common::Url;
-use crate::models::git::GitReference;
-use crate::models::labels::Label;
-use crate::models::links::Links;
-use crate::models::team::SimpleTeam;
-use crate::models::user::SimpleUser;
-use serde::Deserialize;
 use std::fmt::{Display, Formatter};
+
+use serde::Deserialize;
+
+use crate::models::{common::Url, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all(deserialize = "lowercase"))]
@@ -101,10 +98,12 @@ pub struct IssuePullRequest {
 
 #[cfg(test)]
 mod test {
-    use crate::models::pull_request::PullRequest;
-    use crate::models::repository::Repository;
-    use crate::models::static_data::pull_requests::TARI_PR_1K;
-    use crate::models::user::SimpleUser;
+    use crate::models::{
+        pull_request::PullRequest,
+        repository::Repository,
+        static_data::pull_requests::TARI_PR_1K,
+        user::SimpleUser,
+    };
 
     #[test]
     fn tari_pr_1000() {
@@ -117,8 +116,6 @@ mod test {
             pr.links.commits.href,
             "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"
         );
-        assert!(
-            matches!(pr.base.repo, Some(Repository { description, ..}) if description == "The Tari protocol")
-        );
+        assert!(matches!(pr.base.repo, Some(Repository { description, ..}) if description == "The Tari protocol"));
     }
 }

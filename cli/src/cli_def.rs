@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, Args};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -11,9 +11,9 @@ pub struct Cli {
     /// The repository to query (default: tari)
     #[clap(short, long, default_value = "tari")]
     pub repo: String,
-    #[clap(short='u', long="user", env="GH_PILOT_USERNAME")]
+    #[clap(short = 'u', long = "user", env = "GH_PILOT_USERNAME")]
     pub user_name: Option<String>,
-    #[clap(short='a', long="auth", env="GH_PILOT_AUTH_TOKEN")]
+    #[clap(short = 'a', long = "auth", env = "GH_PILOT_AUTH_TOKEN")]
     pub auth_token: Option<String>,
 }
 
@@ -35,7 +35,7 @@ pub enum Commands {
         #[clap(short, long)]
         number: u64,
         #[clap(subcommand)]
-        sub_command: IssueCommand
+        sub_command: IssueCommand,
     },
 }
 
@@ -51,7 +51,7 @@ pub enum IssueCommand {
 
 #[derive(Debug, Args)]
 pub struct LabelArg {
-    pub label: String
+    pub label: String,
 }
 
 #[cfg(test)]

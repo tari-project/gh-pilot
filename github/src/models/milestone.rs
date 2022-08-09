@@ -1,5 +1,6 @@
-use crate::models::{SimpleUser, State, Url};
 use serde::Deserialize;
+
+use crate::models::{SimpleUser, State, Url};
 
 /// Milestone : A collection of related issues and pull requests.
 #[derive(Debug, Deserialize)]
