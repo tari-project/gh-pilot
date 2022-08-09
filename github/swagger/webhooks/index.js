@@ -1,0 +1,1 @@
+const WEBHOOKS = require('@octokit/webhooks-definitions')

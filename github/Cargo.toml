@@ -12,4 +12,6 @@ thiserror = "1.0.32"
 serde_json = "1.0.83"
 
 [dev-dependencies]
+schemars = "0.8.10"
 tokio = {version = "1.20.1", features = ["full"] }
+typify = { version = "0.0.9" }
