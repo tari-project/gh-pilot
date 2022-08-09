@@ -3,18 +3,19 @@ use comfy_table::presets::UTF8_BORDERS_ONLY;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
 use gh_pilot::github::models::SimpleUser;
 use gh_pilot::models::{GithubHandle};
+use log::*;
 
 pub async fn run_user_cmd<S: AsRef<str>>(ctx: &Context<'_>, profile: S) -> Result<(), ()> {
     if let Some(provider) = ctx.user_provider() {
-        println!("Fetching user..{}", profile.as_ref());
+        debug!("Fetching user..{}", profile.as_ref());
         let handle = GithubHandle::from(profile.as_ref());
         let details = provider.fetch_details(&handle).await.map_err(|_| ())?;
         match details {
             Some(p) => pretty_print(&p),
-            None => println!("User {} was not found", profile.as_ref()),
+            None => info!("User {} was not found", profile.as_ref()),
         }
     } else {
-        println!("No user provider installed");
+        warn!("No user provider installed");
     }
     Ok(())
 }

@@ -3,10 +3,11 @@ use crate::Context;
 use gh_pilot::github::models::{Issue};
 use gh_pilot::models::IssueId;
 use crate::cli_def::IssueCommand;
+use log::*;
 
 pub async fn run_issue_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u64, cmd: &IssueCommand) -> Result<(), ()> {
     if ctx.issue_provider().is_none() {
-        println!("No Issue provider was installed");
+        warn!("No Issue provider was installed");
         return Err(());
     }
     let id = IssueId::new(owner, repo, number);
@@ -14,15 +15,15 @@ pub async fn run_issue_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u
     match cmd {
         IssueCommand::Fetch => match provider.fetch_issue(&id).await {
             Ok(issue) => pretty_print(issue),
-            Err(e) => println!("Error fetching issue: {}", e.to_string()),
+            Err(e) => warn!("Error fetching issue: {}", e.to_string()),
         },
         IssueCommand::AddLabel(l) => match provider.add_label(&id, l.label.as_str()).await {
-            Ok(_) => println!("{} added to issue {}/{}", l.label, id.repo, id.number),
-            Err(e) => println!("Error adding label to issue: {}", e.to_string()),
+            Ok(_) => info!("{} added to issue {}/{}", l.label, id.repo, id.number),
+            Err(e) => warn!("Error adding label to issue: {}", e.to_string()),
         },
         IssueCommand::RemoveLabel(l) => match provider.remove_label(&id, l.label.as_str()).await {
-            Ok(_) => println!("{} removed from issue {}/{}", l.label, id.repo, id.number),
-            Err(e) => println!("Error removing label from issue: {}", e.to_string()),
+            Ok(_) => info!("{} removed from issue {}/{}", l.label, id.repo, id.number),
+            Err(e) => warn!("Error removing label from issue: {}", e.to_string()),
         },
     }
     Ok(())

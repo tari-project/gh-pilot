@@ -1,15 +1,16 @@
 use crate::pretty_print::{add_labels, pretty_table};
 use crate::Context;
 use gh_pilot::github::models::{PullRequest};
+use log::*;
 
 pub async fn run_pr_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u64) -> Result<(), ()> {
     if let Some(provider) = ctx.pull_request_provider() {
         match provider.fetch_pull_request(owner, repo, number).await {
             Ok(pr) => pretty_print(pr),
-            Err(e) => println!("Error fetching pr: {}", e.to_string()),
+            Err(e) => warn!("Error fetching pr: {}", e.to_string()),
         }
     } else {
-        println!("No PR provider installed.");
+        warn!("No PR provider installed.");
     }
     Ok(())
 }
