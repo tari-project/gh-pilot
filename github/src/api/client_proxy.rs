@@ -51,6 +51,19 @@ impl ClientProxy {
         self.request(Method::GET, url, auth)
     }
 
+    pub fn post<S: AsRef<str>>(&self, url: S) -> RequestBuilder {
+        self.request(Method::POST, url, true)
+    }
+
+    pub fn delete<S: AsRef<str>>(&self, url: S) -> RequestBuilder {
+        self.request(Method::DELETE, url, true)
+    }
+
+    pub fn put<S: AsRef<str>>(&self, url: S) -> RequestBuilder {
+        self.request(Method::PUT, url, true)
+    }
+
+
     pub async fn send<T: DeserializeOwned>(
         &self,
         request: RequestBuilder,

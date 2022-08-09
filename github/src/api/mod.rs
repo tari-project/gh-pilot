@@ -8,4 +8,4 @@ pub use auth::AuthToken;
 pub use client_proxy::ClientProxy;
 pub use error::GithubApiError;
 pub use pull_request::PullRequestRequest;
-pub use issue::IssueRequest;
+pub use issue::{IssueRequest};

@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use comfy_table::presets::UTF8_BORDERS_ONLY;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
 use gh_pilot::github::models::Label;

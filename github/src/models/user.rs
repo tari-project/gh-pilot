@@ -2,7 +2,7 @@ use crate::models::common::Url;
 
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct SimpleUser {
     pub login: String,
     pub id: i64,

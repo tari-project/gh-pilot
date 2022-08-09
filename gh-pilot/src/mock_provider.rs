@@ -1,12 +1,12 @@
 use crate::error::GithubPilotError;
-use crate::models::{GithubHandle, UserDetails};
+use crate::models::{GithubHandle};
 use async_trait::async_trait;
 use github::models::static_data::users::*;
-use github::models::PullRequest;
+use github::models::{PullRequest, SimpleUser};
 use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 
 pub struct MockUserProvider {
-    users: Vec<UserDetails>,
+    users: Vec<SimpleUser>,
 }
 
 #[async_trait]
@@ -14,7 +14,7 @@ impl UserStatsProvider for MockUserProvider {
     async fn fetch_details(
         &self,
         handle: &GithubHandle,
-    ) -> Result<Option<UserDetails>, GithubPilotError> {
+    ) -> Result<Option<SimpleUser>, GithubPilotError> {
         let user = self
             .users
             .iter()
@@ -26,7 +26,7 @@ impl UserStatsProvider for MockUserProvider {
 
 impl Default for MockUserProvider {
     fn default() -> Self {
-        let users: Vec<UserDetails> = vec![
+        let users: Vec<SimpleUser> = vec![
             serde_json::from_str(CJS77).unwrap(),
             serde_json::from_str(STRINGHANDLER).unwrap(),
         ];

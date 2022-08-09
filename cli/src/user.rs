@@ -1,7 +1,8 @@
 use crate::Context;
 use comfy_table::presets::UTF8_BORDERS_ONLY;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::models::{GithubHandle, UserDetails};
+use gh_pilot::github::models::SimpleUser;
+use gh_pilot::models::{GithubHandle};
 
 pub async fn run_user_cmd<S: AsRef<str>>(ctx: &Context<'_>, profile: S) -> Result<(), ()> {
     if let Some(provider) = ctx.user_provider() {
@@ -18,7 +19,7 @@ pub async fn run_user_cmd<S: AsRef<str>>(ctx: &Context<'_>, profile: S) -> Resul
     Ok(())
 }
 
-fn pretty_print(user: &UserDetails) {
+fn pretty_print(user: &SimpleUser) {
     let mut table = Table::new();
     table
         .load_preset(UTF8_BORDERS_ONLY)
@@ -29,8 +30,8 @@ fn pretty_print(user: &UserDetails) {
         .add_cell(cc(Color::Green, user.login.as_str()));
     table
         .add_row(name_row)
-        .add_row(&["Name", user.name.as_str()])
-        .add_row(&["URL", user.url.as_str()]);
+        .add_row(&["Type", user.name.as_ref().map(|s| s.as_str()).unwrap_or_else(|| "Unavailable")])
+        .add_row(&["URL", user.url.as_ref()]);
     println!("{table}");
 }
 

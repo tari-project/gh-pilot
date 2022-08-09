@@ -2,9 +2,8 @@
 mod newtype;
 // github models
 mod user;
+mod issues;
 
-//pub use gh_handle::GithubHandle;
-pub use user::{AuthenticatedUser, UserDetails};
-
-// pub struct GithubHandle(String);
 newtype!(GithubHandle, String, str);
+
+pub use issues::IssueId;
