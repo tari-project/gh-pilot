@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{repository::Repository, user::SimpleUser};
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GitReference {
     pub label: String,
     pub r#ref: String,

@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Organization {
     pub id: i64,
     pub login: String,

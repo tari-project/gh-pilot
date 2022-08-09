@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::common::Url;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Label {
     pub id: u64,
     pub node_id: String,

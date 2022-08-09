@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{SimpleUser, Url};
 
@@ -6,7 +6,7 @@ use crate::models::{SimpleUser, Url};
 /// accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks.
 /// GitHub apps are first class actors within GitHub.
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Integration {
     /// Unique identifier of the GitHub app
     pub id: u64,
@@ -38,7 +38,7 @@ pub struct Integration {
     pub pem: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct IntegrationPermissions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub issues: Option<String>,

@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 use crate::models::common::Url;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct SimpleUser {
     pub login: String,
     pub id: i64,
@@ -26,4 +26,21 @@ pub struct SimpleUser {
     pub subscriptions_url: Option<Url>,
     #[serde(rename = "type")]
     pub user_type: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
+pub enum UserType {
+    Bot,
+    User,
+    Organization,
+}
+
+impl ToString for UserType {
+    fn to_string(&self) -> String {
+        match *self {
+            UserType::Bot => "Bot".to_string(),
+            UserType::User => "User".to_string(),
+            UserType::Organization => "Organization".to_string(),
+        }
+    }
 }

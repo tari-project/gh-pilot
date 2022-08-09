@@ -1,18 +1,18 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{
     common::{License, Permissions, Url, Visibility},
     user::SimpleUser,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct RepositoryReference {
     pub id: u64,
     pub name: String,
     pub url: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Repository {
     pub archive_url: Url,
     pub assignees_url: Url,

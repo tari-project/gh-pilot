@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{SimpleUser, State, Url};
 
 /// Milestone : A collection of related issues and pull requests.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Milestone {
     pub url: Url,
     pub html_url: Url,
@@ -17,7 +17,7 @@ pub struct Milestone {
     /// The title of the milestone.
     pub title: String,
     pub description: Option<String>,
-    pub creator: Option<Box<SimpleUser>>,
+    pub creator: Option<SimpleUser>,
     pub open_issues: u64,
     pub closed_issues: u64,
     pub created_at: String,

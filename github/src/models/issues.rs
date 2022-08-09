@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{
     integration::Integration,
@@ -14,7 +14,7 @@ use crate::models::{
 };
 
 /// Issue : Issues are a great way to keep track of tasks, enhancements, and bugs for your projects.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Issue {
     pub id: u64,
     pub node_id: String,
@@ -45,7 +45,7 @@ pub struct Issue {
     pub assignee: Option<Box<SimpleUser>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assignees: Option<Vec<SimpleUser>>,
-    pub milestone: Option<Box<Milestone>>,
+    pub milestone: Option<Milestone>,
     pub locked: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub active_lock_reason: Option<String>,
@@ -68,11 +68,11 @@ pub struct Issue {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repository: Option<Box<Repository>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub performed_via_github_app: Option<Box<Integration>>,
+    pub performed_via_github_app: Option<Integration>,
     #[serde(rename = "author_association")]
     pub author_association: AuthorAssociation,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reactions: Option<Box<Reactions>>,
+    pub reactions: Option<Reactions>,
 }
 
 impl Issue {

@@ -19,12 +19,19 @@
 //!         tokio::time::sleep(Duration::from_secs(5)).await; // <-- Ok. Worker thread will handle other requests here
 //!         "response"
 //!     }
-use actix_web::{get, post, HttpResponse, Responder};
+use actix_web::{get, post, HttpResponse, Responder, web, HttpRequest};
+use gh_pilot::ghp_api::webhooks::IssuesEvent;
 
 #[get("/health")]
 pub async fn health() -> impl Responder {
     HttpResponse::Ok().body("👍")
 }
 
-#[post("/github-hook")]
-pub async fn github_webhook() -> impl Responder {}
+#[post("/webhook")]
+pub async fn github_webhook(req: HttpRequest, event: web::Json<IssuesEvent>) -> impl Responder {
+    // TODO - set secret on webhook and validate signature
+    println!("Headers");
+    println!("{:?}", req.headers());
+    println!("{:?}", event);
+    HttpResponse::Ok()
+}

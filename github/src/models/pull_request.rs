@@ -1,13 +1,12 @@
 use std::fmt::{Display, Formatter};
-
-use serde::Deserialize;
-
+use serde::{Deserialize, Serialize};
 use crate::models::{common::Url, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all(deserialize = "lowercase"))]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub enum State {
+    #[serde(rename = "open")]
     Open,
+    #[serde(rename = "closed")]
     Closed,
 }
 
@@ -20,8 +19,8 @@ impl Display for State {
     }
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all(deserialize = "UPPERCASE"))]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum AuthorAssociation {
     Collaborator,
     Contributor,
@@ -33,7 +32,23 @@ pub enum AuthorAssociation {
     Owner,
 }
 
-#[derive(Debug, Deserialize)]
+impl ToString for AuthorAssociation {
+    fn to_string(&self) -> String {
+        match *self {
+            Self::Collaborator => "COLLABORATOR".to_string(),
+            Self::Contributor => "CONTRIBUTOR".to_string(),
+            Self::FirstTimer => "FIRST_TIMER".to_string(),
+            Self::FirstTimeContributor => "FIRST_TIME_CONTRIBUTOR".to_string(),
+            Self::Mannequin => "MANNEQUIN".to_string(),
+            Self::Member => "MEMBER".to_string(),
+            Self::None => "NONE".to_string(),
+            Self::Owner => "OWNER".to_string(),
+        }
+    }
+}
+
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PullRequest {
     pub url: Url,
     pub id: u64,
@@ -67,7 +82,7 @@ pub struct PullRequest {
     pub requested_teams: Option<Vec<SimpleTeam>>,
     pub head: GitReference,
     pub base: GitReference,
-    #[serde(rename(deserialize = "_links"))]
+    #[serde(rename = "_links")]
     pub links: Links,
     pub author_association: AuthorAssociation,
     pub auto_merge: Option<bool>,
@@ -86,14 +101,17 @@ pub struct PullRequest {
     pub changed_files: usize,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(deny_unknown_fields)]
 pub struct IssuePullRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub merged_at: Option<String>,
-    pub diff_url: Option<Url>,
-    pub html_url: Option<Url>,
-    pub patch_url: Option<Url>,
-    pub url: Option<Url>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub diff_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub html_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub patch_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 #[cfg(test)]

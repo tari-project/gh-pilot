@@ -1,16 +1,25 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::common::Link;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Links {
-    pub comments: Link,
-    pub commits: Link,
-    pub statuses: Link,
-    pub html: Link,
-    pub issue: Link,
-    pub review_comments: Link,
-    pub review_comment: Link,
-    #[serde(rename(deserialize = "self"))]
-    pub ref_self: Link,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub comments: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub commits: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub statuses: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub html: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub issue: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub review_comments: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub review_comment: Option<Link>,
+    #[serde(rename(deserialize = "self"), skip_serializing_if="Option::is_none")]
+    pub ref_self: Option<Link>,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub pull_request: Option<Link>,
 }

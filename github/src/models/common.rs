@@ -1,8 +1,8 @@
 use std::fmt::{Display, Formatter};
 
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Url(String);
 
 impl Display for Url {
@@ -17,7 +17,7 @@ impl AsRef<str> for Url {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct License {
     pub key: String,
     pub name: String,
@@ -26,7 +26,7 @@ pub struct License {
     pub node_id: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all(deserialize = "lowercase"))]
 pub enum Visibility {
     Public,
@@ -34,7 +34,7 @@ pub enum Visibility {
     Internal,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Permissions {
     pub admin: bool,
     pub maintain: bool,
@@ -43,7 +43,7 @@ pub struct Permissions {
     pub pull: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Link {
     pub href: String,
 }

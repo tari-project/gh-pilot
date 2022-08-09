@@ -1,14 +1,14 @@
-use serde::Deserialize;
+use serde::{ Deserialize, Serialize };
 
 use crate::models::{common::Url, pull_request::AuthorAssociation, user::SimpleUser};
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Reactions {
     pub url: Url,
     pub total_count: u64,
-    #[serde(rename(deserialize = "+1"))]
+    #[serde(rename = "+1")]
     pub plus1: u64,
-    #[serde(rename(deserialize = "-1"))]
+    #[serde(rename = "-1")]
     pub minus1: u64,
     pub laugh: u64,
     pub hooray: u64,
@@ -18,7 +18,7 @@ pub struct Reactions {
     pub eyes: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct IssueComment {
     pub id: i64,
     pub node_id: String,
@@ -47,6 +47,25 @@ pub struct IssueComment {
     pub line: Option<u64>,
     pub original_line: Option<u64>,
     pub side: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CommitComment {
+    pub html_url: Url,
+    pub url: Url,
+    pub id: u64,
+    pub node_id: String,
+    pub body: String,
+    pub path: Option<String>,
+    pub position: Option<u64>,
+    pub line: Option<u64>,
+    pub commit_id: String,
+    pub user: Option<SimpleUser>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub author_association: AuthorAssociation,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reactions: Option<Reactions>,
 }
 
 #[cfg(test)]
