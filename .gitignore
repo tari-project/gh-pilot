@@ -9,3 +9,5 @@ github/swagger/rust
 github/swagger/rust
 github/swagger/*.jar
 github/swagger/.swagger-codegen-ignore
+
+**/node_modules
