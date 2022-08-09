@@ -1,6 +1,6 @@
 use crate::pretty_print::{add_labels, pretty_table};
 use crate::Context;
-use gh_pilot::github::models::{PullRequest};
+use gh_pilot::ghp_api::models::{PullRequest};
 use log::*;
 
 pub async fn run_pr_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u64) -> Result<(), ()> {

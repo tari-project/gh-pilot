@@ -1,7 +1,7 @@
 use crate::Context;
 use comfy_table::presets::UTF8_BORDERS_ONLY;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::github::models::SimpleUser;
+use gh_pilot::ghp_api::models::SimpleUser;
 use gh_pilot::models::{GithubHandle};
 use log::*;
 

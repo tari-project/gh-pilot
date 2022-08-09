@@ -6,4 +6,4 @@ pub mod models;
 
 pub use github_provider::GithubProvider;
 // re-export github
-pub use github;
+pub use ghp_api;

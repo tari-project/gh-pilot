@@ -1,7 +1,7 @@
 use crate::error::GithubPilotError;
 use async_trait::async_trait;
-use github::api::{ClientProxy, IssueRequest, PullRequestRequest};
-use github::models::{Issue, Label, PullRequest};
+use ghp_api::api::{ClientProxy, IssueRequest, PullRequestRequest};
+use ghp_api::models::{Issue, Label, PullRequest};
 use crate::data_provider::{IssueProvider, PullRequestProvider};
 use crate::models::IssueId;
 

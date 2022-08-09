@@ -1,8 +1,8 @@
 use crate::error::GithubPilotError;
 use crate::models::{GithubHandle};
 use async_trait::async_trait;
-use github::models::static_data::users::*;
-use github::models::{PullRequest, SimpleUser};
+use ghp_api::models::static_data::users::*;
+use ghp_api::models::{PullRequest, SimpleUser};
 use crate::data_provider::{PullRequestProvider, UserStatsProvider};
 
 pub struct MockUserProvider {

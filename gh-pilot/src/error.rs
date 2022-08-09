@@ -1,4 +1,4 @@
-use github::api::GithubApiError;
+use ghp_api::api::GithubApiError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

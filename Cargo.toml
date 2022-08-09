@@ -2,5 +2,6 @@
 members = [
     "gh-pilot",
     "cli",
-    "github"
+    "github",
+    "server"
 ]

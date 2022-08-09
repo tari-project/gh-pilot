@@ -1,6 +1,6 @@
 use crate::error::GithubPilotError;
 use async_trait::async_trait;
-use github::models::{Issue, Label, PullRequest, SimpleUser};
+use ghp_api::models::{Issue, Label, PullRequest, SimpleUser};
 use crate::models::{GithubHandle, IssueId};
 
 #[async_trait]

@@ -1,6 +1,6 @@
 use crate::pretty_print::{add_labels, pretty_table};
 use crate::Context;
-use gh_pilot::github::models::{Issue};
+use gh_pilot::ghp_api::models::{Issue};
 use gh_pilot::models::IssueId;
 use crate::cli_def::IssueCommand;
 use log::*;

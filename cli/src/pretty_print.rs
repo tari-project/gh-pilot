@@ -1,6 +1,6 @@
 use comfy_table::presets::UTF8_BORDERS_ONLY;
 use comfy_table::{Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::github::models::Label;
+use gh_pilot::ghp_api::models::Label;
 use hex;
 
 pub fn pretty_table(header_label: &str, header_value: &str) -> Table {
