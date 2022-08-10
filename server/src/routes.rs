@@ -19,8 +19,9 @@
 //!         tokio::time::sleep(Duration::from_secs(5)).await; // <-- Ok. Worker thread will handle other requests here
 //!         "response"
 //!     }
-use actix_web::{get, post, HttpResponse, Responder, web, HttpRequest};
-use gh_pilot::ghp_api::webhooks::IssuesEvent;
+use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use gh_pilot::ghp_api::webhooks::GithubEvent;
+use log::*;
 
 #[get("/health")]
 pub async fn health() -> impl Responder {
@@ -28,10 +29,24 @@ pub async fn health() -> impl Responder {
 }
 
 #[post("/webhook")]
-pub async fn github_webhook(req: HttpRequest, event: web::Json<IssuesEvent>) -> impl Responder {
+pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> HttpResponse {
+    debug!("Headers: {:?}", req.headers());
+    let payload = match std::str::from_utf8(body.as_ref()) {
+        Ok(text) => text,
+        Err(_) => return HttpResponse::BadRequest().into(),
+    };
+    debug!("Event: {:?}", payload);
+    let event_name = match req
+        .headers()
+        .get("x-github-event")
+        .map(|v| v.to_str())
+        .and_then(Result::ok)
+    {
+        Some(v) => v,
+        None => return HttpResponse::BadRequest().into(),
+    };
+
+    let event = GithubEvent::from_webhook_info(event_name, payload);
     // TODO - set secret on webhook and validate signature
-    println!("Headers");
-    println!("{:?}", req.headers());
-    println!("{:?}", event);
-    HttpResponse::Ok()
+    HttpResponse::Ok().json(event)
 }

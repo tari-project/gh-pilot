@@ -1,11 +1,11 @@
 mod branch;
 mod comments;
-mod common;
 mod commits;
-mod events;
+mod common;
+mod date_time;
 mod git;
-mod integration;
 mod installation;
+mod integration;
 mod issues;
 mod labels;
 mod links;
@@ -21,8 +21,9 @@ mod user;
 
 pub use branch::Branch;
 pub use comments::*;
-pub use common::*;
 pub use commits::*;
+pub use common::*;
+pub use date_time::DateTime;
 pub use git::GitReference;
 pub use installation::*;
 pub use issues::Issue;

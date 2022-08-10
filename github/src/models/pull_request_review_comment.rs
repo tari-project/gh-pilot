@@ -1,5 +1,6 @@
-use crate::models::{AuthorAssociation, Links, Reactions, SimpleUser};
 use serde::{Deserialize, Serialize};
+
+use crate::models::{AuthorAssociation, Links, Reactions, SimpleUser};
 
 /// PullRequestReviewComment : Pull Request Review Comments are comments on a portion of the Pull Request's diff.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -18,7 +19,8 @@ pub struct PullRequestReviewComment {
     pub path: String,
     /// The line index in the diff to which the comment applies. This field is deprecated; use `line` instead.
     pub position: i32,
-    /// The index of the original line in the diff to which the comment applies. This field is deprecated; use `original_line` instead.
+    /// The index of the original line in the diff to which the comment applies. This field is deprecated; use
+    /// `original_line` instead.
     pub original_position: i32,
     /// The SHA of the commit to which the comment applies.
     pub commit_id: String,
@@ -54,7 +56,8 @@ pub struct PullRequestReviewComment {
     /// The line of the blob to which the comment applies. The last line of the range for a multi-line comment
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original_line: Option<i32>,
-    /// The side of the diff to which the comment applies. The side of the last line of the range for a multi-line comment
+    /// The side of the diff to which the comment applies. The side of the last line of the range for a multi-line
+    /// comment
     #[serde(skip_serializing_if = "Option::is_none")]
     pub side: Option<Side>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -79,5 +82,3 @@ impl Default for Side {
         Self::Left
     }
 }
-
-

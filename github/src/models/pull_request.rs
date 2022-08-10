@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
+
 use crate::models::{common::Url, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
@@ -20,7 +22,7 @@ impl Display for State {
 }
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq, Serialize)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all(deserialize = "SCREAMING_SNAKE_CASE", serialize = "PascalCase"))]
 pub enum AuthorAssociation {
     Collaborator,
     Contributor,
@@ -46,7 +48,6 @@ impl ToString for AuthorAssociation {
         }
     }
 }
-
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PullRequest {
@@ -116,12 +117,7 @@ pub struct IssuePullRequest {
 
 #[cfg(test)]
 mod test {
-    use crate::models::{
-        pull_request::PullRequest,
-        repository::Repository,
-        static_data::pull_requests::TARI_PR_1K,
-        user::SimpleUser,
-    };
+    use crate::models::{static_data::pull_requests::TARI_PR_1K, Link, PullRequest, Repository, SimpleUser};
 
     #[test]
     fn tari_pr_1000() {
@@ -130,10 +126,11 @@ mod test {
         assert_eq!(pr.id, 338616778);
         assert_eq!(pr.merged, true);
         assert!(matches!(pr.merged_by, Some(SimpleUser{login, ..}) if login == "CjS77"));
-        assert_eq!(
-            pr.links.commits.href,
-            "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"
+        assert!(matches!(pr.links.commits, Some(Link {href, ..})
+            if href == "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"));
+        assert!(
+            matches!(pr.base.repo, Some(Repository { description: Some(d), ..}) if d == "The Tari \
+        protocol")
         );
-        assert!(matches!(pr.base.repo, Some(Repository { description, ..}) if description == "The Tari protocol"));
     }
 }

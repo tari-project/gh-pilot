@@ -1,16 +1,34 @@
 use serde::{Deserialize, Serialize};
-use crate::models::{Branch, Commit, CommitComment, Committer, InstallationLite, Issue, IssueComment, Label, Organization, PullRequest, PullRequestReview, PullRequestReviewComment, Repository, SimpleUser, Url};
+
+use crate::models::{
+    Branch,
+    Commit,
+    CommitComment,
+    Committer,
+    InstallationLite,
+    Issue,
+    IssueComment,
+    Label,
+    Organization,
+    PullRequest,
+    PullRequestReview,
+    PullRequestReviewComment,
+    Repository,
+    Repository2,
+    SimpleUser,
+    Url,
+};
 
 //----------------------------------  Fields common to all events ------------------------------------------------------
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CommonEventFields {
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    installation: Option<InstallationLite>,
+    pub installation: Option<InstallationLite>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    organization: Option<Organization>,
-    repository: Repository,
-    sender: SimpleUser,
+    pub organization: Option<Organization>,
+    pub repository: Repository2,
+    pub sender: SimpleUser,
 }
 
 //----------------------------------      CommitComment Event     ------------------------------------------------------
@@ -28,7 +46,7 @@ pub struct CommitCommentEvent {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum CommitCommentAction {
     #[serde(rename = "created")]
-    Created
+    Created,
 }
 
 //----------------------------------       IssueComment Event     ------------------------------------------------------
@@ -64,7 +82,7 @@ impl ToString for IssueCommentAction {
         match *self {
             Self::Created => "created".to_string(),
             Self::Deleted => "deleted".to_string(),
-            Self::Edited{..} => "edited".to_string(),
+            Self::Edited { .. } => "edited".to_string(),
         }
     }
 }
@@ -92,7 +110,7 @@ pub struct IssuesEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all="lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum IssuesEventAction {
     /// issues assigned event. Activity related to an issue. The type of activity is specified in the action property.
     Assigned {
@@ -151,13 +169,13 @@ pub enum IssuesEventAction {
 impl ToString for IssuesEventAction {
     fn to_string(&self) -> String {
         match *self {
-            Self::Assigned{..} => "assigned".to_string(),
+            Self::Assigned { .. } => "assigned".to_string(),
             Self::Closed => "closed".to_string(),
             Self::Deleted => "deleted".to_string(),
             Self::Demilestoned => "demilestoned".to_string(),
-            Self::Edited{..} => "edited".to_string(),
-            Self::Labeled{..} => "labeled".to_string(),
-            Self::Unlabeled{..} => "unlabeled".to_string(),
+            Self::Edited { .. } => "edited".to_string(),
+            Self::Labeled { .. } => "labeled".to_string(),
+            Self::Unlabeled { .. } => "unlabeled".to_string(),
             Self::Locked => "locked".to_string(),
             Self::Milestoned => "milestoned".to_string(),
             Self::Unlocked => "unlocked".to_string(),
@@ -165,12 +183,11 @@ impl ToString for IssuesEventAction {
             Self::Pinned => "pinned".to_string(),
             Self::Unpinned => "unpinned".to_string(),
             Self::Reopened => "reopened".to_string(),
-            Self::Unassigned{..} => "unassigned".to_string(),
+            Self::Unassigned { .. } => "unassigned".to_string(),
             Self::Transferred => "transferred".to_string(),
         }
     }
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IssuesEditedChangesBody {
@@ -293,7 +310,7 @@ pub struct PullRequestEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all="snake_case")]
+#[serde(rename_all = "snake_case")]
 pub enum PullRequestAction {
     Assigned {
         assignee: SimpleUser,
@@ -373,9 +390,7 @@ pub enum PullRequestReviewAction {
     Dismissed,
     /// pull_request_review edited event
     #[serde(rename = "edited")]
-    Edited {
-        changes: PullRequestReviewEditedChanges,
-    },
+    Edited { changes: PullRequestReviewEditedChanges },
     /// pull_request_review submitted event
     #[serde(rename = "submitted")]
     Submitted,
@@ -399,7 +414,7 @@ pub struct PullRequestReviewCommentEvent {
     pull_request: PullRequest,
     comment: PullRequestReviewComment,
     #[serde(flatten)]
-    info: CommonEventFields
+    info: CommonEventFields,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -453,7 +468,8 @@ pub struct PushEvent {
 pub struct StatusEvent {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub avatar_url: Option<String>,
-    /// An array of branch objects containing the status' SHA. Each branch contains the given SHA, but the SHA               may or may not be the head of the branch. The array includes a maximum of 10 branches.
+    /// An array of branch objects containing the status' SHA. Each branch contains the given SHA, but the SHA
+    /// may or may not be the head of the branch. The array includes a maximum of 10 branches.
     pub branches: Vec<Branch>,
     pub commit: Commit,
     pub context: String,

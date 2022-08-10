@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+
 use crate::models::{AuthorAssociation, Links, SimpleUser};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

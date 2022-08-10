@@ -1,5 +1,6 @@
-use crate::models::Commit;
 use serde::{Deserialize, Serialize};
+
+use crate::models::Commit;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Branch {

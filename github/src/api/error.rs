@@ -18,4 +18,6 @@ pub enum GithubApiError {
     NotFound(String),
     #[error("HTTP Code response. {0}")]
     HttpResponse(StatusCode),
+    #[error("Could not parse {0} as a valid timestamp")]
+    InvalidTimestamp(String),
 }
