@@ -102,8 +102,8 @@ pub struct IssueCommentEditedChanges {
 //----------------------------------         Issues Event        ------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IssuesEvent {
-    action: IssuesEventAction,
-    issue: Issue,
+    pub action: IssuesEventAction,
+    pub issue: Issue,
     #[serde(flatten)]
     pub info: CommonEventFields,
 }
@@ -208,6 +208,7 @@ pub struct IssuesEditedChanges {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub title: Option<IssuesEditedChangesTitle>,
 }
+
 //------------------------------------        Label Event       --------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LabelEvent {
@@ -229,6 +230,16 @@ pub enum LabelEventAction {
     /// label edited event
     #[serde(rename = "edited")]
     Edited(Box<LabelEditedChanges>),
+}
+
+impl ToString for LabelEventAction {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Created => "created".into(),
+            Self::Deleted => "deleted".into(),
+            Self::Edited(_) => "edited".into(),
+        }
+    }
 }
 
 /// The changes to the label if the action was `edited`.
@@ -281,6 +292,7 @@ pub struct PingEventHook {
     pub updated_at: String,
     pub url: String,
 }
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PingEventHookConfig {
     pub content_type: String,
@@ -311,7 +323,7 @@ pub struct PullRequestEvent {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
-#[serde(tag="action")]
+#[serde(tag = "action")]
 pub enum PullRequestAction {
     Assigned {
         assignee: SimpleUser,
@@ -353,6 +365,30 @@ pub enum PullRequestAction {
     Unlocked,
 }
 
+impl ToString for PullRequestAction {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Assigned{..} => "assigned".into(),
+            Self::AutoMergeDisabled => "auto_merge_disabled".into(),
+            Self::AutoMergeEnabled => "auto_merge_enabled".into(),
+            Self::Closed => "closed".into(),
+            Self::ConvertedToDraft => "converted_to_draft".into(),
+            Self::Edited{..} => "edited".into(),
+            Self::Labeled{..} => "labeled".into(),
+            Self::Locked => "locked".into(),
+            Self::Opened => "opened".into(),
+            Self::ReadyForReview => "ready_for_review".into(),
+            Self::Reopened => "reopened".into(),
+            Self::ReviewRequestRemoved{..} => "review_request_removed".into(),
+            Self::ReviewRequested{..} => "review_requested".into(),
+            Self::Synchronize{..} => "synchronize".into(),
+            Self::Unassigned{..} => "unassigned".into(),
+            Self::Unlabeled{..} => "unlabeled".into(),
+            Self::Unlocked => "unlocked".into(),
+        }
+    }
+}
+
 /// The changes to the comment if the action was `edited`.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestEditedChanges {
@@ -377,11 +413,11 @@ pub struct PullRequestEditedChangesTitle {
 //----------------------------------  Pull-Request-Review Event   ------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestReviewEvent {
-    action: PullRequestReviewAction,
-    review: PullRequestReview,
-    pull_request: PullRequest,
+    pub action: PullRequestReviewAction,
+    pub review: PullRequestReview,
+    pub pull_request: PullRequest,
     #[serde(flatten)]
-    info: CommonEventFields,
+    pub info: CommonEventFields,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -395,6 +431,16 @@ pub enum PullRequestReviewAction {
     /// pull_request_review submitted event
     #[serde(rename = "submitted")]
     Submitted,
+}
+
+impl ToString for PullRequestReviewAction {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Dismissed => "dismissed".into(),
+            Self::Edited { .. } => "edited".into(),
+            Self::Submitted => "submitted".into(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

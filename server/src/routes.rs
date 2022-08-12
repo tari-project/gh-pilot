@@ -35,7 +35,6 @@ pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> HttpResponse 
         Ok(text) => text,
         Err(_) => return HttpResponse::BadRequest().into(),
     };
-    debug!("Event: {:?}", payload);
     let event_name = match req
         .headers()
         .get("x-github-event")
@@ -47,6 +46,7 @@ pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> HttpResponse 
     };
 
     let event = GithubEvent::from_webhook_info(event_name, payload);
+    info!("Github event received: {}, {}", event_name, event.summary());
     // TODO - set secret on webhook and validate signature
-    HttpResponse::Ok().json(event)
+    HttpResponse::Ok().finish()
 }

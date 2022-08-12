@@ -71,6 +71,33 @@ impl GithubEvent {
             },
         }
     }
+
+    pub fn summary(&self) -> String {
+        match self {
+            Self::CommitComment(c) =>
+                format!("Commit comment from {}: {}", c.info.sender.login, c.comment.body),
+            Self::IssueComment(c) =>
+                format!("Issue comment from {}: {}", c.info.sender.login, c.comment.body.clone().unwrap_or_default()),
+            Self::Issues(iss) =>
+                format!("Issue {}: {}", iss.action.to_string(), iss.issue.title),
+            Self::Label(lab) =>
+                format!("Label {}: {}", lab.action.to_string(), lab.label.name),
+            Self::Ping(p) =>
+                format!("Ping: {}", p.zen),
+            Self::PullRequest(pr) =>
+                format!("Pull request {}: {}", pr.action.to_string(), pr.pull_request.title),
+            Self::PullRequestReview(r) =>
+                format!("Pull request review {}: {}", r.action.to_string(), r.pull_request.title),
+            Self::PullRequestReviewComment(c) =>
+                format!("PR review comment from {}: {}", c.info.sender.login, c.comment.body),
+            Self::Push(p) =>
+                format!("User {} pushed {} commits to {}", p.pusher.name, p.commits.len(), p.info.repository.name),
+            Self::Status(s) =>
+                format!("Status event ({}) on {}", s.state.to_string(), s.info.repository.name),
+            Self::UnknownEvent { event, .. } =>
+                format!("Unknown event: {}", event),
+        }
+    }
 }
 
 #[cfg(test)]
