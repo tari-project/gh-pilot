@@ -1,6 +1,6 @@
-use std::fmt::Formatter;
+use std::fmt::{Display, Formatter};
 
-use chrono::{TimeZone, Utc};
+use chrono::{SecondsFormat, TimeZone, Utc};
 use serde::{
     de::{Error, Visitor},
     Deserialize,
@@ -22,6 +22,12 @@ impl DateTime {
 impl AsRef<Timestamp> for DateTime {
     fn as_ref(&self) -> &Timestamp {
         &self.0
+    }
+}
+
+impl Display for DateTime {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0.to_rfc3339_opts(SecondsFormat::Secs, true).as_str())
     }
 }
 

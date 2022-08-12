@@ -77,8 +77,8 @@ impl GithubEvent {
 mod test {
     use crate::{models::static_data::events::PUSH_EVENT, webhooks::GithubEvent};
     use crate::models::AuthorAssociation;
-    use crate::models::static_data::events::PR_REVIEW_COMMENT;
-    use crate::webhooks::PullRequestReviewCommentAction;
+    use crate::models::static_data::events::{PR_EVENT, PR_REVIEW_COMMENT};
+    use crate::webhooks::{PullRequestAction, PullRequestReviewCommentAction};
 
     #[test]
     fn push_event() {
@@ -94,7 +94,7 @@ mod test {
     }
 
     #[test]
-    fn pr_review_comment() {
+    fn pr_review_comment_event() {
         let event = GithubEvent::from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT);
         match event {
             GithubEvent::PullRequestReviewComment(c) => {
@@ -103,6 +103,23 @@ mod test {
                 assert_eq!(c.comment.id, 944298862);
                 assert_eq!(c.pull_request.id, 1023688816);
                 assert!(matches!(c.comment.author_association, AuthorAssociation::Collaborator));
+            },
+            _ => panic!("Not a pull_request_review_comment event"),
+        }
+    }
+
+    #[test]
+    fn pr_event() {
+        let event = GithubEvent::from_webhook_info("pull_request", PR_EVENT);
+        match event {
+            GithubEvent::PullRequest(pr) => {
+                assert!(matches!(pr.action, PullRequestAction::Opened));
+                assert_eq!(pr.number, 2);
+                assert_eq!(pr.pull_request.id, 1024763655);
+                assert_eq!(pr.pull_request.created_at.clone().unwrap().to_string(), "2022-08-12T09:55:42Z");
+                assert_eq!(pr.info.repository.name, "tari-dan");
+                assert_eq!(pr.info.organization.clone().unwrap().id, 37560539);
+                assert_eq!(pr.info.sender.node_id, "MDQ6VXNlcjQ3OTE5OTAx");
             },
             _ => panic!("Not a pull_request_review_comment event"),
         }

@@ -26,4 +26,5 @@ pub mod issues {
 pub mod events {
     pub const PR_REVIEW_COMMENT: &str = include_str!("./data/pr_review_comment_event.json");
     pub const PUSH_EVENT: &str = include_str!("./data/push_event.json");
+    pub const PR_EVENT: &str = include_str!("./data/pr_event.json");
 }

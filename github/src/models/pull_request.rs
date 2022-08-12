@@ -75,7 +75,7 @@ pub struct PullRequest {
     pub updated_at: Option<DateTime>,
     pub closed_at: Option<DateTime>,
     pub merged_at: Option<DateTime>,
-    pub merge_commit_sha: String,
+    pub merge_commit_sha: Option<String>,
     pub assignee: Option<SimpleUser>,
     pub assignees: Vec<SimpleUser>,
     pub requested_reviewers: Vec<SimpleUser>,
