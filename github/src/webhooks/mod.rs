@@ -76,6 +76,9 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{models::static_data::events::PUSH_EVENT, webhooks::GithubEvent};
+    use crate::models::AuthorAssociation;
+    use crate::models::static_data::events::PR_REVIEW_COMMENT;
+    use crate::webhooks::PullRequestReviewCommentAction;
 
     #[test]
     fn push_event() {
@@ -87,6 +90,21 @@ mod test {
                 assert_eq!(push.info.repository.name, "gh-pilot");
             },
             _ => panic!("Not a push event"),
+        }
+    }
+
+    #[test]
+    fn pr_review_comment() {
+        let event = GithubEvent::from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT);
+        match event {
+            GithubEvent::PullRequestReviewComment(c) => {
+                assert!(matches!(c.action, PullRequestReviewCommentAction::Created));
+                assert_eq!(c.info.sender.login, "hansieodendaal");
+                assert_eq!(c.comment.id, 944298862);
+                assert_eq!(c.pull_request.id, 1023688816);
+                assert!(matches!(c.comment.author_association, AuthorAssociation::Collaborator));
+            },
+            _ => panic!("Not a pull_request_review_comment event"),
         }
     }
 }

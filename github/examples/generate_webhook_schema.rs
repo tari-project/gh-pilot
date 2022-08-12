@@ -9,7 +9,7 @@ fn main() {
         let millis = t.elapsed().as_millis();
         millis as f64 * 0.001
     };
-    let content = std::fs::read_to_string("./github/swagger/webhooks_schema.json").unwrap_or_else(|e| {
+    let content = std::fs::read_to_string("./github/swagger/webhooks_schema.json").unwrap_or_else(|_| {
         println!("Error loading schema file");
         std::process::exit(1);
     });

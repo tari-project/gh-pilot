@@ -1,8 +1,7 @@
 use std::fmt::{Display, Formatter};
-
 use serde::{Deserialize, Serialize};
 
-use crate::models::{common::Url, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
+use crate::models::{common::Url, DateTime, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub enum State {
@@ -72,10 +71,10 @@ pub struct PullRequest {
     pub labels: Vec<Label>,
     pub milestone: Option<String>,
     pub active_lock_reason: Option<String>,
-    pub created_at: String,
-    pub updated_at: String,
-    pub closed_at: String,
-    pub merged_at: String,
+    pub created_at: Option<DateTime>,
+    pub updated_at: Option<DateTime>,
+    pub closed_at: Option<DateTime>,
+    pub merged_at: Option<DateTime>,
     pub merge_commit_sha: String,
     pub assignee: Option<SimpleUser>,
     pub assignees: Vec<SimpleUser>,
@@ -88,18 +87,18 @@ pub struct PullRequest {
     pub author_association: AuthorAssociation,
     pub auto_merge: Option<bool>,
     pub draft: bool,
-    pub merged: bool,
+    pub merged: Option<bool>,
     pub mergeable: Option<bool>,
     pub rebaseable: Option<bool>,
-    pub mergeable_state: String,
+    pub mergeable_state: Option<String>,
     pub merged_by: Option<SimpleUser>,
-    pub comments: usize,
-    pub review_comments: usize,
-    pub maintainer_can_modify: bool,
-    pub commits: usize,
-    pub additions: usize,
-    pub deletions: usize,
-    pub changed_files: usize,
+    pub comments: Option<usize>,
+    pub review_comments: Option<usize>,
+    pub maintainer_can_modify: Option<bool>,
+    pub commits: Option<usize>,
+    pub additions: Option<usize>,
+    pub deletions: Option<usize>,
+    pub changed_files: Option<usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -122,9 +121,9 @@ mod test {
     #[test]
     fn tari_pr_1000() {
         let pr: PullRequest = serde_json::from_str(TARI_PR_1K).unwrap();
-        assert_eq!(pr.comments, 2);
+        assert_eq!(pr.comments, Some(2));
         assert_eq!(pr.id, 338616778);
-        assert_eq!(pr.merged, true);
+        assert_eq!(pr.merged, Some(true));
         assert!(matches!(pr.merged_by, Some(SimpleUser{login, ..}) if login == "CjS77"));
         assert!(matches!(pr.links.commits, Some(Link {href, ..})
             if href == "https://api.github.com/repos/tari-project/tari/pulls/1000/commits"));

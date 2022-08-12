@@ -13,7 +13,6 @@ use crate::models::{
     PullRequest,
     PullRequestReview,
     PullRequestReviewComment,
-    Repository,
     Repository2,
     SimpleUser,
     Url,
@@ -410,11 +409,11 @@ pub struct PullRequestReviewEditedChangesBody {
 //----------------------------   Pull-Request-Review-Comment Event    --------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestReviewCommentEvent {
-    action: PullRequestReviewCommentAction,
-    pull_request: PullRequest,
-    comment: PullRequestReviewComment,
+    pub action: PullRequestReviewCommentAction,
+    pub pull_request: PullRequest,
+    pub comment: PullRequestReviewComment,
     #[serde(flatten)]
-    info: CommonEventFields,
+    pub info: CommonEventFields,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
