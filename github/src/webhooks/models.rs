@@ -300,6 +300,7 @@ pub struct PingEventHookLastResponse {
 //------------------------------------    PullRequest Event     --------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestEvent {
+    #[serde(flatten)]
     pub action: PullRequestAction,
     /// The pull request number.
     pub number: u64,
@@ -310,6 +311,7 @@ pub struct PullRequestEvent {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
+#[serde(tag="action")]
 pub enum PullRequestAction {
     Assigned {
         assignee: SimpleUser,

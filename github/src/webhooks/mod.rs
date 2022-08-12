@@ -76,8 +76,8 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{models::static_data::events::PUSH_EVENT, webhooks::GithubEvent};
-    use crate::models::AuthorAssociation;
-    use crate::models::static_data::events::{PR_EVENT, PR_REVIEW_COMMENT};
+    use crate::models::{AuthorAssociation, State};
+    use crate::models::static_data::events::{PR_EDITED_EVENT, PR_EVENT, PR_REVIEW_COMMENT, PR_SYNC_EVENT};
     use crate::webhooks::{PullRequestAction, PullRequestReviewCommentAction};
 
     #[test]
@@ -109,7 +109,7 @@ mod test {
     }
 
     #[test]
-    fn pr_event() {
+    fn pr_opened_event() {
         let event = GithubEvent::from_webhook_info("pull_request", PR_EVENT);
         match event {
             GithubEvent::PullRequest(pr) => {
@@ -121,7 +121,51 @@ mod test {
                 assert_eq!(pr.info.organization.clone().unwrap().id, 37560539);
                 assert_eq!(pr.info.sender.node_id, "MDQ6VXNlcjQ3OTE5OTAx");
             },
-            _ => panic!("Not a pull_request_review_comment event"),
+            _ => panic!("Not a pull_request event"),
+        }
+    }
+
+    #[test]
+    fn pr_edited_event() {
+        let event = GithubEvent::from_webhook_info("pull_request", PR_EDITED_EVENT);
+        match event {
+            GithubEvent::PullRequest(pr) => {
+                match pr.action {
+                    PullRequestAction::Edited {changes} => {
+                        assert!(changes.body.is_some());
+                        assert_eq!(changes.title.clone().unwrap().from, "[wip] feat!: apply hashing api to the mmr");
+                    },
+                    _ => panic!("PR event action was not 'edited'"),
+                }
+                assert_eq!(pr.number, 4445);
+                assert_eq!(pr.pull_request.html_url.as_ref(), "https://github.com/tari-project/tari/pull/4445");
+                assert_eq!(pr.info.repository.node_id, "MDEwOlJlcG9zaXRvcnkxMzY0NTkwOTk=");
+                assert_eq!(pr.info.organization.clone().unwrap().url, "https://api.github.com/orgs/tari-project");
+                assert_eq!(pr.info.sender.user_type, Some("User".to_string()));
+            },
+            _ => panic!("Not a pull_request event"),
+        }
+    }
+
+    #[test]
+    fn pr_sync_event() {
+        let event = GithubEvent::from_webhook_info("pull_request", PR_SYNC_EVENT);
+        match event {
+            GithubEvent::PullRequest(pr) => {
+                match pr.action {
+                    PullRequestAction::Synchronize {before, after} => {
+                        assert_eq!(before, "4427dabd9c269c60ef9ebf8093d83e28d95dac82");
+                        assert_eq!(after, "bdbc85470819181bf9d6243683fb7690959d6a65");
+                    },
+                    _ => panic!("PR event action was not 'synchronize'"),
+                }
+                assert_eq!(pr.number, 4445);
+                assert_eq!(pr.pull_request.state, State::Open);
+                assert_eq!(pr.info.repository.private, false);
+                assert!(pr.info.organization.is_some());
+                assert_eq!(pr.info.sender.id, 39146854);
+            },
+            _ => panic!("Not a pull_request event"),
         }
     }
 }
