@@ -33,14 +33,17 @@ pub async fn health() -> impl Responder {
 #[post("/webhook")]
 pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> Result<HttpResponse, ServerError> {
     let headers = req.headers();
+    debug!("Received webhook request");
     check_valid_signature(headers)?;
+    debug!("Received webhook signature check passed");
     let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
+    debug!("Decoded payload body");
     let event_name = headers
         .get("x-github-event")
         .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
         .to_str()
         .map_err(|_| ServerError::InvalidEventHeader("x-github-event is not a valid string".into()))?;
-
+    debug!("Extracted event name");
     let event = GithubEvent::from_webhook_info(event_name, payload);
     info!("Github event received: {}, {}", event_name, event.summary());
     Ok(HttpResponse::Ok().finish())
