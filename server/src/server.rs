@@ -1,21 +1,23 @@
 use std::time::Duration;
 
-use actix_web::{http::KeepAlive, web, App, HttpServer};
-use actix_web::middleware::Logger;
+use actix::Actor;
+use actix_web::{http::KeepAlive, middleware::Logger, web, web::Data, App, HttpServer};
 
 use crate::{
     config::ServerConfig,
+    pub_sub::PubSubActor,
     routes::{github_webhook, health},
 };
 
 pub async fn run_server(config: ServerConfig) -> std::io::Result<()> {
-    HttpServer::new(|| {
+    let pubsub = Data::new(PubSubActor::default().start());
+
+    HttpServer::new(move || {
         App::new()
+            .app_data(pubsub.clone())
             .wrap(Logger::new("%t (%D ms) %s %a %{Host}i %U").log_target("ghp_server::logger"))
             .service(health)
-            .service(
-            web::scope("/github").service(github_webhook),
-            )
+            .service(web::scope("/github").service(github_webhook))
     })
     .keep_alive(KeepAlive::Timeout(Duration::from_secs(600)))
     .bind((config.host.as_str(), config.port))?

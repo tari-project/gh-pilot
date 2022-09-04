@@ -17,6 +17,10 @@ pub enum ServerError {
     InvalidRequestBody(String),
     /// Invalid or missing github event header: {0}
     InvalidEventHeader(String),
+    /// Could not deliver message because the inbox is full
+    MailboxFull,
+    /// Could not deliver message because the mailbox has closed
+    MailboxClosed,
 }
 
 impl ResponseError for ServerError {
@@ -32,6 +36,7 @@ impl ResponseError for ServerError {
             Self::CouldNotDeserializePayload => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidRequestBody(_) => StatusCode::BAD_REQUEST,
             Self::InvalidEventHeader(_) => StatusCode::BAD_REQUEST,
+            Self::MailboxFull | Self::MailboxClosed => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
