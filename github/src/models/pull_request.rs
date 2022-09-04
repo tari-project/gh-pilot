@@ -1,7 +1,16 @@
 use std::fmt::{Display, Formatter};
+
 use serde::{Deserialize, Serialize};
 
-use crate::models::{common::Url, DateTime, git::GitReference, labels::Label, links::Links, team::SimpleTeam, user::SimpleUser};
+use crate::models::{
+    common::Url,
+    git::GitReference,
+    labels::Label,
+    links::Links,
+    team::SimpleTeam,
+    user::SimpleUser,
+    DateTime,
+};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub enum State {

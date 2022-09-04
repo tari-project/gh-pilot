@@ -368,22 +368,22 @@ pub enum PullRequestAction {
 impl ToString for PullRequestAction {
     fn to_string(&self) -> String {
         match self {
-            Self::Assigned{..} => "assigned".into(),
+            Self::Assigned { .. } => "assigned".into(),
             Self::AutoMergeDisabled => "auto_merge_disabled".into(),
             Self::AutoMergeEnabled => "auto_merge_enabled".into(),
             Self::Closed => "closed".into(),
             Self::ConvertedToDraft => "converted_to_draft".into(),
-            Self::Edited{..} => "edited".into(),
-            Self::Labeled{..} => "labeled".into(),
+            Self::Edited { .. } => "edited".into(),
+            Self::Labeled { .. } => "labeled".into(),
             Self::Locked => "locked".into(),
             Self::Opened => "opened".into(),
             Self::ReadyForReview => "ready_for_review".into(),
             Self::Reopened => "reopened".into(),
-            Self::ReviewRequestRemoved{..} => "review_request_removed".into(),
-            Self::ReviewRequested{..} => "review_requested".into(),
-            Self::Synchronize{..} => "synchronize".into(),
-            Self::Unassigned{..} => "unassigned".into(),
-            Self::Unlabeled{..} => "unlabeled".into(),
+            Self::ReviewRequestRemoved { .. } => "review_request_removed".into(),
+            Self::ReviewRequested { .. } => "review_requested".into(),
+            Self::Synchronize { .. } => "synchronize".into(),
+            Self::Unassigned { .. } => "unassigned".into(),
+            Self::Unlabeled { .. } => "unlabeled".into(),
             Self::Unlocked => "unlocked".into(),
         }
     }

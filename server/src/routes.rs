@@ -19,9 +19,11 @@
 //!         tokio::time::sleep(Duration::from_secs(5)).await; // <-- Ok. Worker thread will handle other requests here
 //!         "response"
 //!     }
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, http::header::HeaderMap, post, web, HttpRequest, HttpResponse, Responder};
 use gh_pilot::ghp_api::webhooks::GithubEvent;
 use log::*;
+
+use crate::error::ServerError;
 
 #[get("/health")]
 pub async fn health() -> impl Responder {
@@ -29,24 +31,22 @@ pub async fn health() -> impl Responder {
 }
 
 #[post("/webhook")]
-pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> HttpResponse {
-    debug!("Headers: {:?}", req.headers());
-    let payload = match std::str::from_utf8(body.as_ref()) {
-        Ok(text) => text,
-        Err(_) => return HttpResponse::BadRequest().into(),
-    };
-    let event_name = match req
-        .headers()
+pub async fn github_webhook(req: HttpRequest, body: web::Bytes) -> Result<HttpResponse, ServerError> {
+    let headers = req.headers();
+    check_valid_signature(headers)?;
+    let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
+    let event_name = headers
         .get("x-github-event")
-        .map(|v| v.to_str())
-        .and_then(Result::ok)
-    {
-        Some(v) => v,
-        None => return HttpResponse::BadRequest().into(),
-    };
+        .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
+        .to_str()
+        .map_err(|_| ServerError::InvalidEventHeader("x-github-event is not a valid string".into()))?;
 
     let event = GithubEvent::from_webhook_info(event_name, payload);
     info!("Github event received: {}, {}", event_name, event.summary());
-    // TODO - set secret on webhook and validate signature
-    HttpResponse::Ok().finish()
+    Ok(HttpResponse::Ok().finish())
+}
+
+fn check_valid_signature(_headers: &HeaderMap) -> Result<(), ServerError> {
+    // TODO
+    Ok(())
 }
