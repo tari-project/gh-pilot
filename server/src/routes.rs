@@ -6,19 +6,21 @@
 //! A note about performance:
 //! Since each worker thread processes its requests sequentially, handlers which block the current thread will cause the
 //! current worker to stop processing new requests:
-//!
+//! ```nocompile
 //!     fn my_handler() -> impl Responder {
 //!         std::thread::sleep(Duration::from_secs(5)); // <-- Bad practice! Will cause the current worker thread to
-//! hang!         "response"
+//! hang!
 //!     }
+//! ```
 //! For this reason, any long, non-cpu-bound operation (e.g. I/O, database operations, etc.) should be expressed as
 //! futures or asynchronous functions. Async handlers get executed concurrently by worker threads and thus don’t block
 //! execution:
 //!
+//! ```nocompile
 //!     async fn my_handler() -> impl Responder {
 //!         tokio::time::sleep(Duration::from_secs(5)).await; // <-- Ok. Worker thread will handle other requests here
-//!         "response"
 //!     }
+//! ```
 use actix::prelude::*;
 use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest, HttpResponse, Responder};
 use gh_pilot::ghp_api::webhooks::GithubEvent;

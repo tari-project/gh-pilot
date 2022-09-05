@@ -55,7 +55,10 @@ mod test {
     async fn users_deserialize_correctly() {
         let provider = MockUserProvider::default();
         let user = provider.fetch_details(&"CjS77".into()).await.unwrap().unwrap();
-        assert_eq!(user.name, "Cayle Sharrock");
-        assert_eq!(user.followers, 65);
+        assert_eq!(user.name.unwrap(), "Cayle Sharrock");
+        assert_eq!(
+            user.followers_url.unwrap().as_ref(),
+            "https://api.github.com/users/CjS77/followers"
+        );
     }
 }

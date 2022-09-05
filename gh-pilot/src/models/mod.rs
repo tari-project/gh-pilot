@@ -1,5 +1,5 @@
-#[macro_use]
-mod newtype;
+use ghp_api::newtype;
+
 // github models
 mod issues;
 mod user;

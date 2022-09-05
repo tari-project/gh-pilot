@@ -9,16 +9,16 @@ pub struct PubSubActor;
 impl Actor for PubSubActor {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Self::Context) {
+    fn started(&mut self, _ctx: &mut Self::Context) {
         debug!("PubSub actor has started.");
     }
 
-    fn stopping(&mut self, ctx: &mut Self::Context) -> Running {
+    fn stopping(&mut self, _ctx: &mut Self::Context) -> Running {
         debug!("PubSub actor is stopping.");
         Running::Stop
     }
 
-    fn stopped(&mut self, ctx: &mut Self::Context) {
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
         debug!("PubSub actor has stopped.");
     }
 }
@@ -26,7 +26,7 @@ impl Actor for PubSubActor {
 impl Handler<GithubEventMessage> for PubSubActor {
     type Result = ();
 
-    fn handle(&mut self, msg: GithubEventMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: GithubEventMessage, _ctx: &mut Self::Context) -> Self::Result {
         trace!("PubSub received github event message: {}", msg.name());
     }
 }
