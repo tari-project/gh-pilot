@@ -8,9 +8,11 @@ use crate::{
     pub_sub::PubSubActor,
     routes::{github_webhook, health},
 };
+use crate::pub_sub::TaskRunner;
 
 pub async fn run_server(config: ServerConfig) -> std::io::Result<()> {
-    let pubsub = Data::new(PubSubActor::default().start());
+    let task_runner = TaskRunner::default().start();
+    let pubsub = Data::new(PubSubActor::new(task_runner.recipient()).start());
 
     HttpServer::new(move || {
         App::new()

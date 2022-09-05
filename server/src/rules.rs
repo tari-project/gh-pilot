@@ -1,74 +1,124 @@
+//! This module covers the [`Rule`] implementation. You can only create a Rule using the [`RuleBuilder`].
+//!
+//! For example
+//!
+//! ```
+//!   # use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestEvent};
+//!   # use ghp_server::actions::ClosureAction;
+//!   # use ghp_server::predicates::PullRequest;
+//!   # use ghp_server::rules::RuleBuilder;
+//!   RuleBuilder::new("my-rule")
+//!     .when(PullRequest::opened())
+//!     .execute(ClosureAction::with(|msg| {
+//!         let e = msg.event();
+//!         if let GithubEvent::PullRequest(PullRequestEvent { pull_request, .. }) = e {
+//!             println!("PR {} opened", pull_request.id);
+//!         }
+//!      }));
+//! ```
+//!
+//! This module also defines the [`RulePredicate`] trait, which defines behaviour for structs that want to act as rule
+//! predicates.
+//!
 use crate::pub_sub::GithubEventMessage;
+use std::slice::Iter;
+use std::sync::Arc;
+use crate::actions::Action;
+use crate::utilities::timestamp;
 
-pub struct RuleInner<F> {
-    predicates: Vec<Box<dyn RulePredicate>>,
-    actions: Vec<F>,
+/// A [`Rule`] is a combination of predicates, notifications and actions.
+/// When the Github Pilot receives an event from the webhook, it will scan all its registered rules. For each rule
+/// that is triggered (because one/more of the predicates match the event), all notifications get sent out, and all
+/// actions get executed.
+pub struct Rule {
+    inner_rule: RuleInner,
 }
 
-impl<F> Default for RuleInner<F> {
+impl Rule {
+    /// Return an iterator over this Rule's actions
+    pub(crate) fn actions(&self) -> Iter<Arc< dyn Action>> {
+        self.inner_rule.actions.iter()
+    }
+
+    /// Determine whether this rule's predicate match against the given github event, returning the first predicate
+    /// that matches, or None.
+    pub(crate) fn matches(&self, event: &GithubEventMessage) -> Option<Arc<dyn RulePredicate>> {
+        self.inner_rule.predicates.iter().find(|&p| p.matches(event)).cloned()
+    }
+
+    pub fn name(&self) -> &str {
+        self.inner_rule.name.as_str()
+    }
+}
+
+/// Common fields that get passed between the builder and the rule itself.
+struct RuleInner {
+    name: String,
+    predicates: Vec<Arc<dyn RulePredicate>>,
+    actions: Vec<Arc<dyn Action>>,
+}
+
+impl Default for RuleInner {
     fn default() -> Self {
         Self {
+            name: RuleInner::time_stamped_name(),
             predicates: Vec::new(),
             actions: Vec::new(),
         }
     }
 }
 
-pub struct Notification;
+impl RuleInner {
+    fn time_stamped_name() -> String {
+        format!("rule_{}", timestamp())
+    }
 
-pub trait RulePredicate {
+    fn new<S: Into<String>>(name: S) -> Self {
+        Self {
+            name: name.into(),
+            .. Default::default()
+        }
+    }
+}
+
+/// Define behaviour for structs that want to be defined as Rule predicate conditions.
+/// A rule predicate defines a single method, [`matches`], that takes a Github event message and decides whether the
+/// predicate is satisfied or not. If so, it returns `true`, otherwise it must return false. This method must not panic
+/// or fail.
+pub trait RulePredicate: Send + Sync {
     fn matches(&self, event: &GithubEventMessage) -> bool;
 }
 
-pub struct RuleBuilder<F> {
-    inner_rule: RuleInner<F>,
+#[derive(Default)]
+pub struct RuleBuilder {
+    inner_rule: RuleInner,
 }
 
-impl<F> RuleBuilder<F> {
+impl RuleBuilder {
     /// Create a new Github event rule
-    pub fn new() -> Self {
+    pub fn new<S: Into<String>>(name: S) -> Self {
         Self {
-            inner_rule: Default::default(),
+            inner_rule: RuleInner::new(name)
         }
     }
 
     /// Add an event predicate. You can add any number of event predicates. The rule will trigger if _any_ of the
     /// predicates match the event.
     pub fn when(mut self, pred: impl RulePredicate + 'static) -> Self {
-        self.inner_rule.predicates.push(Box::new(pred));
+        self.inner_rule.predicates.push(Arc::new(pred));
         self
     }
-}
 
-impl<F> RuleBuilder<F>
-where F: Fn(&dyn RulePredicate, &GithubEventMessage) + Send + Sync
-{
     /// Add an action to the set of actions to fire when the rule matches. You may add any number of actions.
-    pub fn execute(mut self, action: F) -> Self {
-        self.inner_rule.actions.push(action);
+    pub fn execute<A: Action + 'static>(mut self, action: A) -> Self {
+        self.inner_rule.actions.push(Arc::new(action));
         self
     }
 
     /// Build the rule
-    pub fn submit(self) -> Rule<F> {
+    pub fn submit(self) -> Rule {
         Rule {
             inner_rule: self.inner_rule,
         }
-    }
-}
-
-pub struct Rule<F> {
-    inner_rule: RuleInner<F>,
-}
-
-impl<F> Rule<F>
-where F: Fn(&dyn RulePredicate, &GithubEventMessage) + Send + Sync
-{
-    /// Run this rule's actions concurrently, each in their own blocking task
-    pub fn run(&self) {}
-
-    /// Determine whether this rule's predicate match against the given github event
-    pub fn matches(&self, event: &GithubEventMessage) -> bool {
-        self.inner_rule.predicates.iter().any(|p| p.matches(event))
     }
 }

@@ -314,7 +314,7 @@ mod test {
     #[test]
     fn pull_request_predicate_matches() {
         let pr_event: PullRequestEvent = serde_json::from_str(PR_EVENT).unwrap();
-        let mut msg = GithubEventMessage::new("test", GithubEvent::PullRequest(pr_event));
+        let msg = GithubEventMessage::new("test", GithubEvent::PullRequest(pr_event));
         assert!(PullRequest::opened().matches(&msg));
         assert_eq!(PullRequest::merged().matches(&msg), false);
     }

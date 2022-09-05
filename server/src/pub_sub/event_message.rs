@@ -1,6 +1,7 @@
 use actix::Message;
 use gh_pilot::ghp_api::webhooks::GithubEvent;
 
+#[derive(Debug, Clone)]
 pub struct GithubEventMessage {
     name: String,
     event: GithubEvent,
