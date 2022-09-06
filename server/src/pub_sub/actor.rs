@@ -1,22 +1,37 @@
-use actix::{Actor, Context, Handler, Recipient, Running};
-use log::{debug, trace, warn};
+use std::sync::RwLock;
 
-use crate::pub_sub::{GithubEventMessage};
-use crate::pub_sub::task_message::TaskExecuteMessage;
-use crate::rules::{Rule};
-use crate::utilities::timestamp;
+use actix::{Actor, Context, Handler, Recipient, Running};
+use log::*;
+
+use crate::{
+    pub_sub::{task_message::TaskExecuteMessage, GithubEventMessage, PubSubError, ReplaceRulesMessage},
+    rules::Rule,
+    utilities::timestamp,
+};
 
 pub struct PubSubActor {
-    rules: Vec<Rule>,
-    task_runner: Recipient<TaskExecuteMessage>
+    rules: RwLock<Vec<Rule>>,
+    task_runner: Recipient<TaskExecuteMessage>,
 }
 
 impl PubSubActor {
     pub fn new(task_runner: Recipient<TaskExecuteMessage>) -> Self {
         Self {
-            rules: Vec::new(),
+            rules: RwLock::new(Vec::new()),
             task_runner,
         }
+    }
+
+    fn add_rules(&mut self, clear_first: bool, rules: Vec<Rule>) -> Result<usize, PubSubError> {
+        let mut lock_guard = self
+            .rules
+            .write()
+            .map_err(|_| PubSubError::ReplaceRulesError("Pubsub actor write lock is poisoned".to_string()))?;
+        if clear_first {
+            lock_guard.clear();
+        }
+        rules.into_iter().for_each(|r| lock_guard.push(r));
+        Ok(lock_guard.len())
     }
 }
 
@@ -42,23 +57,42 @@ impl Handler<GithubEventMessage> for PubSubActor {
 
     fn handle(&mut self, msg: GithubEventMessage, _ctx: &mut Self::Context) -> Self::Result {
         trace!("PubSub received github event message: {}", msg.name());
-        for rule in self.rules.iter() {
+        let rules = self.rules.read();
+        // FIXME: Return an error properly
+        if rules.is_err() {
+            warn!("Could not access rules. {}", rules.err().unwrap().to_string());
+            return;
+        }
+        let rules = rules.unwrap();
+        for rule in rules.iter() {
             // Check if any of the predicates match
             let rule_triggered = rule.matches(&msg);
             // If so, dispatch a tasks to run the actions
             if rule_triggered.is_some() {
-                trace!("Rule {} was triggered. Running its actions.", rule.name());
+                info!(
+                    "Rule \"{}\" triggered for \"{}\". Running its actions.",
+                    rule.name(),
+                    msg.name()
+                );
                 let (event_name, event) = msg.clone().to_parts();
 
                 let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
                 for action in rule.actions().cloned() {
                     let task_msg = TaskExecuteMessage::new(name.clone(), event_name.clone(), event.clone(), action);
                     match self.task_runner.try_send(task_msg) {
-                        Ok(()) => debug!("Task {} executed happily", name),
-                        Err(e) => warn!("Failed to dispatch task {}. {}", name, e.to_string()),
+                        Ok(()) => trace!("Task \"{}\" dispatched successfully", name),
+                        Err(e) => warn!("Failed to dispatch task \"{}\". {}", name, e.to_string()),
                     }
                 }
             }
         }
+    }
+}
+
+impl Handler<ReplaceRulesMessage> for PubSubActor {
+    type Result = Result<usize, PubSubError>;
+
+    fn handle(&mut self, msg: ReplaceRulesMessage, _ctx: &mut Self::Context) -> Self::Result {
+        self.add_rules(true, msg.new_rules)
     }
 }

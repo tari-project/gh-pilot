@@ -1,6 +1,8 @@
 use std::sync::Arc;
-use actix::{Message};
+
+use actix::Message;
 use gh_pilot::ghp_api::webhooks::GithubEvent;
+
 use crate::actions::Action;
 
 #[derive(Clone)]
@@ -8,7 +10,7 @@ pub struct TaskExecuteMessage {
     name: String,
     event_name: String,
     event: GithubEvent,
-    action: Arc<dyn Action>
+    action: Arc<dyn Action>,
 }
 
 impl TaskExecuteMessage {

@@ -1,7 +1,7 @@
 use actix::{Actor, Context, Handler, ResponseFuture, Running};
 use log::*;
-use crate::pub_sub::GithubEventMessage;
-use crate::pub_sub::task_message::TaskExecuteMessage;
+
+use crate::pub_sub::{task_message::TaskExecuteMessage, GithubEventMessage};
 
 #[derive(Default)]
 pub struct TaskRunner {}
@@ -29,11 +29,10 @@ impl Handler<TaskExecuteMessage> for TaskRunner {
 
     fn handle(&mut self, msg: TaskExecuteMessage, _ctx: &mut Self::Context) -> Self::Result {
         let (name, event_name, event, action) = msg.to_parts();
-        debug!("Starting task {}", name);
-        trace!("Triggered by {}", event_name);
+        debug!("Starting task \"{}\" for \"{}\"", name, event_name);
         Box::pin(async move {
             action.run(GithubEventMessage::new(name.as_str(), event)).await;
-            debug!("Completed execution of task {}", name);
+            debug!("Completed execution of task \"{}\" for \"{}\"", name, event_name);
         })
     }
 }

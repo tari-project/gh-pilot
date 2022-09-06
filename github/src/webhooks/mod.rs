@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 mod models;
 pub use models::*;
 
+use crate::error::GithubPilotError;
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
     CommitComment(CommitCommentEvent),
@@ -23,52 +25,49 @@ pub enum GithubEvent {
 }
 
 impl GithubEvent {
-    pub fn from_webhook_info(event: &str, body: &str) -> Self {
+    pub fn try_from_webhook_info(event: &str, body: &str) -> Result<Self, GithubPilotError> {
         match event {
             "commit_comment" => {
-                let value: CommitCommentEvent = serde_json::from_str(body).unwrap();
-                Self::CommitComment(value)
+                let value: CommitCommentEvent = serde_json::from_str(body)?;
+                Ok(Self::CommitComment(value))
             },
             "issue_comment" => {
-                let value: IssueCommentEvent = serde_json::from_str(body).unwrap();
-                Self::IssueComment(value)
+                let value: IssueCommentEvent = serde_json::from_str(body)?;
+                Ok(Self::IssueComment(value))
             },
             "issues" => {
-                let value: IssuesEvent = serde_json::from_str(body).unwrap();
-                Self::Issues(value)
+                let value: IssuesEvent = serde_json::from_str(body)?;
+                Ok(Self::Issues(value))
             },
             "label" => {
-                let value: LabelEvent = serde_json::from_str(body).unwrap();
-                Self::Label(value)
+                let value: LabelEvent = serde_json::from_str(body)?;
+                Ok(Self::Label(value))
             },
             "ping" => {
-                let value: PingEvent = serde_json::from_str(body).unwrap();
-                Self::Ping(value)
+                let value: PingEvent = serde_json::from_str(body)?;
+                Ok(Self::Ping(value))
             },
             "pull_request" => {
-                let value: PullRequestEvent = serde_json::from_str(body).unwrap();
-                Self::PullRequest(value)
+                let value: PullRequestEvent = serde_json::from_str(body)?;
+                Ok(Self::PullRequest(value))
             },
             "pull_request_review" => {
-                let value: PullRequestReviewEvent = serde_json::from_str(body).unwrap();
-                Self::PullRequestReview(value)
+                let value: PullRequestReviewEvent = serde_json::from_str(body)?;
+                Ok(Self::PullRequestReview(value))
             },
             "pull_request_review_comment" => {
-                let value: PullRequestReviewCommentEvent = serde_json::from_str(body).unwrap();
-                Self::PullRequestReviewComment(value)
+                let value: PullRequestReviewCommentEvent = serde_json::from_str(body)?;
+                Ok(Self::PullRequestReviewComment(value))
             },
             "push" => {
-                let value: PushEvent = serde_json::from_str(body).unwrap();
-                Self::Push(value)
+                let value: PushEvent = serde_json::from_str(body)?;
+                Ok(Self::Push(value))
             },
             "status" => {
-                let value: StatusEvent = serde_json::from_str(body).unwrap();
-                Self::Status(value)
+                let value: StatusEvent = serde_json::from_str(body)?;
+                Ok(Self::Status(value))
             },
-            s => Self::UnknownEvent {
-                event: s.to_string(),
-                payload: body.to_string(),
-            },
+            s => Err(GithubPilotError::UnknownEvent(s.to_string())),
         }
     }
 
@@ -115,7 +114,7 @@ mod test {
 
     #[test]
     fn push_event() {
-        let event = GithubEvent::from_webhook_info("push", PUSH_EVENT);
+        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT);
         match event {
             GithubEvent::Push(push) => {
                 assert_eq!(push.before, "455b0193f3595375025175a9f40b0552f5094437");
@@ -128,7 +127,7 @@ mod test {
 
     #[test]
     fn pr_review_comment_event() {
-        let event = GithubEvent::from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT);
         match event {
             GithubEvent::PullRequestReviewComment(c) => {
                 assert!(matches!(c.action, PullRequestReviewCommentAction::Created));
@@ -143,7 +142,7 @@ mod test {
 
     #[test]
     fn pr_opened_event() {
-        let event = GithubEvent::from_webhook_info("pull_request", PR_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EVENT);
         match event {
             GithubEvent::PullRequest(pr) => {
                 assert!(matches!(pr.action, PullRequestAction::Opened));
@@ -163,7 +162,7 @@ mod test {
 
     #[test]
     fn pr_edited_event() {
-        let event = GithubEvent::from_webhook_info("pull_request", PR_EDITED_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EDITED_EVENT);
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {
@@ -194,7 +193,7 @@ mod test {
 
     #[test]
     fn pr_sync_event() {
-        let event = GithubEvent::from_webhook_info("pull_request", PR_SYNC_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_SYNC_EVENT);
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {

@@ -1,8 +1,10 @@
 mod actor;
-mod event_message;
+mod error;
+mod messages;
 mod task_message;
 mod task_runner;
 
 pub use actor::PubSubActor;
-pub use event_message::GithubEventMessage;
+pub use error::PubSubError;
+pub use messages::{AddRuleMessage, GithubEventMessage, ReplaceRulesMessage};
 pub use task_runner::TaskRunner;

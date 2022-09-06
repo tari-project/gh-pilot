@@ -7,24 +7,21 @@
 //!   # use ghp_server::actions::ClosureAction;
 //!   # use ghp_server::predicates::PullRequest;
 //!   # use ghp_server::rules::RuleBuilder;
-//!   RuleBuilder::new("my-rule")
+//! RuleBuilder::new("my-rule")
 //!     .when(PullRequest::opened())
 //!     .execute(ClosureAction::with(|msg| {
 //!         let e = msg.event();
 //!         if let GithubEvent::PullRequest(PullRequestEvent { pull_request, .. }) = e {
 //!             println!("PR {} opened", pull_request.id);
 //!         }
-//!      }));
+//!     }));
 //! ```
 //!
 //! This module also defines the [`RulePredicate`] trait, which defines behaviour for structs that want to act as rule
 //! predicates.
-//!
-use crate::pub_sub::GithubEventMessage;
-use std::slice::Iter;
-use std::sync::Arc;
-use crate::actions::Action;
-use crate::utilities::timestamp;
+use std::{slice::Iter, sync::Arc};
+
+use crate::{actions::Action, pub_sub::GithubEventMessage, utilities::timestamp};
 
 /// A [`Rule`] is a combination of predicates, notifications and actions.
 /// When the Github Pilot receives an event from the webhook, it will scan all its registered rules. For each rule
@@ -36,7 +33,7 @@ pub struct Rule {
 
 impl Rule {
     /// Return an iterator over this Rule's actions
-    pub(crate) fn actions(&self) -> Iter<Arc< dyn Action>> {
+    pub(crate) fn actions(&self) -> Iter<Arc<dyn Action>> {
         self.inner_rule.actions.iter()
     }
 
@@ -76,7 +73,7 @@ impl RuleInner {
     fn new<S: Into<String>>(name: S) -> Self {
         Self {
             name: name.into(),
-            .. Default::default()
+            ..Default::default()
         }
     }
 }
@@ -98,7 +95,7 @@ impl RuleBuilder {
     /// Create a new Github event rule
     pub fn new<S: Into<String>>(name: S) -> Self {
         Self {
-            inner_rule: RuleInner::new(name)
+            inner_rule: RuleInner::new(name),
         }
     }
 

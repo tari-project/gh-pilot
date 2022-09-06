@@ -24,6 +24,7 @@
 use actix::prelude::*;
 use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest, HttpResponse, Responder};
 use gh_pilot::ghp_api::webhooks::GithubEvent;
+use ghp_api::error::GithubPilotError;
 use log::*;
 
 use crate::{
@@ -49,17 +50,44 @@ pub async fn github_webhook(
     check_valid_signature(headers)?;
     trace!("Received webhook signature check passed");
     let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
-    trace!("Decoded payload body");
+    trace!("Decoded payload body. {} bytes", payload.bytes().len());
     let event_name = headers
         .get("x-github-event")
         .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
         .to_str()
         .map_err(|_| ServerError::InvalidEventHeader("x-github-event is not a valid string".into()))?;
-    trace!("Extracted event name");
-    let event = GithubEvent::from_webhook_info(event_name, payload);
-    info!("Github event received: {}, {}", event_name, event.summary());
-    dispatch_event_to_pubsub(pubsub, event_name, event)?;
-    Ok(HttpResponse::Ok().finish())
+    trace!("Extracted event name: {}", event_name);
+    match GithubEvent::try_from_webhook_info(event_name, payload) {
+        Ok(event) => {
+            info!("Github Event Received: [{}], \"{}\"", event_name, event.summary());
+            dispatch_event_to_pubsub(pubsub, event_name, event)?;
+            Ok(HttpResponse::Ok().finish())
+        },
+        Err(GithubPilotError::UnknownEvent(s)) => {
+            info!(
+                "/webhook handler could not handle an \"{}\" event. Discarding it and moving on.",
+                s
+            );
+            Ok(HttpResponse::Ok().finish())
+        },
+        Err(GithubPilotError::EventDeserializationError(s)) => {
+            warn!(
+                "/webhook handler could not deserialize a \"{}\". Turn on TRACE level to get more details and maybe \
+                 file a bug report?",
+                event_name
+            );
+            trace!("{}", s);
+            trace!("JSON payload:\n{}", payload);
+            Ok(HttpResponse::Ok().finish())
+        },
+        Err(e) => {
+            warn!(
+                "/webhook handler received an unexpected error: {}. Dropping it like yesterday's news.",
+                e.to_string()
+            );
+            Ok(HttpResponse::Ok().finish())
+        },
+    }
 }
 
 fn check_valid_signature(_headers: &HeaderMap) -> Result<(), ServerError> {

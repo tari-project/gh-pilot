@@ -1,5 +1,4 @@
-use std::fmt::{Display, Formatter};
-
+use actix::MailboxError;
 use actix_web::{
     error::ResponseError,
     http::{header::ContentType, StatusCode},
@@ -7,20 +6,28 @@ use actix_web::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Error)]
 pub enum ServerError {
-    /// Invalid signature
+    #[error("Invalid signature")]
     InvalidSignature,
-    /// Payload deserialization error
+    #[error("Payload deserialization error")]
     CouldNotDeserializePayload,
-    /// Could not read request body: {0}
+    #[error("Could not read request body: {0}")]
     InvalidRequestBody(String),
-    /// Invalid or missing github event header: {0}
+    #[error("Invalid or missing github event header: {0}")]
     InvalidEventHeader(String),
-    /// Could not deliver message because the inbox is full
+    #[error("Could not deliver message because the inbox is full")]
     MailboxFull,
-    /// Could not deliver message because the mailbox has closed
+    #[error("Could not deliver message because the mailbox has closed")]
     MailboxClosed,
+    #[error("Other mailbox error. {0}")]
+    MailboxError(#[from] MailboxError),
+    #[error("Rule configuration error: {0}")]
+    RuleConfigurationError(String),
+    #[error("An I/O error happened in the server. {0}")]
+    IOError(#[from] std::io::Error),
+    #[error("UnspecifiedError. {0}")]
+    Unspecified(String),
 }
 
 impl ResponseError for ServerError {
@@ -33,16 +40,9 @@ impl ResponseError for ServerError {
     fn status_code(&self) -> StatusCode {
         match *self {
             Self::InvalidSignature => StatusCode::UNAUTHORIZED,
-            Self::CouldNotDeserializePayload => StatusCode::INTERNAL_SERVER_ERROR,
             Self::InvalidRequestBody(_) => StatusCode::BAD_REQUEST,
             Self::InvalidEventHeader(_) => StatusCode::BAD_REQUEST,
-            Self::MailboxFull | Self::MailboxClosed => StatusCode::INTERNAL_SERVER_ERROR,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
-    }
-}
-
-impl Display for ServerError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.to_string().as_str())
     }
 }
