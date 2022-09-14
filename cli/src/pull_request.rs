@@ -26,5 +26,5 @@ fn pretty_print(pr: PullRequest) {
         .add_row(&["Merged", if matches!(pr.merged, Some(true)) { "Yes" } else { "No" }]);
     add_labels(&mut table, &pr.labels);
     println!("{table}");
-    println!("{}", pr.body);
+    println!("{}", pr.body.unwrap_or("No body provided".into()));
 }

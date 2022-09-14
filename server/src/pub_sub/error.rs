@@ -6,4 +6,6 @@ pub enum PubSubError {
     ReplaceRulesError(String),
     #[error("An error occurred when trying to add a server rules. {0}")]
     AddRuleError(String),
+    #[error("Could not dispatch message to the relevant executor. {0}")]
+    DispatchError(String),
 }

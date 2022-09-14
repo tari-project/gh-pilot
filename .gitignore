@@ -5,9 +5,9 @@
 
 Cargo.lock
 
-github/swagger/rust
-github/swagger/rust
+github-api/swagger/rust
+github-api/swagger/rust
 github/swagger/*.jar
-github/swagger/.swagger-codegen-ignore
+github-api/swagger/.swagger-codegen-ignore
 
 **/node_modules

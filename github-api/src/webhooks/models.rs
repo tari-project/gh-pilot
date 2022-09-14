@@ -102,6 +102,7 @@ pub struct IssueCommentEditedChanges {
 //----------------------------------         Issues Event        ------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IssuesEvent {
+    #[serde(flatten)]
     pub action: IssuesEventAction,
     pub issue: Issue,
     #[serde(flatten)]
@@ -110,6 +111,7 @@ pub struct IssuesEvent {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
+#[serde(tag = "action")]
 pub enum IssuesEventAction {
     /// issues assigned event. Activity related to an issue. The type of activity is specified in the action property.
     Assigned {

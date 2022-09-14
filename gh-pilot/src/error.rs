@@ -7,4 +7,6 @@ pub enum GithubPilotError {
     GithubError(#[from] GithubApiError),
     #[error("We encountered an unspecified problem in github pilot: {0}")]
     GeneralError(String),
+    #[error("Configuration error. {0}")]
+    ConfigurationError(String),
 }

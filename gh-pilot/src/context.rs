@@ -1,4 +1,4 @@
-use gh_pilot::data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider};
+use crate::data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider};
 
 #[derive(Default)]
 pub struct Context<'app> {
@@ -24,7 +24,7 @@ impl<'app> Context<'app> {
         self.pr_provider
     }
 
-    pub fn use_isue_provider(&mut self, provider: &'app dyn IssueProvider) {
+    pub fn use_issue_provider(&mut self, provider: &'app dyn IssueProvider) {
         self.issue_provider = Some(provider);
     }
 

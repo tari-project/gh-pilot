@@ -3,6 +3,9 @@ use ghp_api::{
     api::{ClientProxy, IssueRequest, PullRequestRequest},
     models::{Issue, Label, PullRequest},
 };
+use std::env;
+use ghp_api::api::AuthToken;
+use log::*;
 
 use crate::{
     data_provider::{IssueProvider, PullRequestProvider},
@@ -10,15 +13,45 @@ use crate::{
     models::IssueId,
 };
 
-#[derive(Clone, Default)]
+pub const GITHUB_USER_ENVAR_NAME: &str = "GH_PILOT_USERNAME";
+pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GH_PILOT_AUTH_TOKEN";
+
+#[derive(Clone)]
 pub struct GithubProvider {
     client: ClientProxy,
+}
+
+impl Default for GithubProvider {
+    /// Create a default `GithubProvider` instance, which reads from envars if possible, or else creates a client
+    /// with blank credentials
+    fn default() -> Self {
+        GithubProvider::from_environment().unwrap_or_else(|err| {
+            warn!("Could not create default Github Provider instance using environment variables. {}. Setting \
+            credentials to blank (and almost certainly incorrect) values.", err.to_string());
+            GithubProvider::new("user", "")
+        })
+    }
 }
 
 impl GithubProvider {
     pub fn new(username: &str, auth_token: &str) -> Self {
         let client = ClientProxy::new(username, auth_token.into());
         Self { client }
+    }
+
+    /// Create a GithubProvider instance by reading in variables from the environment. If the variables are missing,
+    /// this method will return an error. The `Default` implementation uses this method, but will not fail,
+    /// substituting blank values for username and auth token (which will typically fail).
+    pub fn from_environment() -> Result<Self, GithubPilotError> {
+        let username = env::var(GITHUB_USER_ENVAR_NAME)
+            .map_err(|_| GithubPilotError::ConfigurationError(format!("Cannot set github user name. \
+            Missing {} environment variable", GITHUB_USER_ENVAR_NAME)))?;
+        let token: AuthToken = env::var(GITHUB_AUTH_TOKEN_ENVAR_NAME)
+            .map(AuthToken::from)
+            .map_err(|_| GithubPilotError::ConfigurationError(format!("Cannot set github auth token. \
+            Missing {} environment variable", GITHUB_AUTH_TOKEN_ENVAR_NAME)))?;
+        let client = ClientProxy::new(username.as_str(), token);
+        Ok(Self { client })
     }
 }
 
