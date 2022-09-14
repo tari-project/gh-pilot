@@ -17,9 +17,13 @@
 //!     .submit();
 //! ```
 
+use std::sync::Arc;
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
+use gh_pilot::{GithubProvider};
 use ghp_api::webhooks::GithubEvent;
 use log::{debug, warn};
+use gh_pilot::data_provider::IssueProvider;
+use gh_pilot::models::IssueId;
 
 #[derive(Clone)]
 pub enum GithubActionParams {
@@ -78,10 +82,17 @@ impl Message for GithubActionMessage {
     type Result = ();
 }
 
-#[derive(Default)]
-pub struct GithubActionExecutor {}
+pub struct GithubActionExecutor {
+    provider: Arc<GithubProvider>,
+}
 
-impl GithubActionExecutor {}
+impl Default for GithubActionExecutor {
+    fn default() -> Self {
+        // Will pull credentials from envars if possible
+        let github_provider = GithubProvider::default();
+        Self { provider: Arc::new(github_provider) }
+    }
+}
 
 impl Supervised for GithubActionExecutor {}
 
@@ -112,6 +123,7 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
     type Result = ResponseFuture<()>;
 
     fn handle(&mut self, msg: GithubActionMessage, _ctx: &mut Self::Context) -> Self::Result {
+        let provider = Arc::clone(&self.provider);
         let fut = async move {
             match (msg.event(), msg.params()) {
                 (GithubEvent::Issues(event), GithubActionParams::AddLabel { label }) => {
@@ -119,10 +131,11 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                     let owner = event.owner();
                     let issue_number = event.number();
                     debug!("Adding label {} to issue {}/{}#{}", label, owner, repo, issue_number);
-                    // let res = ghp_api::issues::add_label(owner, repo, issue_number, label).await;
-                    // if let Err(e) = res {
-                    //     warn!("Failed to add label to issue: {}", e);
-                    // }
+                    let req = IssueId::new(owner, repo, issue_number);
+                    let res = provider.add_label(&req, label).await;
+                    if let Err(e) = res {
+                        warn!("Failed to add label to issue: {}", e.to_string());
+                    }
                 },
                 (GithubEvent::Issues(event), GithubActionParams::RemoveLabel { label }) => {
                     let repo = event.repo();
@@ -132,30 +145,33 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                         "Removing label {} from issue {}/{}#{}",
                         label, owner, repo, issue_number
                     );
-                    // let res = ghp_api::issues::remove_label(owner, repo, issue_number, label).await;
-                    // if let Err(e) = res {
-                    //     warn!("Failed to remove label from issue: {}", e);
-                    // }
+                    let req = IssueId::new(owner, repo, issue_number);
+                    let res = provider.remove_label(&req, label).await;
+                    if let Err(e) = res {
+                        warn!("Failed to remove label to issue: {}", e.to_string());
+                    }
                 },
                 (GithubEvent::PullRequest(event), GithubActionParams::AddLabel { label }) => {
                     let repo = event.repo();
                     let owner = event.owner();
                     let pr_number = event.number();
                     debug!("Adding label {} to PR {}/{}#{}", label, owner, repo, pr_number);
-                    // let res = ghp_api::pulls::add_label(owner, repo, pr_number, label).await;
-                    // if let Err(e) = res {
-                    //     warn!("Failed to add label to PR: {}", e);
-                    // }
+                    let req = IssueId::new(owner, repo, pr_number);
+                    let res = provider.add_label(&req, label).await;
+                    if let Err(e) = res {
+                        warn!("Failed to add label to PR: {}", e.to_string());
+                    }
                 },
                 (GithubEvent::PullRequest(event), GithubActionParams::RemoveLabel { label }) => {
                     let repo = event.repo();
                     let owner = event.owner();
                     let pr_number = event.number();
                     debug!("Removing label {} from PR {}/{}#{}", label, owner, repo, pr_number);
-                    // let res = ghp_api::pulls::remove_label(owner, repo, pr_number, label).await;
-                    // if let Err(e) = res {
-                    //     warn!("Failed to remove label from PR: {}", e);
-                    // }
+                    let req = IssueId::new(owner, repo, pr_number);
+                    let res = provider.remove_label(&req, label).await;
+                    if let Err(e) = res {
+                        warn!("Failed to remove label from PR: {}", e.to_string());
+                    }
                 },
                 _ => {
                     warn!("Unimplemented event type for Github Action: {}", msg.event_name());

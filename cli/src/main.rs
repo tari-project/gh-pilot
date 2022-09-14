@@ -1,7 +1,6 @@
 extern crate core;
 
 mod cli_def;
-mod context;
 mod issue;
 mod pretty_print;
 mod pull_request;
@@ -9,10 +8,10 @@ mod user;
 
 use clap::Parser;
 use cli_def::{Cli, Commands};
-use gh_pilot::{mock_provider::MockUserProvider, GithubProvider};
+use gh_pilot::{mock_provider::MockUserProvider, GithubProvider, Context};
 use log::*;
 
-use crate::{context::Context, issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
+use crate::{issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {

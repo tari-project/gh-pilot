@@ -1,4 +1,4 @@
-use gh_pilot::data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider};
+use crate::data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider};
 
 #[derive(Default)]
 pub struct Context<'app> {

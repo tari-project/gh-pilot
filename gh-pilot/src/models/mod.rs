@@ -1,9 +1,7 @@
 use ghp_api::newtype;
 
-// github models
-mod issues;
-mod user;
+mod issue_id;
 
 newtype!(GithubHandle, String, str);
 
-pub use issues::IssueId;
+pub use issue_id::IssueId;

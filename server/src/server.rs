@@ -24,11 +24,11 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
             .service(health)
             .service(web::scope("/github").service(github_webhook))
     })
-    .keep_alive(KeepAlive::Timeout(Duration::from_secs(600)))
-    .bind((config.host.as_str(), config.port))?
-    .run()
-    .await
-    .map_err(|e| ServerError::Unspecified(e.to_string()))
+        .keep_alive(KeepAlive::Timeout(Duration::from_secs(600)))
+        .bind((config.host.as_str(), config.port))?
+        .run()
+        .await
+        .map_err(|e| ServerError::Unspecified(e.to_string()))
 }
 
 mod rules {
@@ -48,14 +48,14 @@ mod rules {
         // RuleSet::from_json("./config/rules.json")
         // or whatever
         let rules = vec![
-            {
-                let action = Actions::github().add_label("P-conflicts").build();
-                RuleBuilder::new("AutoLabel - Merge conflicts")
-                    .when(PullRequest::opened())
-                    .when(PullRequest::synchronize())
-                    .execute(action)
-                    .submit()
-            },
+            RuleBuilder::new("AutoLabel - Demo (add bar)")
+                .when(PullRequest::labeled_with("T-foo"))
+                .execute(Actions::github().add_label("T-bar").build())
+                .submit(),
+            RuleBuilder::new("AutoLabel - Demo (remove bar)")
+                .when(PullRequest::unlabeled_with("T-foo"))
+                .execute(Actions::github().remove_label("T-bar").build())
+                .submit(),
             {
                 let action = Actions::closure()
                     .with(|_name, event| {
