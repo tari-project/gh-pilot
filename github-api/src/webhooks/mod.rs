@@ -127,6 +127,7 @@ mod test {
         },
         webhooks::{GithubEvent, IssuesEventAction, PullRequestAction, PullRequestReviewCommentAction},
     };
+    use crate::models::static_data::events::{LABELLED_EVENT, PUSH_EVENT_2};
 
     #[test]
     fn push_event() {
@@ -138,6 +139,32 @@ mod test {
                 assert_eq!(push.info.repository.name, "gh-pilot");
             },
             _ => panic!("Not a push event"),
+        }
+    }
+
+    #[test]
+    fn push_event_2() {
+        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT_2).unwrap();
+        match event {
+            GithubEvent::Push(push) => {
+                assert_eq!(push.info.repository.name, "gh-pilot");
+            },
+            _ => panic!("Not a push event"),
+        }
+    }
+
+    #[test]
+    fn labelled_event() {
+        let event = GithubEvent::try_from_webhook_info("pull_request", LABELLED_EVENT).unwrap();
+        let pr = event.pull_request().expect("Labelled PR event did not include the PR");
+        assert_eq!(pr.pull_request.state, State::Open);
+        assert_eq!(pr.number, 2);
+        match &pr.action {
+            PullRequestAction::Labeled { label } => {
+                assert_eq!(label.name, "T-foo");
+                assert_eq!(label.color, "7A2F2E");
+            },
+            _ => panic!("Action was not 'label'")
         }
     }
 

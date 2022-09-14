@@ -76,7 +76,7 @@ pub struct PullRequest {
     pub locked: bool,
     pub title: String,
     pub user: Option<SimpleUser>,
-    pub body: String,
+    pub body: Option<String>,
     pub labels: Vec<Label>,
     pub milestone: Option<String>,
     pub active_lock_reason: Option<String>,

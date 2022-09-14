@@ -13,8 +13,8 @@ use crate::{
     models::IssueId,
 };
 
-pub const GITHUB_USER_ENVAR_NAME: &str = "GITHUB_PILOT_USERNAME";
-pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GITHUB_PILOT_AUTH_TOKEN";
+pub const GITHUB_USER_ENVAR_NAME: &str = "GH_PILOT_USERNAME";
+pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GH_PILOT_AUTH_TOKEN";
 
 #[derive(Clone)]
 pub struct GithubProvider {
