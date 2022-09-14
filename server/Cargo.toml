@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ghp-api = { version = "0.1", path = "../github" }
+ghp-api = { version = "0.1", path = "../github-api" }
 gh-pilot = { version = "0.1", path = "../gh-pilot" }
 
 actix = { version = "0.13.0" }

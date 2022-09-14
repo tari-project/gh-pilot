@@ -29,4 +29,5 @@ pub mod events {
     pub const PR_EVENT: &str = include_str!("./data/pr_event.json");
     pub const PR_EDITED_EVENT: &str = include_str!("./data/pr_edited_event.json");
     pub const PR_SYNC_EVENT: &str = include_str!("./data/pr_sync_event.json");
+    pub const ISSUE_EVENT: &str = include_str!("./data/issue_event.json");
 }

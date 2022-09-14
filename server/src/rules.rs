@@ -4,24 +4,22 @@
 //!
 //! ```
 //!   # use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestEvent};
-//!   # use ghp_server::actions::ClosureAction;
+//! use ghp_server::actions::Actions;
 //!   # use ghp_server::predicates::PullRequest;
 //!   # use ghp_server::rules::RuleBuilder;
 //! RuleBuilder::new("my-rule")
 //!     .when(PullRequest::opened())
-//!     .execute(ClosureAction::with(|msg| {
-//!         let e = msg.event();
-//!         if let GithubEvent::PullRequest(PullRequestEvent { pull_request, .. }) = e {
-//!             println!("PR {} opened", pull_request.id);
-//!         }
-//!     }));
+//!     .execute(Actions::closure().with(|name, msg| {
+//!         let pr = msg.pull_request().unwrap();
+//!         println!("PR {} opened", pr.number());
+//!     }).build());
 //! ```
 //!
 //! This module also defines the [`RulePredicate`] trait, which defines behaviour for structs that want to act as rule
 //! predicates.
 use std::{slice::Iter, sync::Arc};
 
-use crate::{actions::Action, pub_sub::GithubEventMessage, utilities::timestamp};
+use crate::{actions::Actions, pub_sub::GithubEventMessage, utilities::timestamp};
 
 /// A [`Rule`] is a combination of predicates, notifications and actions.
 /// When the Github Pilot receives an event from the webhook, it will scan all its registered rules. For each rule
@@ -33,7 +31,7 @@ pub struct Rule {
 
 impl Rule {
     /// Return an iterator over this Rule's actions
-    pub(crate) fn actions(&self) -> Iter<Arc<dyn Action>> {
+    pub(crate) fn actions(&self) -> Iter<Arc<Actions>> {
         self.inner_rule.actions.iter()
     }
 
@@ -52,7 +50,7 @@ impl Rule {
 struct RuleInner {
     name: String,
     predicates: Vec<Arc<dyn RulePredicate>>,
-    actions: Vec<Arc<dyn Action>>,
+    actions: Vec<Arc<Actions>>,
 }
 
 impl Default for RuleInner {
@@ -107,7 +105,7 @@ impl RuleBuilder {
     }
 
     /// Add an action to the set of actions to fire when the rule matches. You may add any number of actions.
-    pub fn execute<A: Action + 'static>(mut self, action: A) -> Self {
+    pub fn execute(mut self, action: Actions) -> Self {
         self.inner_rule.actions.push(Arc::new(action));
         self
     }

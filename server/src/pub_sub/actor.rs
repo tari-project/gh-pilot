@@ -1,24 +1,32 @@
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
-use actix::{Actor, Context, Handler, Recipient, Running};
+use actix::{Actor, Context, Handler, Running, SystemService};
+use ghp_api::webhooks::GithubEvent;
 use log::*;
 
 use crate::{
-    pub_sub::{task_message::TaskExecuteMessage, GithubEventMessage, PubSubError, ReplaceRulesMessage},
+    actions::{
+        Actions,
+        ClosureActionExecutor,
+        ClosureActionMessage,
+        ClosureActionParams,
+        GithubActionExecutor,
+        GithubActionMessage,
+        GithubActionParams,
+    },
+    pub_sub::{GithubEventMessage, PubSubError, ReplaceRulesMessage},
     rules::Rule,
     utilities::timestamp,
 };
 
 pub struct PubSubActor {
     rules: RwLock<Vec<Rule>>,
-    task_runner: Recipient<TaskExecuteMessage>,
 }
 
 impl PubSubActor {
-    pub fn new(task_runner: Recipient<TaskExecuteMessage>) -> Self {
+    pub fn new() -> Self {
         Self {
             rules: RwLock::new(Vec::new()),
-            task_runner,
         }
     }
 
@@ -32,6 +40,50 @@ impl PubSubActor {
         }
         rules.into_iter().for_each(|r| lock_guard.push(r));
         Ok(lock_guard.len())
+    }
+
+    fn dispatch_message(
+        &self,
+        action: Arc<Actions>,
+        event_name: String,
+        event: GithubEvent,
+    ) -> Result<(), PubSubError> {
+        match action.as_ref() {
+            Actions::Closure(c) => self.dispatch_closure_action(*c.clone(), event_name, event),
+            Actions::Github(a) => self.dispatch_github_action(*a.clone(), event_name, event),
+            Actions::NullAction => {
+                info!("NullAction was dispatched. Doing nothing");
+                Ok(())
+            },
+        }
+    }
+
+    fn dispatch_closure_action(
+        &self,
+        params: ClosureActionParams,
+        ev_name: String,
+        ev: GithubEvent,
+    ) -> Result<(), PubSubError> {
+        let name = format!("ClosureAction-{}", timestamp());
+        let msg = ClosureActionMessage::new(name, ev_name, ev, params);
+        let executor = ClosureActionExecutor::from_registry();
+        executor.try_send(msg).map_err(|e| {
+            PubSubError::DispatchError(format!("Could not dispatch Closure Action message. {}", e.to_string()))
+        })
+    }
+
+    fn dispatch_github_action(
+        &self,
+        params: GithubActionParams,
+        ev_name: String,
+        ev: GithubEvent,
+    ) -> Result<(), PubSubError> {
+        let name = format!("GithubAction-{}", timestamp());
+        let msg = GithubActionMessage::new(name, ev_name, ev, params);
+        let executor = GithubActionExecutor::from_registry();
+        executor.try_send(msg).map_err(|e| {
+            PubSubError::DispatchError(format!("Could not dispatch Github Action message. {}", e.to_string()))
+        })
     }
 }
 
@@ -75,14 +127,10 @@ impl Handler<GithubEventMessage> for PubSubActor {
                     msg.name()
                 );
                 let (event_name, event) = msg.clone().to_parts();
-
                 let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
                 for action in rule.actions().cloned() {
-                    let task_msg = TaskExecuteMessage::new(name.clone(), event_name.clone(), event.clone(), action);
-                    match self.task_runner.try_send(task_msg) {
-                        Ok(()) => trace!("Task \"{}\" dispatched successfully", name),
-                        Err(e) => warn!("Failed to dispatch task \"{}\". {}", name, e.to_string()),
-                    }
+                    trace!("Preparing task \"{}\"", name);
+                    self.dispatch_message(action.clone(), event_name.clone(), event.clone());
                 }
             }
         }

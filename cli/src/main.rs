@@ -26,7 +26,7 @@ async fn main() -> Result<(), ()> {
         let mut context = Context::default();
         context.use_user_provider(&user_provider);
         context.use_pr_provider(&github_provider);
-        context.use_isue_provider(&github_provider);
+        context.use_issue_provider(&github_provider);
         context
     };
 

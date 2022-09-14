@@ -1,7 +1,8 @@
+use async_trait::async_trait;
 use reqwest::{Client, Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
 
-use crate::api::{AuthToken, GithubApiError};
+use crate::api::{AuthToken, GithubApiError, GithubQuery, GithubQueryExec};
 
 pub const USER_AGENT: &str = "GithubPilot_v1.0";
 pub const BASE_URL: &str = "https://api.github.com";
@@ -79,5 +80,15 @@ impl ClientProxy {
             )),
             code => Err(GithubApiError::HttpResponse(code)),
         }
+    }
+}
+
+#[async_trait]
+impl GithubQueryExec for ClientProxy {
+    type Error = GithubApiError;
+
+    async fn exec<T: DeserializeOwned + Send>(&self, request: impl GithubQuery) -> Result<T, Self::Error> {
+        let req = self.request(request.method(), request.path(), request.use_auth());
+        self.send::<T>(req).await
     }
 }

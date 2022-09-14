@@ -32,7 +32,7 @@ impl IssueRequest {
         }
     }
 
-    fn fetch_path(&self) -> String {
+    pub fn fetch_path(&self) -> String {
         format!("/repos/{}/{}/issues/{}", self.owner, self.repo, self.number)
     }
 

@@ -1,6 +1,5 @@
 use actix::Message;
 use gh_pilot::ghp_api::webhooks::GithubEvent;
-use ghp_api::webhooks::PullRequestEvent;
 
 use crate::{pub_sub::PubSubError, rules::Rule};
 
@@ -28,13 +27,6 @@ impl GithubEventMessage {
 
     pub fn to_parts(self) -> (String, GithubEvent) {
         (self.name, self.event)
-    }
-
-    pub fn pull_request(&self) -> Option<&PullRequestEvent> {
-        match &self.event {
-            GithubEvent::PullRequest(pr) => Some(pr),
-            _ => None,
-        }
     }
 }
 

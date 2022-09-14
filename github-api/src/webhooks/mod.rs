@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+pub mod issue_event;
 mod models;
+pub mod pr_event;
 pub use models::*;
 
 use crate::error::GithubPilotError;
@@ -99,22 +101,36 @@ impl GithubEvent {
             Self::UnknownEvent { event, .. } => format!("Unknown event: {}", event),
         }
     }
+
+    pub fn pull_request(&self) -> Option<&PullRequestEvent> {
+        match &self {
+            Self::PullRequest(pr) => Some(pr),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
     use crate::{
         models::{
-            static_data::events::{PR_EDITED_EVENT, PR_EVENT, PR_REVIEW_COMMENT, PR_SYNC_EVENT, PUSH_EVENT},
+            static_data::events::{
+                ISSUE_EVENT,
+                PR_EDITED_EVENT,
+                PR_EVENT,
+                PR_REVIEW_COMMENT,
+                PR_SYNC_EVENT,
+                PUSH_EVENT,
+            },
             AuthorAssociation,
             State,
         },
-        webhooks::{GithubEvent, PullRequestAction, PullRequestReviewCommentAction},
+        webhooks::{GithubEvent, IssuesEventAction, PullRequestAction, PullRequestReviewCommentAction},
     };
 
     #[test]
     fn push_event() {
-        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT);
+        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT).unwrap();
         match event {
             GithubEvent::Push(push) => {
                 assert_eq!(push.before, "455b0193f3595375025175a9f40b0552f5094437");
@@ -127,7 +143,7 @@ mod test {
 
     #[test]
     fn pr_review_comment_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT).unwrap();
         match event {
             GithubEvent::PullRequestReviewComment(c) => {
                 assert!(matches!(c.action, PullRequestReviewCommentAction::Created));
@@ -142,7 +158,7 @@ mod test {
 
     #[test]
     fn pr_opened_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EVENT).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 assert!(matches!(pr.action, PullRequestAction::Opened));
@@ -162,7 +178,7 @@ mod test {
 
     #[test]
     fn pr_edited_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EDITED_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EDITED_EVENT).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {
@@ -193,7 +209,7 @@ mod test {
 
     #[test]
     fn pr_sync_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_SYNC_EVENT);
+        let event = GithubEvent::try_from_webhook_info("pull_request", PR_SYNC_EVENT).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {
@@ -210,6 +226,25 @@ mod test {
                 assert_eq!(pr.info.sender.id, 39146854);
             },
             _ => panic!("Not a pull_request event"),
+        }
+    }
+
+    #[test]
+    fn issue_assigned_event() {
+        let event = GithubEvent::try_from_webhook_info("issues", ISSUE_EVENT).unwrap();
+        match event {
+            GithubEvent::Issues(ev) => {
+                match ev.action {
+                    IssuesEventAction::Assigned { assignee: Some(user) } => {
+                        assert_eq!(user.login, "sdbondi");
+                    },
+                    _ => panic!("Issue event action was not 'assigned'"),
+                }
+                assert_eq!(ev.issue.number, 4630);
+                assert_eq!(ev.issue.id, 1364448816);
+                assert_eq!(ev.issue.user.unwrap().login, "hansieodendaal");
+            },
+            _ => panic!("Not an issue event"),
         }
     }
 }
