@@ -116,24 +116,30 @@ impl Handler<GithubEventMessage> for PubSubActor {
             return;
         }
         let rules = rules.unwrap();
+        let mut rules_matched = 0usize;
+        let (event_name, event) = msg.clone().to_parts();
         for rule in rules.iter() {
             // Check if any of the predicates match
             let rule_triggered = rule.matches(&msg);
             // If so, dispatch a tasks to run the actions
             if rule_triggered.is_some() {
+                rules_matched += 1;
                 info!(
                     "Rule \"{}\" triggered for \"{}\". Running its actions.",
                     rule.name(),
                     msg.name()
                 );
-                let (event_name, event) = msg.clone().to_parts();
                 let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
                 for action in rule.actions().cloned() {
                     trace!("Preparing task \"{}\"", name);
-                    self.dispatch_message(action.clone(), event_name.clone(), event.clone());
+                    let dispatch_result = self.dispatch_message(action.clone(), event_name.clone(), event.clone());
+                    if let Err(e) = dispatch_result {
+                        warn!("There was an issue dispatching {}: {}", name, e.to_string());
+                    }
                 }
             }
         }
+        debug!("{} rules matched event \"{}\"", rules_matched, event_name);
     }
 }
 
