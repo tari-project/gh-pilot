@@ -1,11 +1,11 @@
 use ghp_api::models::PullRequest;
 
-pub struct PullRequestHeuristics<'PR> {
-    pr: &'PR PullRequest,
+pub struct PullRequestHeuristics<'pr> {
+    pr: &'pr PullRequest,
 }
 
-impl<'PR> PullRequestHeuristics<'PR> {
-    pub fn new(pr: &'PR PullRequest) -> Self {
+impl<'pr> PullRequestHeuristics<'pr> {
+    pub fn new(pr: &'pr PullRequest) -> Self {
         Self { pr }
     }
 
@@ -42,7 +42,12 @@ impl<'PR> PullRequestHeuristics<'PR> {
     }
 }
 
-fn complexity_heuristic(additions: usize, deletions: usize, commit_count: f64, files_changed: f64) -> PullRequestComplexity {
+fn complexity_heuristic(
+    additions: usize,
+    deletions: usize,
+    commit_count: f64,
+    files_changed: f64,
+) -> PullRequestComplexity {
     let total = (additions + deletions) as f64;
 
     // If |additions - deletions| is large, the there is mostly new code, or mostly removing code, so complexity
@@ -59,7 +64,7 @@ fn complexity_heuristic(additions: usize, deletions: usize, commit_count: f64, f
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PullRequestSize {
     Tiny,
     Small,
@@ -68,7 +73,7 @@ pub enum PullRequestSize {
     Huge,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PullRequestComplexity {
     Low,
     Medium,

@@ -1,7 +1,11 @@
 use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestAction, PullRequestEvent};
 use ghp_api::newtype;
 
-use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};
+use crate::{
+    heuristics::pull_requests::{PullRequestComplexity, PullRequestHeuristics, PullRequestSize},
+    pub_sub::GithubEventMessage,
+    rules::RulePredicate,
+};
 
 newtype!(UserName, String, str);
 newtype!(LabelName, String, str);
@@ -24,6 +28,8 @@ enum PullRequestPredicate {
     Reopened,
     Synchronize,
     Unlocked,
+    SizeGreaterThan(PullRequestSize),
+    MoreComplexThan(PullRequestComplexity),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -164,6 +170,18 @@ impl PullRequest {
             trigger: PullRequestPredicate::Unassigned(Some(user_name.into())),
         }
     }
+
+    pub fn larger_than(size: PullRequestSize) -> Self {
+        Self {
+            trigger: PullRequestPredicate::SizeGreaterThan(size),
+        }
+    }
+
+    pub fn more_complex_than(complexity: PullRequestComplexity) -> Self {
+        Self {
+            trigger: PullRequestPredicate::MoreComplexThan(complexity),
+        }
+    }
 }
 
 impl RulePredicate for PullRequest {
@@ -219,6 +237,20 @@ impl RulePredicate for PullRequest {
                 },
                 // If the action is closed and the merged key is true, the pull request was merged.
                 (PullRequestPredicate::Merged, PullRequestAction::Closed) => pull_request.merged == Some(true),
+                (
+                    PullRequestPredicate::SizeGreaterThan(size),
+                    PullRequestAction::Opened | PullRequestAction::Synchronize { .. } | PullRequestAction::Reopened,
+                ) => {
+                    let heuristic = PullRequestHeuristics::new(pull_request);
+                    heuristic.size() > *size
+                },
+                (
+                    PullRequestPredicate::MoreComplexThan(complexity),
+                    PullRequestAction::Opened | PullRequestAction::Synchronize { .. } | PullRequestAction::Reopened,
+                ) => {
+                    let heuristic = PullRequestHeuristics::new(pull_request);
+                    heuristic.complexity() > *complexity
+                },
                 // Anything else does not match
                 _ => false,
             }
