@@ -30,6 +30,7 @@ enum PullRequestPredicate {
     Unlocked,
     SizeGreaterThan(PullRequestSize),
     MoreComplexThan(PullRequestComplexity),
+    PoorJustification,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -182,6 +183,12 @@ impl PullRequest {
             trigger: PullRequestPredicate::MoreComplexThan(complexity),
         }
     }
+
+    pub fn poor_justification() -> Self {
+        Self {
+            trigger: PullRequestPredicate::PoorJustification,
+        }
+    }
 }
 
 impl RulePredicate for PullRequest {
@@ -193,6 +200,7 @@ impl RulePredicate for PullRequest {
             action, pull_request, ..
         }) = event.event()
         {
+            let heuristic = PullRequestHeuristics::new(pull_request);
             match (&self.trigger, action) {
                 (PullRequestPredicate::Assigned(None), PullRequestAction::Assigned { .. }) => true,
                 (PullRequestPredicate::Assigned(Some(user)), PullRequestAction::Assigned { assignee }) => {
@@ -240,17 +248,15 @@ impl RulePredicate for PullRequest {
                 (
                     PullRequestPredicate::SizeGreaterThan(size),
                     PullRequestAction::Opened | PullRequestAction::Synchronize { .. } | PullRequestAction::Reopened,
-                ) => {
-                    let heuristic = PullRequestHeuristics::new(pull_request);
-                    heuristic.size() > *size
-                },
+                ) => heuristic.size() > *size,
                 (
                     PullRequestPredicate::MoreComplexThan(complexity),
                     PullRequestAction::Opened | PullRequestAction::Synchronize { .. } | PullRequestAction::Reopened,
-                ) => {
-                    let heuristic = PullRequestHeuristics::new(pull_request);
-                    heuristic.complexity() > *complexity
-                },
+                ) => heuristic.complexity() > *complexity,
+                (
+                    PullRequestPredicate::PoorJustification,
+                    PullRequestAction::Opened | PullRequestAction::Edited { .. },
+                ) => !heuristic.has_sufficient_context(),
                 // Anything else does not match
                 _ => false,
             }

@@ -14,8 +14,7 @@ impl<'pr> PullRequestHeuristics<'pr> {
     /// * deletions
     pub fn size(&self) -> PullRequestSize {
         let additions = self.pr.additions.unwrap_or(0);
-        let deletions = self.pr.deletions.unwrap_or(0);
-        let total = additions + deletions;
+        let total = self.total_changes();
 
         if total < 5 {
             PullRequestSize::Tiny
@@ -30,6 +29,12 @@ impl<'pr> PullRequestHeuristics<'pr> {
         }
     }
 
+    pub fn total_changes(&self) -> usize {
+        let additions = self.pr.additions.unwrap_or(0);
+        let deletions = self.pr.deletions.unwrap_or(0);
+        additions + deletions
+    }
+
     /// A heuristic to indicate the complexity of a PR. Currently, the metrics used to detmine complexity are
     /// * PR size heuristic
     /// * Number of files changed
@@ -39,6 +44,15 @@ impl<'pr> PullRequestHeuristics<'pr> {
         let commit_count = self.pr.commits.unwrap_or(2) as f64;
         let files_changed = self.pr.changed_files.unwrap_or(1) as f64;
         complexity_heuristic(additions, deletions, commit_count, files_changed)
+    }
+
+    /// Estimates whether the PR body has sufficient context to describe the changes in the PR.
+    pub fn has_sufficient_context(&self) -> bool {
+        let changes = self.total_changes();
+        let body_length = self.pr.body.as_ref().map(|s| s.len()).unwrap_or(0);
+        // Want at least 150 characters,
+        // and at least 1 character per 10 lines of code changed
+        body_length >= 150.max(changes / 10)
     }
 }
 
