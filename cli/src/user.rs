@@ -30,10 +30,7 @@ fn pretty_print(user: &SimpleUser) {
         .add_cell(cc(Color::Green, user.login.as_str()));
     table
         .add_row(name_row)
-        .add_row([
-            "Type",
-            user.name.as_deref().unwrap_or("Unavailable"),
-        ])
+        .add_row(["Type", user.name.as_deref().unwrap_or("Unavailable")])
         .add_row(["URL", user.url.as_ref()]);
     println!("{table}");
 }
