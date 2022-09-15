@@ -2,7 +2,7 @@
 name = "ghp-cli"
 version = "0.1.0"
 edition = "2021"
-
+description = "A command line interface for GitHub Pages; intended as a client partner tool to the Github Pilot server"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
