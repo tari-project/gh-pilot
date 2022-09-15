@@ -1,5 +1,3 @@
-extern crate core;
-
 mod cli_def;
 mod issue;
 mod pretty_print;

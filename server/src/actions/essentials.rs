@@ -67,8 +67,20 @@ impl ClosureActionBuilder {
     }
 }
 
+impl Default for ClosureActionBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct GithubActionBuilder {
     params: Option<GithubActionParams>,
+}
+
+impl Default for GithubActionBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GithubActionBuilder {

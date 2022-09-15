@@ -22,7 +22,6 @@ deny = [
     'clippy::needless_question_mark',
     'clippy::nonminimal_bool',
     'clippy::range_plus_one',
-    'clippy::struct_excessive_bools',
     'clippy::style',
     'clippy::too_many_lines',
     'clippy::trivially_copy_pass_by_ref',
@@ -36,7 +35,9 @@ deny = [
     'unused_variables',
 ]
 allow = [
+    'clippy::bool-assert-comparison',
     'clippy::default_trait_access',
+    'clippy::struct_excessive_bools',
     'clippy::too_many_arguments',
 ]
 warn = []

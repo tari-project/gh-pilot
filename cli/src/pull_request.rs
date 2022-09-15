@@ -21,10 +21,10 @@ pub async fn run_pr_cmd(ctx: &Context<'_>, owner: &str, repo: &str, number: u64)
 fn pretty_print(pr: PullRequest) {
     let mut table = pretty_table("Title", pr.title.as_str());
     table
-        .add_row(&["URL", pr.url.as_ref()])
-        .add_row(&["State", pr.state.to_string().as_str()])
-        .add_row(&["Merged", if matches!(pr.merged, Some(true)) { "Yes" } else { "No" }]);
+        .add_row(["URL", pr.url.as_ref()])
+        .add_row(["State", pr.state.to_string().as_str()])
+        .add_row(["Merged", if matches!(pr.merged, Some(true)) { "Yes" } else { "No" }]);
     add_labels(&mut table, &pr.labels);
     println!("{table}");
-    println!("{}", pr.body.unwrap_or("No body provided".into()));
+    println!("{}", pr.body.unwrap_or_else(|| "No body provided".into()));
 }
