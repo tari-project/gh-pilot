@@ -1,6 +1,7 @@
 pub mod actions;
 pub mod config;
 pub mod error;
+pub mod heuristics;
 pub mod notifications;
 pub mod predicates;
 pub mod pub_sub;
