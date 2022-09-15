@@ -35,6 +35,7 @@ deny = [
     'unused_variables',
 ]
 allow = [
+    'clippy::bool-assert-comparison',
     'clippy::default_trait_access',
     'clippy::struct_excessive_bools',
     'clippy::too_many_arguments',
