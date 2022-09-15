@@ -23,6 +23,12 @@ pub struct PubSubActor {
     rules: RwLock<Vec<Rule>>,
 }
 
+impl Default for PubSubActor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PubSubActor {
     pub fn new() -> Self {
         Self {
@@ -132,7 +138,7 @@ impl Handler<GithubEventMessage> for PubSubActor {
                 let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
                 for action in rule.actions().cloned() {
                     trace!("Preparing task \"{}\"", name);
-                    let dispatch_result = self.dispatch_message(action.clone(), event_name.clone(), event.clone());
+                    let dispatch_result = self.dispatch_message(action, event_name.clone(), event.clone());
                     if let Err(e) = dispatch_result {
                         warn!("There was an issue dispatching {}: {}", name, e.to_string());
                     }
