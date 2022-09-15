@@ -9,10 +9,14 @@
 //!   # use ghp_server::rules::RuleBuilder;
 //! RuleBuilder::new("my-rule")
 //!     .when(PullRequest::opened())
-//!     .execute(Actions::closure().with(|name, msg| {
-//!         let pr = msg.pull_request().unwrap();
-//!         println!("PR {} opened", pr.number());
-//!     }).build());
+//!     .execute(
+//!         Actions::closure()
+//!             .with(|name, msg| {
+//!                 let pr = msg.pull_request().unwrap();
+//!                 println!("PR {} opened", pr.number());
+//!             })
+//!             .build(),
+//!     );
 //! ```
 //!
 //! This module also defines the [`RulePredicate`] trait, which defines behaviour for structs that want to act as rule

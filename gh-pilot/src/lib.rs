@@ -6,6 +6,6 @@ pub mod mock_provider;
 pub mod models;
 
 // re-export github
-pub use ghp_api;
 pub use context::Context;
+pub use ghp_api;
 pub use github_provider::GithubProvider;

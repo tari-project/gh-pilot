@@ -10,6 +10,10 @@ use thiserror::Error;
 pub enum ServerError {
     #[error("Invalid signature")]
     InvalidSignature,
+    #[error("The secret used to sign webhook payloads is invalid. {0}")]
+    InvalidSecret(String),
+    #[error("Invalid signature header: {0}")]
+    InvalidSignatureHeader(String),
     #[error("Payload deserialization error")]
     CouldNotDeserializePayload,
     #[error("Could not read request body: {0}")]
@@ -40,6 +44,7 @@ impl ResponseError for ServerError {
     fn status_code(&self) -> StatusCode {
         match *self {
             Self::InvalidSignature => StatusCode::UNAUTHORIZED,
+            Self::InvalidSignatureHeader(_) => StatusCode::BAD_REQUEST,
             Self::InvalidRequestBody(_) => StatusCode::BAD_REQUEST,
             Self::InvalidEventHeader(_) => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
