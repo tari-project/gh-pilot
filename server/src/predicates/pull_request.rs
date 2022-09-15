@@ -1,5 +1,6 @@
 use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestAction, PullRequestEvent};
 use ghp_api::newtype;
+use log::trace;
 
 use crate::{
     heuristics::pull_requests::{PullRequestComplexity, PullRequestHeuristics, PullRequestSize},
@@ -200,6 +201,7 @@ impl RulePredicate for PullRequest {
             action, pull_request, ..
         }) = event.event()
         {
+            trace!("testing {:?} against event {}/{:?}", self.trigger, event.name(), action);
             let heuristic = PullRequestHeuristics::new(pull_request);
             match (&self.trigger, action) {
                 (PullRequestPredicate::Assigned(None), PullRequestAction::Assigned { .. }) => true,
@@ -251,7 +253,7 @@ impl RulePredicate for PullRequest {
                 ) => heuristic.size() > *size,
                 (
                     PullRequestPredicate::MoreComplexThan(complexity),
-                    PullRequestAction::Opened | PullRequestAction::Synchronize { .. } | PullRequestAction::Reopened,
+                    PullRequestAction::Opened | PullRequestAction::Edited { .. },
                 ) => heuristic.complexity() > *complexity,
                 (
                     PullRequestPredicate::PoorJustification,

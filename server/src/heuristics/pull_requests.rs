@@ -1,4 +1,5 @@
 use ghp_api::models::PullRequest;
+use log::trace;
 
 pub struct PullRequestHeuristics<'pr> {
     pr: &'pr PullRequest,
@@ -16,7 +17,7 @@ impl<'pr> PullRequestHeuristics<'pr> {
         let additions = self.pr.additions.unwrap_or(0);
         let total = self.total_changes();
 
-        if total < 5 {
+        let size = if total < 5 {
             PullRequestSize::Tiny
         } else if additions < 25 || total < 100 {
             PullRequestSize::Small
@@ -26,7 +27,9 @@ impl<'pr> PullRequestHeuristics<'pr> {
             PullRequestSize::Large
         } else {
             PullRequestSize::Huge
-        }
+        };
+        trace!("PR size heuristic: {:?}", size);
+        size
     }
 
     pub fn total_changes(&self) -> usize {
@@ -43,7 +46,9 @@ impl<'pr> PullRequestHeuristics<'pr> {
         let deletions = self.pr.deletions.unwrap_or(0);
         let commit_count = self.pr.commits.unwrap_or(2) as f64;
         let files_changed = self.pr.changed_files.unwrap_or(1) as f64;
-        complexity_heuristic(additions, deletions, commit_count, files_changed)
+        let complexity = complexity_heuristic(additions, deletions, commit_count, files_changed);
+        trace!("PR complexity heuristic: {:?}", complexity);
+        complexity
     }
 
     /// Estimates whether the PR body has sufficient context to describe the changes in the PR.
@@ -69,7 +74,7 @@ fn complexity_heuristic(
     // But the total number of changes is important too.
     let size_complexity = total.powf(1.25) / (additions.abs_diff(deletions).max(10) as f64).sqrt();
     let complexity_score = 3.0 * commit_count + 1.5 * files_changed + size_complexity;
-    println!("Complexity score: {}", complexity_score);
+    trace!("Complexity score: {}", complexity_score);
     match complexity_score as usize {
         0..=20 => PullRequestComplexity::Low,
         21..=250 => PullRequestComplexity::Medium,
