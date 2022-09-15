@@ -1,8 +1,12 @@
 //! Additional implementations for PullRequestEvent are kept here to avoid messing with the code generation tools in
 //! models.rs
 use std::fmt::{Display, Formatter};
-use crate::{api::PullRequestRequest, models::PullRequest, webhooks::PullRequestEvent};
-use crate::webhooks::PullRequestAction;
+
+use crate::{
+    api::PullRequestRequest,
+    models::PullRequest,
+    webhooks::{PullRequestAction, PullRequestEvent},
+};
 
 impl PullRequestEvent {
     pub fn owner(&self) -> &str {
