@@ -34,10 +34,12 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
 mod rules {
     use actix::Addr;
     use ghp_api::webhooks::PullRequestAction;
+    use log::info;
 
     use crate::{
         actions::Actions,
         error::ServerError,
+        heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
         predicates::PullRequest,
         pub_sub::{PubSubActor, ReplaceRulesMessage},
         rules::RuleBuilder,
@@ -48,28 +50,38 @@ mod rules {
         // RuleSet::from_json("./config/rules.json")
         // or whatever
         let rules = vec![
-            RuleBuilder::new("AutoLabel - Demo (add bar)")
-                .when(PullRequest::labeled_with("T-foo"))
-                .execute(Actions::github().add_label("T-bar").build())
+            RuleBuilder::new("(AutoLabel) Pull request size")
+                .when(PullRequest::larger_than(PullRequestSize::Medium))
+                .execute(Actions::github().add_label("CR-too_long").build())
                 .submit(),
-            RuleBuilder::new("AutoLabel - Demo (remove bar)")
-                .when(PullRequest::unlabeled_with("T-foo"))
-                .execute(Actions::github().remove_label("T-bar").build())
+            RuleBuilder::new("(AutoLabel) Pull request complexity")
+                .when(PullRequest::more_complex_than(PullRequestComplexity::High))
+                .execute(Actions::github().add_label("CR-one_job").build())
+                .submit(),
+            RuleBuilder::new("(AutoLabel) Pull request justification")
+                .when(PullRequest::poor_justification())
+                .execute(Actions::github().add_label("CR-insufficient_context").build())
                 .submit(),
             {
                 let action = Actions::closure()
-                    .with(|_name, event| {
+                    .with(|name, event| {
                         let pr = event.pull_request().unwrap();
                         let label = if let PullRequestAction::Unlabeled { label } = &pr.action {
                             label.name.as_str()
                         } else {
-                            "No label name found"
+                            "?"
                         };
-                        println!("PR #{} has had label [{}] removed.", pr.number, label)
+                        info!(
+                            "{} on PR #{} has been labelled: [{}]. {}",
+                            name,
+                            pr.number,
+                            label,
+                            event.summary()
+                        )
                     })
                     .build();
-                RuleBuilder::new("When label removed")
-                    .when(PullRequest::unlabeled())
+                RuleBuilder::new("(Log) Label added")
+                    .when(PullRequest::labeled())
                     .execute(action)
                     .submit()
             },
