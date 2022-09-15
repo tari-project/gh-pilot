@@ -116,18 +116,19 @@ mod test {
         models::{
             static_data::events::{
                 ISSUE_EVENT,
+                LABELLED_EVENT,
                 PR_EDITED_EVENT,
                 PR_EVENT,
                 PR_REVIEW_COMMENT,
                 PR_SYNC_EVENT,
                 PUSH_EVENT,
+                PUSH_EVENT_2,
             },
             AuthorAssociation,
             State,
         },
         webhooks::{GithubEvent, IssuesEventAction, PullRequestAction, PullRequestReviewCommentAction},
     };
-    use crate::models::static_data::events::{LABELLED_EVENT, PUSH_EVENT_2};
 
     #[test]
     fn push_event() {
@@ -164,7 +165,7 @@ mod test {
                 assert_eq!(label.name, "T-foo");
                 assert_eq!(label.color, "7A2F2E");
             },
-            _ => panic!("Action was not 'label'")
+            _ => panic!("Action was not 'label'"),
         }
     }
 

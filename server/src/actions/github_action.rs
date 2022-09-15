@@ -18,12 +18,11 @@
 //! ```
 
 use std::sync::Arc;
+
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
-use gh_pilot::{GithubProvider};
+use gh_pilot::{data_provider::IssueProvider, models::IssueId, GithubProvider};
 use ghp_api::webhooks::GithubEvent;
 use log::{debug, warn};
-use gh_pilot::data_provider::IssueProvider;
-use gh_pilot::models::IssueId;
 
 #[derive(Clone)]
 pub enum GithubActionParams {
@@ -90,7 +89,9 @@ impl Default for GithubActionExecutor {
     fn default() -> Self {
         // Will pull credentials from envars if possible
         let github_provider = GithubProvider::default();
-        Self { provider: Arc::new(github_provider) }
+        Self {
+            provider: Arc::new(github_provider),
+        }
     }
 }
 

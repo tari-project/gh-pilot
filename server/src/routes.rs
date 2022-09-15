@@ -26,10 +26,12 @@ use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest,
 use gh_pilot::ghp_api::webhooks::GithubEvent;
 use ghp_api::error::GithubPilotError;
 use log::*;
+use zeroize::Zeroize;
 
 use crate::{
     error::ServerError,
     pub_sub::{GithubEventMessage, PubSubActor},
+    utilities::{check_valid_signature, extract_signature, get_secret},
 };
 
 type PubSubActorRef = Data<Addr<PubSubActor>>;
@@ -47,10 +49,15 @@ pub async fn github_webhook(
 ) -> Result<HttpResponse, ServerError> {
     let headers = req.headers();
     debug!("Received webhook request");
-    check_valid_signature(headers)?;
-    trace!("Received webhook signature check passed");
     let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
     trace!("Decoded payload body. {} bytes", payload.bytes().len());
+    if let Err(e) = validate_signature(headers, payload) {
+        error!(
+            "The webhook signature is invalid. This event will not be processed. {}",
+            e
+        );
+        return Err(ServerError::InvalidSignature);
+    }
     let event_name = headers
         .get("x-github-event")
         .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
@@ -90,8 +97,12 @@ pub async fn github_webhook(
     }
 }
 
-fn check_valid_signature(_headers: &HeaderMap) -> Result<(), ServerError> {
-    // TODO
+fn validate_signature(headers: &HeaderMap, payload: &str) -> Result<(), ServerError> {
+    let signature = extract_signature(headers)?;
+    let mut secret = get_secret()?;
+    check_valid_signature(secret.as_str(), signature, payload)?;
+    secret.zeroize();
+    trace!("Received webhook signature check passed");
     Ok(())
 }
 

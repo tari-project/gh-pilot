@@ -24,11 +24,11 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
             .service(health)
             .service(web::scope("/github").service(github_webhook))
     })
-        .keep_alive(KeepAlive::Timeout(Duration::from_secs(600)))
-        .bind((config.host.as_str(), config.port))?
-        .run()
-        .await
-        .map_err(|e| ServerError::Unspecified(e.to_string()))
+    .keep_alive(KeepAlive::Timeout(Duration::from_secs(600)))
+    .bind((config.host.as_str(), config.port))?
+    .run()
+    .await
+    .map_err(|e| ServerError::Unspecified(e.to_string()))
 }
 
 mod rules {
