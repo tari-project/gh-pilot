@@ -18,10 +18,10 @@ pub struct PullRequestReviewComment {
     /// The relative path of the file to which the comment applies.
     pub path: String,
     /// The line index in the diff to which the comment applies. This field is deprecated; use `line` instead.
-    pub position: i32,
+    pub position: Option<i32>,
     /// The index of the original line in the diff to which the comment applies. This field is deprecated; use
     /// `original_line` instead.
-    pub original_position: i32,
+    pub original_position: Option<i32>,
     /// The SHA of the commit to which the comment applies.
     pub commit_id: String,
     /// The SHA of the original commit to which the comment applies.

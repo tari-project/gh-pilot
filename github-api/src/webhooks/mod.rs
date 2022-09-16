@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 pub mod issue_event;
 mod models;
 pub mod pr_event;
+
 pub use models::*;
 
 use crate::error::GithubPilotError;
@@ -273,6 +274,21 @@ mod test {
                 assert_eq!(ev.issue.user.unwrap().login, "hansieodendaal");
             },
             _ => panic!("Not an issue event"),
+        }
+    }
+
+    /// Fix bug in deserializing the `GithubEvent::PullRequestReviewComment` event - 15/9/2022
+    #[test]
+    fn pr_review_comment() {
+        let data = include_str!("../test_data/pr_review_comment_event2.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", data).unwrap();
+        match event {
+            GithubEvent::PullRequestReviewComment(ev) => {
+                assert!(matches!(ev.action, PullRequestReviewCommentAction::Created));
+                assert_eq!(ev.comment.node_id, "PRRC_kwDOCCIzW845_Sdp");
+                assert_eq!(ev.comment.user.login, "sdbondi");
+            },
+            _ => panic!("Not a PullRequestReviewComment event"),
         }
     }
 }
