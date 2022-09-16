@@ -6,7 +6,7 @@ mod user;
 
 use clap::Parser;
 use cli_def::{Cli, Commands};
-use gh_pilot::{mock_provider::MockUserProvider, Context, GithubProvider};
+use gh_pilot::GithubProvider;
 use log::*;
 
 use crate::{issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
@@ -15,25 +15,13 @@ use crate::{issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
 async fn main() -> Result<(), ()> {
     env_logger::init();
     let cli = Cli::parse();
-
-    let user_provider = MockUserProvider::default();
-    let github_provider = setup_github_api(&cli);
-
-    let build_context = || {
-        let mut context = Context::default();
-        context.use_user_provider(&user_provider);
-        context.use_pr_provider(&github_provider);
-        context.use_issue_provider(&github_provider);
-        context
-    };
-
-    let ctx = build_context();
+    let provider = setup_github_api(&cli);
     let owner = cli.owner.as_str();
     let repo = cli.repo.as_str();
     match &cli.command {
-        Commands::User { profile } => run_user_cmd(&ctx, profile).await,
-        Commands::PullRequest { number } => run_pr_cmd(&ctx, owner, repo, *number).await,
-        Commands::Issue { number, sub_command } => run_issue_cmd(&ctx, owner, repo, *number, sub_command).await,
+        Commands::User { profile } => run_user_cmd(&provider, profile).await,
+        Commands::PullRequest { number } => run_pr_cmd(&provider, owner, repo, *number).await,
+        Commands::Issue { number, sub_command } => run_issue_cmd(&provider, owner, repo, *number, sub_command).await,
     }
 }
 

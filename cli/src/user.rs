@@ -1,20 +1,14 @@
 use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::{ghp_api::models::SimpleUser, models::GithubHandle};
+use gh_pilot::{data_provider::UserStatsProvider, ghp_api::models::SimpleUser, models::GithubHandle};
 use log::*;
 
-use crate::Context;
-
-pub async fn run_user_cmd<S: AsRef<str>>(ctx: &Context<'_>, profile: S) -> Result<(), ()> {
-    if let Some(provider) = ctx.user_provider() {
-        debug!("Fetching user..{}", profile.as_ref());
-        let handle = GithubHandle::from(profile.as_ref());
-        let details = provider.fetch_details(&handle).await.map_err(|_| ())?;
-        match details {
-            Some(p) => pretty_print(&p),
-            None => info!("User {} was not found", profile.as_ref()),
-        }
-    } else {
-        warn!("No user provider installed");
+pub async fn run_user_cmd<S: AsRef<str>>(provider: &dyn UserStatsProvider, profile: S) -> Result<(), ()> {
+    debug!("Fetching user..{}", profile.as_ref());
+    let handle = GithubHandle::from(profile.as_ref());
+    let details = provider.fetch_details(&handle).await.map_err(|_| ())?;
+    match details {
+        Some(p) => pretty_print(&p),
+        None => info!("User {} was not found", profile.as_ref()),
     }
     Ok(())
 }
