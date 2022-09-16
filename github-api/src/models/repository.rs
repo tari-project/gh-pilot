@@ -264,11 +264,12 @@ pub struct Repository2 {
 
 #[cfg(test)]
 mod test {
-    use crate::models::{repository::Repository, static_data::repositories::TARI_REPO};
+    use crate::models::repository::Repository;
 
     #[test]
     fn tari_repo_deserializes() {
-        let tari: Repository = serde_json::from_str(TARI_REPO).unwrap();
+        let data = include_str!("../test_data/tari_repo.json");
+        let tari: Repository = serde_json::from_str(data).unwrap();
         assert_eq!(tari.id, 136459099);
         assert_eq!(tari.name, "tari");
         assert_eq!(tari.owner.node_id, "MDEyOk9yZ2FuaXphdGlvbjM3NTYwNTM5");

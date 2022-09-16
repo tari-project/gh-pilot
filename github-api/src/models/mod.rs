@@ -15,7 +15,6 @@ mod pull_request;
 mod pull_request_review;
 mod pull_request_review_comment;
 mod repository;
-pub mod static_data;
 mod team;
 mod user;
 

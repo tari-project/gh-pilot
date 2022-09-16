@@ -83,11 +83,12 @@ impl Issue {
 
 #[cfg(test)]
 mod test {
-    use crate::models::{issues::Issue, static_data::issues::ISSUE, SimpleUser, State};
+    use crate::models::{issues::Issue, SimpleUser, State};
 
     #[test]
     fn deserialize_issue() {
-        let issue: Issue = serde_json::from_str(ISSUE).unwrap();
+        let data = include_str!("../test_data/issue.json");
+        let issue: Issue = serde_json::from_str(data).unwrap();
         assert_eq!(issue.title, "Add elliptic curve marker trait?");
         assert_eq!(issue.number, 72);
         assert!(matches!(issue.state, State::Open));

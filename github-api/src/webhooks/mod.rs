@@ -114,20 +114,7 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{
-        models::{
-            static_data::events::{
-                ISSUE_EVENT,
-                LABELLED_EVENT,
-                PR_EDITED_EVENT,
-                PR_EVENT,
-                PR_REVIEW_COMMENT,
-                PR_SYNC_EVENT,
-                PUSH_EVENT,
-                PUSH_EVENT_2,
-            },
-            AuthorAssociation,
-            State,
-        },
+        models::{AuthorAssociation, State},
         webhooks::{
             GithubEvent,
             IssueCommentAction,
@@ -139,7 +126,8 @@ mod test {
 
     #[test]
     fn push_event() {
-        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT).unwrap();
+        let data = include_str!("../test_data/push_event.json");
+        let event = GithubEvent::try_from_webhook_info("push", data).unwrap();
         match event {
             GithubEvent::Push(push) => {
                 assert_eq!(push.before, "455b0193f3595375025175a9f40b0552f5094437");
@@ -152,7 +140,8 @@ mod test {
 
     #[test]
     fn push_event_2() {
-        let event = GithubEvent::try_from_webhook_info("push", PUSH_EVENT_2).unwrap();
+        let data = include_str!("../test_data/push_event2.json");
+        let event = GithubEvent::try_from_webhook_info("push", data).unwrap();
         match event {
             GithubEvent::Push(push) => {
                 assert_eq!(push.info.repository.name, "gh-pilot");
@@ -163,7 +152,8 @@ mod test {
 
     #[test]
     fn labelled_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", LABELLED_EVENT).unwrap();
+        let data = include_str!("../test_data/labelled_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         let pr = event.pull_request().expect("Labelled PR event did not include the PR");
         assert_eq!(pr.pull_request.state, State::Open);
         assert_eq!(pr.number, 2);
@@ -178,7 +168,8 @@ mod test {
 
     #[test]
     fn pr_review_comment_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", PR_REVIEW_COMMENT).unwrap();
+        let data = include_str!("../test_data/pr_review_comment_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", data).unwrap();
         match event {
             GithubEvent::PullRequestReviewComment(c) => {
                 assert!(matches!(c.action, PullRequestReviewCommentAction::Created));
@@ -193,7 +184,8 @@ mod test {
 
     #[test]
     fn pr_opened_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EVENT).unwrap();
+        let data = include_str!("../test_data/pr_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 assert!(matches!(pr.action, PullRequestAction::Opened));
@@ -213,7 +205,8 @@ mod test {
 
     #[test]
     fn pr_edited_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_EDITED_EVENT).unwrap();
+        let data = include_str!("../test_data/pr_edited_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {
@@ -244,7 +237,8 @@ mod test {
 
     #[test]
     fn pr_sync_event() {
-        let event = GithubEvent::try_from_webhook_info("pull_request", PR_SYNC_EVENT).unwrap();
+        let data = include_str!("../test_data/pr_sync_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
                 match pr.action {
@@ -266,7 +260,8 @@ mod test {
 
     #[test]
     fn issue_assigned_event() {
-        let event = GithubEvent::try_from_webhook_info("issues", ISSUE_EVENT).unwrap();
+        let data = include_str!("../test_data/issue_event.json");
+        let event = GithubEvent::try_from_webhook_info("issues", data).unwrap();
         match event {
             GithubEvent::Issues(ev) => {
                 match ev.action {

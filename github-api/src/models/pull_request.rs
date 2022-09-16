@@ -127,11 +127,12 @@ pub struct IssuePullRequest {
 
 #[cfg(test)]
 mod test {
-    use crate::models::{static_data::pull_requests::TARI_PR_1K, Link, PullRequest, Repository, SimpleUser};
+    use crate::models::{Link, PullRequest, Repository, SimpleUser};
 
     #[test]
     fn tari_pr_1000() {
-        let pr: PullRequest = serde_json::from_str(TARI_PR_1K).unwrap();
+        let data = include_str!("../test_data/pr_1000.json");
+        let pr: PullRequest = serde_json::from_str(data).unwrap();
         assert_eq!(pr.comments, Some(2));
         assert_eq!(pr.id, 338616778);
         assert_eq!(pr.merged, Some(true));

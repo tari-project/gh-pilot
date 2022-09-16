@@ -70,10 +70,11 @@ pub struct CommitComment {
 
 #[cfg(test)]
 mod test {
-    use crate::models::{comments::IssueComment, static_data::comments::COMMENT};
+    use crate::models::comments::IssueComment;
     #[test]
     fn comment1() {
-        let comment: IssueComment = serde_json::from_str(COMMENT).unwrap();
+        let data = include_str!("../test_data/comment.json");
+        let comment: IssueComment = serde_json::from_str(data).unwrap();
         assert_eq!(comment.node_id, "MDI0OlB1bGxSZXF1ZXN0UmV2aWV3Q29tbWVudDM0NDExNjkzNA==");
         assert_eq!(comment.body.unwrap(), "Current RFC says Gen is height 1, not 0");
         assert_eq!(

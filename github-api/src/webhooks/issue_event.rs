@@ -26,11 +26,12 @@ impl IssuesEvent {
 
 #[cfg(test)]
 mod test {
-    use crate::{models::static_data::events::ISSUE_EVENT, webhooks::models::IssuesEvent};
+    use crate::webhooks::models::IssuesEvent;
 
     #[test]
     fn issue_metadata() {
-        let issue: IssuesEvent = serde_json::from_str(ISSUE_EVENT).unwrap();
+        let data = include_str!("../test_data/issue_event.json");
+        let issue: IssuesEvent = serde_json::from_str(data).unwrap();
         assert_eq!(issue.owner(), "tari-project");
         assert_eq!(issue.repo(), "tari");
         assert_eq!(issue.number(), 4630);
@@ -38,7 +39,8 @@ mod test {
 
     #[test]
     fn issue_as_request() {
-        let issue: IssuesEvent = serde_json::from_str(ISSUE_EVENT).unwrap();
+        let data = include_str!("../test_data/issue_event.json");
+        let issue: IssuesEvent = serde_json::from_str(data).unwrap();
         let req = issue.to_request();
         assert_eq!(req.fetch_path(), "/repos/tari-project/tari/issues/4630");
     }

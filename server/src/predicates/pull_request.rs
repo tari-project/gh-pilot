@@ -271,10 +271,7 @@ impl RulePredicate for PullRequest {
 
 #[cfg(test)]
 mod test {
-    use gh_pilot::ghp_api::{
-        models::static_data::events::PR_EVENT,
-        webhooks::{GithubEvent, PullRequestEvent},
-    };
+    use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestEvent};
 
     use super::{LabelName, PullRequest, PullRequestPredicate, UserName};
     use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};
@@ -353,7 +350,8 @@ mod test {
 
     #[test]
     fn pull_request_predicate_matches() {
-        let pr_event: PullRequestEvent = serde_json::from_str(PR_EVENT).unwrap();
+        let data = include_str!("../../test-data/pr_event.json");
+        let pr_event: PullRequestEvent = serde_json::from_str(data).unwrap();
         let msg = GithubEventMessage::new("test", GithubEvent::PullRequest(pr_event));
         assert!(PullRequest::opened().matches(&msg));
         assert_eq!(PullRequest::merged().matches(&msg), false);
