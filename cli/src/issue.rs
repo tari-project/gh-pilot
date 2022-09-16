@@ -1,25 +1,19 @@
-use gh_pilot::{ghp_api::models::Issue, models::IssueId};
+use gh_pilot::{data_provider::IssueProvider, ghp_api::models::Issue, models::IssueId};
 use log::*;
 
 use crate::{
     cli_def::IssueCommand,
     pretty_print::{add_labels, pretty_table},
-    Context,
 };
 
 pub async fn run_issue_cmd(
-    ctx: &Context<'_>,
+    provider: &dyn IssueProvider,
     owner: &str,
     repo: &str,
     number: u64,
     cmd: &IssueCommand,
 ) -> Result<(), ()> {
-    if ctx.issue_provider().is_none() {
-        warn!("No Issue provider was installed");
-        return Err(());
-    }
     let id = IssueId::new(owner, repo, number);
-    let provider = ctx.issue_provider().unwrap();
     match cmd {
         IssueCommand::Fetch => match provider.fetch_issue(&id).await {
             Ok(issue) => pretty_print(issue),

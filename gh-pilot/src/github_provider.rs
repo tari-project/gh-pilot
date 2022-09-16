@@ -3,14 +3,14 @@ use std::env;
 use async_trait::async_trait;
 use ghp_api::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest},
-    models::{Issue, Label, PullRequest},
+    models::{Issue, Label, PullRequest, SimpleUser},
 };
 use log::*;
 
 use crate::{
-    data_provider::{IssueProvider, PullRequestProvider},
+    data_provider::{IssueProvider, PullRequestProvider, UserStatsProvider},
     error::GithubPilotError,
-    models::IssueId,
+    models::{GithubHandle, IssueId},
 };
 
 pub const GITHUB_USER_ENVAR_NAME: &str = "GH_PILOT_USERNAME";
@@ -92,5 +92,13 @@ impl IssueProvider for GithubProvider {
         let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
         let labels = issue.remove_label(label, &self.client).await?;
         Ok(labels)
+    }
+}
+
+#[async_trait]
+impl UserStatsProvider for GithubProvider {
+    async fn fetch_details(&self, _handle: &GithubHandle) -> Result<Option<SimpleUser>, GithubPilotError> {
+        // TODO: implement
+        Ok(None)
     }
 }
