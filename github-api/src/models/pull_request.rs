@@ -121,6 +121,8 @@ pub struct IssuePullRequest {
     pub patch_url: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merged_at: Option<DateTime>,
 }
 
 #[cfg(test)]
