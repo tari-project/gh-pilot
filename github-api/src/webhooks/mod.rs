@@ -128,7 +128,13 @@ mod test {
             AuthorAssociation,
             State,
         },
-        webhooks::{GithubEvent, IssuesEventAction, PullRequestAction, PullRequestReviewCommentAction},
+        webhooks::{
+            GithubEvent,
+            IssueCommentAction,
+            IssuesEventAction,
+            PullRequestAction,
+            PullRequestReviewCommentAction,
+        },
     };
 
     #[test]
@@ -287,6 +293,22 @@ mod test {
                 assert!(matches!(ev.action, PullRequestReviewCommentAction::Created));
                 assert_eq!(ev.comment.node_id, "PRRC_kwDOCCIzW845_Sdp");
                 assert_eq!(ev.comment.user.login, "sdbondi");
+            },
+            _ => panic!("Not a PullRequestReviewComment event"),
+        }
+    }
+
+    /// Fix bug in deserializing the `GithubEvent::IssueComment` event - 15/9/2022
+    #[test]
+    fn issue_comment_1() {
+        let data = include_str!("../test_data/issue_comment1.json");
+        let event = GithubEvent::try_from_webhook_info("issue_comment", data).unwrap();
+        match event {
+            GithubEvent::IssueComment(ev) => {
+                assert!(matches!(ev.action, IssueCommentAction::Created));
+                assert_eq!(ev.issue.id, 1375932113);
+                assert_eq!(ev.comment.id, 1249350083);
+                assert_eq!(ev.comment.user.unwrap().login, "CjS77");
             },
             _ => panic!("Not a PullRequestReviewComment event"),
         }
