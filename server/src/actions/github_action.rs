@@ -23,12 +23,14 @@ use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervise
 use github_pilot_api::{provider_traits::IssueProvider, webhooks::GithubEvent, wrappers::IssueId, GithubProvider};
 use log::{debug, warn};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GithubActionParams {
     // Adds a label to the PR or Issue (context dependent)
     AddLabel { label: String },
     // Removes a label from the PR or Issue (context dependent)
     RemoveLabel { label: String },
+    // Adds or removes the `merge-conflict` label depending on whether the PR has merge conflicts
+    CheckConflicts,
 }
 
 impl GithubActionParams {
@@ -38,6 +40,10 @@ impl GithubActionParams {
 
     pub fn remove_label<S: Into<String>>(label: S) -> Self {
         GithubActionParams::RemoveLabel { label: label.into() }
+    }
+
+    pub fn check_conflicts() -> Self {
+        GithubActionParams::CheckConflicts
     }
 }
 
@@ -163,6 +169,17 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                     }
                 },
                 (GithubEvent::PullRequest(event), GithubActionParams::RemoveLabel { label }) => {
+                    let repo = event.repo();
+                    let owner = event.owner();
+                    let pr_number = event.number();
+                    debug!("Removing label {} from PR {}/{}#{}", label, owner, repo, pr_number);
+                    let req = IssueId::new(owner, repo, pr_number);
+                    let res = provider.remove_label(&req, label).await;
+                    if let Err(e) = res {
+                        warn!("Failed to remove label from PR: {}", e.to_string());
+                    }
+                },
+                (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts)=> {
                     let repo = event.repo();
                     let owner = event.owner();
                     let pr_number = event.number();
