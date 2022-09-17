@@ -62,6 +62,13 @@ mod rules {
                 .when(PullRequest::poor_justification())
                 .execute(Actions::github().add_label("CR-insufficient_context").build())
                 .submit(),
+            RuleBuilder::new("Merge conflict check")
+                .when(PullRequest::opened())
+                .when(PullRequest::reopened())
+                .when(PullRequest::synchronize())
+                .when(PullRequest::edited())
+                .execute(Actions::github().label_conflicts().build())
+                .submit(),
             {
                 let action = Actions::closure()
                     .with(|name, event| {

@@ -179,15 +179,21 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                         warn!("Failed to remove label from PR: {}", e.to_string());
                     }
                 },
-                (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts)=> {
+                (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts) => {
                     let repo = event.repo();
                     let owner = event.owner();
                     let pr_number = event.number();
-                    debug!("Removing label {} from PR {}/{}#{}", label, owner, repo, pr_number);
                     let req = IssueId::new(owner, repo, pr_number);
-                    let res = provider.remove_label(&req, label).await;
+                    debug!("Checking merge conflict status for PR {}/{}#{}", owner, repo, pr_number);
+                    let conflict_label = "P-conflicts";
+                    let pr = event.pull_request();
+                    let res = if pr.has_merge_conflicts() {
+                        provider.add_label(&req, conflict_label).await
+                    } else {
+                        provider.remove_label(&req, conflict_label).await
+                    };
                     if let Err(e) = res {
-                        warn!("Failed to remove label from PR: {}", e.to_string());
+                        warn!("Failed to add/remove conflict label to/from PR: {}", e.to_string());
                     }
                 },
                 _ => {
