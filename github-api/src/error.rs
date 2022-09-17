@@ -1,4 +1,5 @@
 use thiserror::Error;
+
 use crate::api::GithubApiError;
 
 #[derive(Error, Debug)]

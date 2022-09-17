@@ -1,7 +1,5 @@
+use github_pilot_api::{models::Issue, provider_traits::IssueProvider, wrappers::IssueId};
 use log::*;
-use github_pilot_api::provider_traits::IssueProvider;
-use github_pilot_api::wrappers::IssueId;
-use github_pilot_api::models::Issue;
 
 use crate::{
     cli_def::IssueCommand,

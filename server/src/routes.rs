@@ -23,10 +23,9 @@
 //! ```
 use actix::prelude::*;
 use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest, HttpResponse, Responder};
-use github_pilot_api::webhooks::GithubEvent;
+use github_pilot_api::{error::GithubProviderError, webhooks::GithubEvent};
 use log::*;
 use zeroize::Zeroize;
-use github_pilot_api::error::GithubProviderError;
 
 use crate::{
     error::ServerError,

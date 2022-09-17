@@ -1,6 +1,6 @@
+use github_pilot_api::{models::PullRequest, provider_traits::PullRequestProvider};
 use log::*;
-use github_pilot_api::provider_traits::PullRequestProvider;
-use github_pilot_api::models::PullRequest;
+
 use crate::pretty_print::{add_labels, pretty_table};
 
 pub async fn run_pr_cmd(provider: &dyn PullRequestProvider, owner: &str, repo: &str, number: u64) -> Result<(), ()> {

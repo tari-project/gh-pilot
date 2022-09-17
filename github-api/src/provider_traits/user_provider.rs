@@ -1,7 +1,6 @@
-use crate::error::GithubProviderError;
-use crate::models::SimpleUser;
-use crate::wrappers::GithubHandle;
 use async_trait::async_trait;
+
+use crate::{error::GithubProviderError, models::SimpleUser, wrappers::GithubHandle};
 
 #[async_trait]
 pub trait UserProvider {

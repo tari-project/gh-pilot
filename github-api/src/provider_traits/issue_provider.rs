@@ -1,7 +1,10 @@
-use crate::error::GithubProviderError;
-use crate::models::{Issue, Label};
-use crate::wrappers::IssueId;
 use async_trait::async_trait;
+
+use crate::{
+    error::GithubProviderError,
+    models::{Issue, Label},
+    wrappers::IssueId,
+};
 
 #[async_trait]
 pub trait IssueProvider {

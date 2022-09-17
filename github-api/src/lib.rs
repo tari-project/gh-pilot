@@ -8,4 +8,3 @@ pub mod webhooks;
 pub mod wrappers;
 
 pub use github_provider::GithubProvider;
-

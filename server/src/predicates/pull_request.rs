@@ -1,6 +1,8 @@
+use github_pilot_api::{
+    newtype,
+    webhooks::{GithubEvent, PullRequestAction, PullRequestEvent},
+};
 use log::trace;
-use github_pilot_api::newtype;
-use github_pilot_api::webhooks::{GithubEvent, PullRequestAction, PullRequestEvent};
 
 use crate::{
     heuristics::pull_requests::{PullRequestComplexity, PullRequestHeuristics, PullRequestSize},

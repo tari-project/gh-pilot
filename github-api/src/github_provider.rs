@@ -1,14 +1,15 @@
 use std::env;
 
 use async_trait::async_trait;
+use log::*;
+
 use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest},
+    error::GithubProviderError,
     models::{Issue, Label, PullRequest, SimpleUser},
+    provider_traits::{IssueProvider, PullRequestProvider, UserProvider},
+    wrappers::{GithubHandle, IssueId},
 };
-use log::*;
-use crate::error::GithubProviderError;
-use crate::provider_traits::{IssueProvider, PullRequestProvider, UserProvider};
-use crate::wrappers::{GithubHandle, IssueId};
 
 pub const GITHUB_USER_ENVAR_NAME: &str = "GH_PILOT_USERNAME";
 pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GH_PILOT_AUTH_TOKEN";
@@ -64,7 +65,12 @@ impl GithubProvider {
 
 #[async_trait]
 impl PullRequestProvider for GithubProvider {
-    async fn fetch_pull_request(&self, owner: &str, repo: &str, number: u64) -> Result<PullRequest, GithubProviderError> {
+    async fn fetch_pull_request(
+        &self,
+        owner: &str,
+        repo: &str,
+        number: u64,
+    ) -> Result<PullRequest, GithubProviderError> {
         let pr = PullRequestRequest::new(owner, repo, number);
         let result = pr.fetch(&self.client).await?;
         Ok(result)

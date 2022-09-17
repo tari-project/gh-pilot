@@ -1,5 +1,5 @@
-use log::trace;
 use github_pilot_api::models::PullRequest;
+use log::trace;
 
 pub struct PullRequestHeuristics<'pr> {
     pr: &'pr PullRequest,

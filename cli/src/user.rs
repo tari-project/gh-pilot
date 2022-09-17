@@ -1,8 +1,6 @@
 use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
+use github_pilot_api::{models::SimpleUser, provider_traits::UserProvider, wrappers::GithubHandle};
 use log::*;
-use github_pilot_api::wrappers::GithubHandle;
-use github_pilot_api::models::SimpleUser;
-use github_pilot_api::provider_traits::UserProvider;
 
 pub async fn run_user_cmd<S: AsRef<str>>(provider: &dyn UserProvider, profile: S) -> Result<(), ()> {
     debug!("Fetching user..{}", profile.as_ref());
