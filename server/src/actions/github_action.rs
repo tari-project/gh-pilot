@@ -23,12 +23,14 @@ use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervise
 use github_pilot_api::{provider_traits::IssueProvider, webhooks::GithubEvent, wrappers::IssueId, GithubProvider};
 use log::{debug, warn};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GithubActionParams {
     // Adds a label to the PR or Issue (context dependent)
     AddLabel { label: String },
     // Removes a label from the PR or Issue (context dependent)
     RemoveLabel { label: String },
+    // Adds or removes the `merge-conflict` label depending on whether the PR has merge conflicts
+    CheckConflicts,
 }
 
 impl GithubActionParams {
@@ -38,6 +40,10 @@ impl GithubActionParams {
 
     pub fn remove_label<S: Into<String>>(label: S) -> Self {
         GithubActionParams::RemoveLabel { label: label.into() }
+    }
+
+    pub fn check_conflicts() -> Self {
+        GithubActionParams::CheckConflicts
     }
 }
 
@@ -171,6 +177,23 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                     let res = provider.remove_label(&req, label).await;
                     if let Err(e) = res {
                         warn!("Failed to remove label from PR: {}", e.to_string());
+                    }
+                },
+                (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts) => {
+                    let repo = event.repo();
+                    let owner = event.owner();
+                    let pr_number = event.number();
+                    let req = IssueId::new(owner, repo, pr_number);
+                    debug!("Checking merge conflict status for PR {}/{}#{}", owner, repo, pr_number);
+                    let conflict_label = "P-conflicts";
+                    let pr = event.pull_request();
+                    let res = if pr.has_merge_conflicts() {
+                        provider.add_label(&req, conflict_label).await
+                    } else {
+                        provider.remove_label(&req, conflict_label).await
+                    };
+                    if let Err(e) = res {
+                        warn!("Failed to add/remove conflict label to/from PR: {}", e.to_string());
                     }
                 },
                 _ => {

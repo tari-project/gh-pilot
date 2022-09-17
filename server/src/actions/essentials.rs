@@ -98,6 +98,11 @@ impl GithubActionBuilder {
         self
     }
 
+    pub fn label_conflicts(mut self) -> Self {
+        self.params = Some(GithubActionParams::check_conflicts());
+        self
+    }
+
     pub fn build(self) -> Actions {
         match self.params {
             None => {
@@ -154,6 +159,16 @@ mod test {
         match action {
             Actions::NullAction => (),
             _ => panic!("Expected a null action"),
+        }
+    }
+
+    #[test]
+    fn test_github_action_builder_conflicts() {
+        let action = Actions::github().label_conflicts().build();
+
+        match action {
+            Actions::Github(p) => assert_eq!(*p, GithubActionParams::CheckConflicts),
+            _ => panic!("Expected a CheckConflicts action"),
         }
     }
 }
