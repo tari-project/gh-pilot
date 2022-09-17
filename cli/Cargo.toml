@@ -6,7 +6,7 @@ description = "A command line interface for GitHub Pages; intended as a client p
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gh-pilot = { version = "0.1", path = "../gh-pilot" }
+github-pilot-api = { version = "0.1", path = "../github-api" }
 clap = {version = "3.2.16", features = ["derive", "env"] }
 comfy-table = "6.0.0"
 tokio = {version = "1.20.1", features = ["full"] }

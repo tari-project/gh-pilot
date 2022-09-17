@@ -6,7 +6,7 @@ pub mod pr_event;
 
 pub use models::*;
 
-use crate::error::GithubPilotError;
+use crate::error::GithubProviderError;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
@@ -28,7 +28,7 @@ pub enum GithubEvent {
 }
 
 impl GithubEvent {
-    pub fn try_from_webhook_info(event: &str, body: &str) -> Result<Self, GithubPilotError> {
+    pub fn try_from_webhook_info(event: &str, body: &str) -> Result<Self, GithubProviderError> {
         match event {
             "commit_comment" => {
                 let value: CommitCommentEvent = serde_json::from_str(body)?;
@@ -70,7 +70,7 @@ impl GithubEvent {
                 let value: StatusEvent = serde_json::from_str(body)?;
                 Ok(Self::Status(value))
             },
-            s => Err(GithubPilotError::UnknownEvent(s.to_string())),
+            s => Err(GithubProviderError::UnknownEvent(s.to_string())),
         }
     }
 

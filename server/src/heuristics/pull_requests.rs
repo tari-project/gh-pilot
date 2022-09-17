@@ -1,5 +1,5 @@
-use ghp_api::models::PullRequest;
 use log::trace;
+use github_pilot_api::models::PullRequest;
 
 pub struct PullRequestHeuristics<'pr> {
     pr: &'pr PullRequest,
@@ -38,7 +38,7 @@ impl<'pr> PullRequestHeuristics<'pr> {
         additions + deletions
     }
 
-    /// A heuristic to indicate the complexity of a PR. Currently, the metrics used to detmine complexity are
+    /// A heuristic to indicate the complexity of a PR. Currently, the metrics used to determine complexity are
     /// * PR size heuristic
     /// * Number of files changed
     pub fn complexity(&self) -> PullRequestComplexity {

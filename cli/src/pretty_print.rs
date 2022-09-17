@@ -1,5 +1,5 @@
 use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::ghp_api::models::Label;
+use github_pilot_api::models::Label;
 
 pub fn pretty_table(header_label: &str, header_value: &str) -> Table {
     let mut table = Table::new();

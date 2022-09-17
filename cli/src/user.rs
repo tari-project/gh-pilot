@@ -1,8 +1,10 @@
 use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
-use gh_pilot::{data_provider::UserStatsProvider, ghp_api::models::SimpleUser, models::GithubHandle};
 use log::*;
+use github_pilot_api::wrappers::GithubHandle;
+use github_pilot_api::models::SimpleUser;
+use github_pilot_api::provider_traits::UserProvider;
 
-pub async fn run_user_cmd<S: AsRef<str>>(provider: &dyn UserStatsProvider, profile: S) -> Result<(), ()> {
+pub async fn run_user_cmd<S: AsRef<str>>(provider: &dyn UserProvider, profile: S) -> Result<(), ()> {
     debug!("Fetching user..{}", profile.as_ref());
     let handle = GithubHandle::from(profile.as_ref());
     let details = provider.fetch_details(&handle).await.map_err(|_| ())?;

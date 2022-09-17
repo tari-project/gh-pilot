@@ -1,5 +1,5 @@
 [package]
-name = "ghp-api"
+name = "github-pilot-api"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.57"
 chrono = { version = "0.4.20", features = ["serde"] }
+log = "0.4.17"
 serde = { version = "1.0.142", features = ["derive"] }
 reqwest = { version = "0.11.11", features = ["json", "multipart"]}
 thiserror = "1.0.32"

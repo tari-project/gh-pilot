@@ -3,8 +3,8 @@
 //! For example
 //!
 //! ```
-//!   # use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestEvent};
-//! use ghp_server::actions::Actions;
+//!   # use github_pilot_api::webhooks::{GithubEvent, PullRequestEvent};
+//!   # use ghp_server::actions::Actions;
 //!   # use ghp_server::predicates::PullRequest;
 //!   # use ghp_server::rules::RuleBuilder;
 //! RuleBuilder::new("my-rule")

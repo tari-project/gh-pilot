@@ -5,7 +5,7 @@ pub struct IssueId {
 }
 
 impl IssueId {
-    pub fn new<S: Into<String>>(owner: S, repo: S, number: u64) -> Self {
+    pub fn new<S: Into<String>, S2: Into<String>>(owner: S, repo: S2, number: u64) -> Self {
         Self {
             owner: owner.into(),
             repo: repo.into(),

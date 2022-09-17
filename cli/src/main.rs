@@ -6,8 +6,8 @@ mod user;
 
 use clap::Parser;
 use cli_def::{Cli, Commands};
-use gh_pilot::GithubProvider;
 use log::*;
+use github_pilot_api::GithubProvider;
 
 use crate::{issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
 

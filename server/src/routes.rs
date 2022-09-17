@@ -23,10 +23,10 @@
 //! ```
 use actix::prelude::*;
 use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest, HttpResponse, Responder};
-use gh_pilot::ghp_api::webhooks::GithubEvent;
-use ghp_api::error::GithubPilotError;
+use github_pilot_api::webhooks::GithubEvent;
 use log::*;
 use zeroize::Zeroize;
+use github_pilot_api::error::GithubProviderError;
 
 use crate::{
     error::ServerError,
@@ -70,14 +70,14 @@ pub async fn github_webhook(
             dispatch_event_to_pubsub(pubsub, event_name, event)?;
             Ok(HttpResponse::Ok().finish())
         },
-        Err(GithubPilotError::UnknownEvent(s)) => {
+        Err(GithubProviderError::UnknownEvent(s)) => {
             info!(
                 "/webhook handler could not handle an \"{}\" event. Discarding it and moving on.",
                 s
             );
             Ok(HttpResponse::Ok().finish())
         },
-        Err(GithubPilotError::EventDeserializationError(s)) => {
+        Err(GithubProviderError::EventDeserializationError(s)) => {
             warn!(
                 "/webhook handler could not deserialize a \"{}\". Turn on TRACE level to get more details and maybe \
                  file a bug report?",

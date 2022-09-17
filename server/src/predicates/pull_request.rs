@@ -1,6 +1,6 @@
-use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestAction, PullRequestEvent};
-use ghp_api::newtype;
 use log::trace;
+use github_pilot_api::newtype;
+use github_pilot_api::webhooks::{GithubEvent, PullRequestAction, PullRequestEvent};
 
 use crate::{
     heuristics::pull_requests::{PullRequestComplexity, PullRequestHeuristics, PullRequestSize},
@@ -271,7 +271,7 @@ impl RulePredicate for PullRequest {
 
 #[cfg(test)]
 mod test {
-    use gh_pilot::ghp_api::webhooks::{GithubEvent, PullRequestEvent};
+    use github_pilot_api::webhooks::{GithubEvent, PullRequestEvent};
 
     use super::{LabelName, PullRequest, PullRequestPredicate, UserName};
     use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};

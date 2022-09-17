@@ -20,9 +20,11 @@
 use std::sync::Arc;
 
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
-use gh_pilot::{data_provider::IssueProvider, models::IssueId, GithubProvider};
-use ghp_api::webhooks::GithubEvent;
 use log::{debug, warn};
+use github_pilot_api::GithubProvider;
+use github_pilot_api::provider_traits::IssueProvider;
+use github_pilot_api::webhooks::GithubEvent;
+use github_pilot_api::wrappers::IssueId;
 
 #[derive(Clone)]
 pub enum GithubActionParams {

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
-use ghp_api::webhooks::GithubEvent;
 use log::*;
+use github_pilot_api::webhooks::GithubEvent;
 
 type ClosureActionFn = Arc<dyn Fn(String, GithubEvent) + Send + Sync>;
 
