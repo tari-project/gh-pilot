@@ -2,7 +2,7 @@
 name: Security audit
 on:
   schedule:
-    - cron:  '04 45 * * *'
+    - cron:  '45 04 * * *'
 jobs:
   security_audit:
     runs-on: ubuntu-latest
