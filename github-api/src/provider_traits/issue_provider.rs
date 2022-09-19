@@ -12,7 +12,7 @@ pub trait IssueProvider {
 
     async fn add_label(&self, id: &IssueId, label: &str) -> Result<Vec<Label>, GithubProviderError>;
 
-    async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<(), GithubProviderError>;
+    async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<bool, GithubProviderError>;
 
     async fn label_exists(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError>;
 }

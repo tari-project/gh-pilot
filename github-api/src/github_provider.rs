@@ -91,12 +91,18 @@ impl IssueProvider for GithubProvider {
         Ok(labels)
     }
 
-    async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<(), GithubProviderError> {
+    /// Remove a label from an issue.
+    ///
+    /// The boolean result indicates whether a call to the API to remove the label was actually made.
+    /// e.g., if the label was not present on the issue, then no call was made, and the result is `false`.
+    async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<bool, GithubProviderError> {
         let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
         if !only_if_exists || self.label_exists(label, id).await? {
             let _labels = issue.remove_label(label, &self.client).await?;
+            Ok(true)
+        } else {
+            Ok(false)
         }
-        Ok(())
     }
 
     async fn label_exists(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError> {
