@@ -120,6 +120,7 @@ mod test {
             IssueCommentAction,
             IssuesEventAction,
             PullRequestAction,
+            PullRequestReviewAction,
             PullRequestReviewCommentAction,
         },
     };
@@ -304,6 +305,24 @@ mod test {
                 assert_eq!(ev.issue.id, 1375932113);
                 assert_eq!(ev.comment.id, 1249350083);
                 assert_eq!(ev.comment.user.unwrap().login, "CjS77");
+            },
+            _ => panic!("Not a PullRequestReviewComment event"),
+        }
+    }
+
+    /// Fix bug in deserializing the `GithubEvent::PullRequestReview` event - 19/9/2022
+    #[test]
+    fn pr_review_1() {
+        let data = include_str!("../test_data/pull_request_review.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review", data).unwrap();
+        match event {
+            GithubEvent::PullRequestReview(ev) => match ev.action {
+                PullRequestReviewAction::Edited { changes } => {
+                    assert!(changes.body.is_none());
+                    assert_eq!(ev.pull_request.id, 1060040769);
+                    assert!(ev.review.body.starts_with("I agree with the added safeguard"));
+                },
+                _ => panic!("PR review event action was not 'edited'"),
             },
             _ => panic!("Not a PullRequestReviewComment event"),
         }

@@ -391,6 +391,7 @@ pub struct PullRequestEditedChangesTitle {
 //----------------------------------  Pull-Request-Review Event   ------------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestReviewEvent {
+    #[serde(flatten)]
     pub action: PullRequestReviewAction,
     pub review: PullRequestReview,
     pub pull_request: PullRequest,
@@ -399,6 +400,7 @@ pub struct PullRequestReviewEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "action")]
 pub enum PullRequestReviewAction {
     /// pull_request_review dismissed event
     #[serde(rename = "dismissed")]
@@ -423,7 +425,7 @@ impl ToString for PullRequestReviewAction {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestReviewEditedChanges {
-    pub body: PullRequestReviewEditedChangesBody,
+    pub body: Option<PullRequestReviewEditedChangesBody>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
