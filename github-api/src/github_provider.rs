@@ -91,10 +91,18 @@ impl IssueProvider for GithubProvider {
         Ok(labels)
     }
 
-    async fn remove_label(&self, id: &IssueId, label: &str) -> Result<Vec<Label>, GithubProviderError> {
+    async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<(), GithubProviderError> {
         let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
-        let labels = issue.remove_label(label, &self.client).await?;
-        Ok(labels)
+        if !only_if_exists || self.label_exists(label, id).await? {
+            let _labels = issue.remove_label(label, &self.client).await?;
+        }
+        Ok(())
+    }
+
+    async fn label_exists(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError> {
+        let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
+        let labels = issue.fetch_labels(&self.client).await?;
+        Ok(labels.iter().any(|l| l.name == label))
     }
 }
 
