@@ -23,7 +23,7 @@ pub async fn run_issue_cmd(
             Ok(_) => info!("{} added to issue {}/{}", l.label, id.repo, id.number),
             Err(e) => warn!("Error adding label to issue: {}", e.to_string()),
         },
-        IssueCommand::RemoveLabel(l) => match provider.remove_label(&id, l.label.as_str()).await {
+        IssueCommand::RemoveLabel(l) => match provider.remove_label(&id, l.label.as_str(), false).await {
             Ok(_) => info!("{} removed from issue {}/{}", l.label, id.repo, id.number),
             Err(e) => warn!("Error removing label from issue: {}", e.to_string()),
         },

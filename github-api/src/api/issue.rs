@@ -63,4 +63,9 @@ impl IssueRequest {
         let req = proxy.delete(self.remove_label_path(label).as_str());
         proxy.send(req).await
     }
+
+    pub async fn fetch_labels(&self, proxy: &ClientProxy) -> Result<Vec<Label>, GithubApiError> {
+        let req = proxy.get(self.add_label_path().as_str(), false);
+        proxy.send(req).await
+    }
 }
