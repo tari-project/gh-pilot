@@ -37,6 +37,63 @@ pub enum Commands {
         #[clap(subcommand)]
         sub_command: IssueCommand,
     },
+    /// Manipulate labels on a repo
+    Labels {
+        #[clap(subcommand)]
+        sub_command: LabelCommand,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum LabelCommand {
+    /// List all labels on a repo
+    #[clap(name = "list")]
+    List {
+        /// The page number to fetch
+        #[clap(short, long)]
+        page: Option<usize>,
+        /// The number of labels to fetch per page
+        #[clap(short = 'n', long)]
+        per_page: Option<usize>,
+    },
+    /// Create a new label
+    Create {
+        /// The name of the label
+        #[clap(short, long)]
+        name: String,
+        /// The color of the label
+        #[clap(short, long)]
+        color: Option<String>,
+        /// The description of the label
+        #[clap(short, long)]
+        description: Option<String>,
+    },
+    /// Delete a label
+    Delete {
+        /// The name of the label
+        #[clap(short, long)]
+        label: String,
+    },
+    /// Assign labels to a repo
+    Assign {
+        /// A path to a file containing label definitions
+        labels_file: String,
+    },
+    /// Edit an existing label
+    Edit {
+        /// The name of the label
+        #[clap(short, long)]
+        label: String,
+        /// The new name of the label
+        #[clap(short, long)]
+        name: Option<String>,
+        /// The new color of the label
+        #[clap(short, long)]
+        color: Option<String>,
+        /// The new description of the label
+        #[clap(short, long)]
+        description: Option<String>,
+    },
 }
 
 #[derive(Debug, Subcommand)]

@@ -1,5 +1,6 @@
 mod cli_def;
 mod issue;
+mod labels;
 mod pretty_print;
 mod pull_request;
 mod user;
@@ -9,7 +10,7 @@ use cli_def::{Cli, Commands};
 use github_pilot_api::GithubProvider;
 use log::*;
 
-use crate::{issue::run_issue_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
+use crate::{issue::run_issue_cmd, labels::run_label_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
@@ -18,10 +19,11 @@ async fn main() -> Result<(), ()> {
     let provider = setup_github_api(&cli);
     let owner = cli.owner.as_str();
     let repo = cli.repo.as_str();
-    match &cli.command {
-        Commands::User { profile } => run_user_cmd(&provider, profile).await,
-        Commands::PullRequest { number } => run_pr_cmd(&provider, owner, repo, *number).await,
-        Commands::Issue { number, sub_command } => run_issue_cmd(&provider, owner, repo, *number, sub_command).await,
+    match cli.command {
+        Commands::User { profile } => run_user_cmd(&provider, &profile).await,
+        Commands::PullRequest { number } => run_pr_cmd(&provider, owner, repo, number).await,
+        Commands::Issue { number, sub_command } => run_issue_cmd(&provider, owner, repo, number, sub_command).await,
+        Commands::Labels { sub_command } => run_label_cmd(&provider, owner, repo, sub_command).await,
     }
 }
 

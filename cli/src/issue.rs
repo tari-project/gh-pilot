@@ -11,7 +11,7 @@ pub async fn run_issue_cmd(
     owner: &str,
     repo: &str,
     number: u64,
-    cmd: &IssueCommand,
+    cmd: IssueCommand,
 ) -> Result<(), ()> {
     let id = IssueId::new(owner, repo, number);
     match cmd {

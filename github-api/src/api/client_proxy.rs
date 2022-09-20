@@ -65,6 +65,10 @@ impl ClientProxy {
         self.request(Method::PUT, url, true)
     }
 
+    pub fn patch<S: AsRef<str>>(&self, url: S) -> RequestBuilder {
+        self.request(Method::PATCH, url, true)
+    }
+
     pub async fn send<T: DeserializeOwned>(&self, request: RequestBuilder) -> Result<T, GithubApiError> {
         let response = request
             .send()
