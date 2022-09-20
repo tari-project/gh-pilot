@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use reqwest::StatusCode;
 use thiserror::Error;
 
@@ -21,5 +23,28 @@ pub enum GithubApiError {
     #[error("Could not parse {0} as a valid timestamp")]
     InvalidTimestamp(String),
     #[error("Multiple errors occurred: {0:?}")]
-    MultipleErrors(Vec<GithubApiError>),
+    MultipleErrors(Vec<ErrorItem>),
+    #[error("reqwest client error: {0}")]
+    ReqwestError(String),
+}
+
+#[derive(Clone)]
+pub struct ErrorItem {
+    label: String,
+    error: GithubApiError,
+}
+
+impl ErrorItem {
+    pub fn new(label: &str, error: GithubApiError) -> Self {
+        ErrorItem {
+            label: label.into(),
+            error,
+        }
+    }
+}
+
+impl Debug for ErrorItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {:?}", self.label, self.error)
+    }
 }

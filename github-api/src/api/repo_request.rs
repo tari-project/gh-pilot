@@ -1,5 +1,7 @@
+use reqwest::StatusCode;
+
 use crate::{
-    api::{ClientProxy, GithubApiError},
+    api::{error::ErrorItem, ClientProxy, GithubApiError},
     models::{Label, Repository},
     wrappers::NewLabel,
 };
@@ -44,8 +46,12 @@ impl RepoRequest {
 
     pub async fn delete_label(&self, proxy: &ClientProxy, label: &str) -> Result<bool, GithubApiError> {
         let url = format!("/repos/{}/{}/labels/{label}", self.owner, self.repo);
-        let req = proxy.delete(url);
-        proxy.send(req).await
+        let res = proxy
+            .delete(url)
+            .send()
+            .await
+            .map_err(|e| GithubApiError::ReqwestError(e.to_string()))?;
+        Ok(res.status().is_success())
     }
 
     pub async fn assign_labels(&self, proxy: &ClientProxy, labels: &[NewLabel]) -> Result<(), GithubApiError> {
@@ -53,9 +59,23 @@ impl RepoRequest {
         let mut errors = vec![];
         for label in labels {
             let req = proxy.post(url.as_str()).json(label);
-            if let Err(e) = proxy.send::<()>(req).await {
-                errors.push(e);
+            let res = req
+                .send()
+                .await
+                .map_err(|e| GithubApiError::ReqwestError(e.to_string()))?;
+            let status = res.status();
+            // Any success code, or 422 (already exists) is ok, just carry on.
+            if status.is_success() || status == StatusCode::UNPROCESSABLE_ENTITY {
+                continue;
             }
+            let err = res
+                .text()
+                .await
+                .unwrap_or_else(|_| "No error text provided by Github".to_string());
+            errors.push(ErrorItem::new(
+                label.name.as_str(),
+                GithubApiError::HttpClientError(err),
+            ));
         }
         if errors.is_empty() {
             Ok(())
