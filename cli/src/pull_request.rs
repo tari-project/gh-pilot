@@ -6,7 +6,7 @@ use crate::pretty_print::{add_labels, pretty_table};
 pub async fn run_pr_cmd(provider: &dyn PullRequestProvider, owner: &str, repo: &str, number: u64) -> Result<(), ()> {
     match provider.fetch_pull_request(owner, repo, number).await {
         Ok(pr) => pretty_print(pr),
-        Err(e) => warn!("Error fetching pr: {}", e.to_string()),
+        Err(e) => warn!("⏩ Error fetching PR: {}", e.to_string()),
     }
     Ok(())
 }

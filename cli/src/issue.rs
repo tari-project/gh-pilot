@@ -17,16 +17,16 @@ pub async fn run_issue_cmd(
     match cmd {
         IssueCommand::Fetch => match provider.fetch_issue(&id).await {
             Ok(issue) => pretty_print(issue),
-            Err(e) => warn!("Error fetching issue: {}", e.to_string()),
+            Err(e) => warn!("📒 Error fetching issue: {}", e.to_string()),
         },
         IssueCommand::AddLabel(l) => match provider.add_label(&id, l.label.as_str()).await {
             Ok(_) => info!("🏷 '{}' added to issue {}/{}", l.label, id.repo, id.number),
-            Err(e) => warn!("Error adding label to issue: {}", e.to_string()),
+            Err(e) => warn!("🏷 Error adding label to issue: {}", e.to_string()),
         },
         IssueCommand::RemoveLabel(l) => match provider.remove_label(&id, l.label.as_str(), false).await {
             Ok(true) => info!("🏷 '{}' removed from issue {}/{}", l.label, id.repo, id.number),
             Ok(false) => info!("🏷 '{}' was not present on issue {}/{}", l.label, id.repo, id.number),
-            Err(e) => warn!("Error removing label from issue: {}", e.to_string()),
+            Err(e) => warn!("🏷 Error removing label from issue: {}", e.to_string()),
         },
     }
     Ok(())

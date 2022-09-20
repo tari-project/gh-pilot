@@ -15,7 +15,7 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
     let pubsub = PubSubActor::new().start();
 
     let num_rules = rules::load_rules(pubsub.clone()).await?;
-    info!("{} Rules loaded", num_rules);
+    info!("📄 {} Rules loaded", num_rules);
 
     HttpServer::new(move || {
         App::new()
@@ -73,7 +73,7 @@ mod rules {
                 let action = Actions::closure()
                     .with(|name, event| {
                         let pr = event.pull_request().unwrap();
-                        let label = if let PullRequestAction::Unlabeled { label } = &pr.action {
+                        let label = if let PullRequestAction::Labeled { label } = &pr.action {
                             label.name.as_str()
                         } else {
                             "?"

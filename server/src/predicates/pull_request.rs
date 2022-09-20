@@ -203,7 +203,7 @@ impl RulePredicate for PullRequest {
             action, pull_request, ..
         }) = event.event()
         {
-            trace!("testing {:?} against event {}/{}", self.trigger, event.name(), action);
+            trace!("❓testing {:?} against event {}/{}", self.trigger, event.name(), action);
             let heuristic = PullRequestHeuristics::new(pull_request);
             match (&self.trigger, action) {
                 (PullRequestPredicate::Assigned(None), PullRequestAction::Assigned { .. }) => true,
