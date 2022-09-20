@@ -20,4 +20,6 @@ pub enum GithubApiError {
     HttpResponse(StatusCode),
     #[error("Could not parse {0} as a valid timestamp")]
     InvalidTimestamp(String),
+    #[error("Multiple errors occurred: {0:?}")]
+    MultipleErrors(Vec<GithubApiError>),
 }

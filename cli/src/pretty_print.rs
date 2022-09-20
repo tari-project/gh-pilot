@@ -14,18 +14,19 @@ pub fn pretty_table(header_label: &str, header_value: &str) -> Table {
 }
 
 pub fn add_labels(table: &mut Table, labels: &[Label]) {
-    table.add_row(["Labels"]);
     labels.iter().for_each(|label| {
         let mut row = Row::new();
         let color = color_from_hex(label.color.as_str());
         let desc = label.description.as_deref().unwrap_or_default();
-        row.add_cell(cc(color, label.name.as_str())).add_cell(Cell::new(desc));
+        row.add_cell(cc(color, label.name.as_str()))
+            .add_cell(Cell::new(&label.color))
+            .add_cell(Cell::new(desc));
         table.add_row(row);
     })
 }
 
 pub fn cc(color: Color, val: &str) -> Cell {
-    Cell::new(val).fg(color)
+    Cell::new(val).fg(color).bg(Color::Black)
 }
 
 pub fn color_from_hex(hex_code: &str) -> Color {

@@ -1,0 +1,27 @@
+# This is a set of opinionated labels that are derived from the Tari contribution guidelines.
+# https://github.com/tari-project/tari/blob/development/Contributing.md
+# You can apply these to your repo with the command
+# $ ghp-cli -o owner -r repo labels assign -f presets/labels.yml
+- name: C-bug
+  description: Something isn't working
+  color: d73a4a
+
+- name: CR-insufficient_context
+  description: 'The PR body does not provide enough information to fully describe the changes requested.'
+  color: FBE057
+
+- name: 'C-Documentation'
+  description: 'This PR or issue is related to documentation.'
+  color: 56a6ff
+
+- name: 'C-Duplicate'
+  description: This issue or pull request already exists
+  color: cfd3d7
+
+- name: good first issue
+  description: Good for newcomers
+  color: 7057ff
+
+- name: P-conflicts
+  description: The PR has merge conflicts that need to be resolved
+  color: D50030

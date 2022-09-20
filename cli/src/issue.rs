@@ -11,7 +11,7 @@ pub async fn run_issue_cmd(
     owner: &str,
     repo: &str,
     number: u64,
-    cmd: &IssueCommand,
+    cmd: IssueCommand,
 ) -> Result<(), ()> {
     let id = IssueId::new(owner, repo, number);
     match cmd {
@@ -36,7 +36,8 @@ fn pretty_print(issue: Issue) {
     let mut table = pretty_table("Title", issue.title.as_str());
     table
         .add_row(["URL", issue.url.as_ref()])
-        .add_row(["State", issue.state.to_string().as_str()]);
+        .add_row(["State", issue.state.to_string().as_str()])
+        .add_row(["Labels"]);
     add_labels(&mut table, &issue.labels);
     println!("{table}");
     println!("{}", issue.body.unwrap_or_default());

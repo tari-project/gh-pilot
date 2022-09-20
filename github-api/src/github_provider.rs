@@ -4,11 +4,11 @@ use async_trait::async_trait;
 use log::*;
 
 use crate::{
-    api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest},
+    api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
     error::GithubProviderError,
-    models::{Issue, Label, PullRequest, SimpleUser},
-    provider_traits::{IssueProvider, PullRequestProvider, UserProvider},
-    wrappers::{GithubHandle, IssueId},
+    models::{Issue, Label, PullRequest, Repository, SimpleUser},
+    provider_traits::{IssueProvider, PullRequestProvider, RepoProvider, UserProvider},
+    wrappers::{GithubHandle, IssueId, NewLabel},
 };
 
 pub const GITHUB_USER_ENVAR_NAME: &str = "GH_PILOT_USERNAME";
@@ -117,5 +117,52 @@ impl UserProvider for GithubProvider {
     async fn fetch_details(&self, _handle: &GithubHandle) -> Result<Option<SimpleUser>, GithubProviderError> {
         // TODO: implement
         Ok(None)
+    }
+}
+
+#[async_trait]
+impl RepoProvider for GithubProvider {
+    async fn fetch_repository(&self, owner: &str, repo: &str) -> Result<Repository, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.fetch(&self.client).await?;
+        Ok(result)
+    }
+
+    async fn fetch_labels(
+        &self,
+        owner: &str,
+        repo: &str,
+        page: Option<usize>,
+        per_page: Option<usize>,
+    ) -> Result<Vec<Label>, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let page = page.unwrap_or(1);
+        let per_page = per_page.unwrap_or(100);
+        let result = repo.fetch_labels(&self.client, page, per_page).await?;
+        Ok(result)
+    }
+
+    async fn delete_label(&self, owner: &str, repo: &str, label: &str) -> Result<bool, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.delete_label(&self.client, label).await?;
+        Ok(result)
+    }
+
+    async fn assign_labels(&self, owner: &str, repo: &str, labels: &[NewLabel]) -> Result<(), GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.assign_labels(&self.client, labels).await?;
+        Ok(result)
+    }
+
+    async fn edit_label(
+        &self,
+        owner: &str,
+        repo: &str,
+        label: &str,
+        new: &NewLabel,
+    ) -> Result<bool, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.edit_label(&self.client, label, new).await?;
+        Ok(result)
     }
 }

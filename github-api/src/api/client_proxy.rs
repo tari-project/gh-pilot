@@ -65,13 +65,23 @@ impl ClientProxy {
         self.request(Method::PUT, url, true)
     }
 
+    pub fn patch<S: AsRef<str>>(&self, url: S) -> RequestBuilder {
+        self.request(Method::PATCH, url, true)
+    }
+
     pub async fn send<T: DeserializeOwned>(&self, request: RequestBuilder) -> Result<T, GithubApiError> {
         let response = request
             .send()
             .await
             .map_err(|e| GithubApiError::HttpClientError(e.to_string()))?;
         match response.status() {
-            StatusCode::OK => response
+            StatusCode::OK |
+            StatusCode::CREATED |
+            StatusCode::ACCEPTED |
+            StatusCode::PARTIAL_CONTENT |
+            StatusCode::RESET_CONTENT |
+            StatusCode::MULTI_STATUS |
+            StatusCode::ALREADY_REPORTED => response
                 .json()
                 .await
                 .map_err(|e| GithubApiError::DeserializationError(e.to_string())),
