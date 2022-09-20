@@ -1,16 +1,19 @@
 use std::{fs::File, io::BufReader};
 
+use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, ContentArrangement, Row, Table};
 use github_pilot_api::{models::Label, provider_traits::RepoProvider, wrappers::NewLabel};
 use log::{debug, error, info};
 
 use crate::{
-    cli_def::LabelCommand,
-    pretty_print::{add_labels, pretty_table},
+    cli_def::{LabelCommand, OutputFormat},
+    pretty_print::add_labels,
 };
 
 pub async fn run_label_cmd(provider: &dyn RepoProvider, owner: &str, repo: &str, cmd: LabelCommand) -> Result<(), ()> {
     match cmd {
-        LabelCommand::List { page, per_page } => fetch_labels(provider, owner, repo, page, per_page).await,
+        LabelCommand::List { page, per_page, format } => {
+            fetch_labels(provider, owner, repo, page, per_page, format).await
+        },
         LabelCommand::Delete { label } => delete_label(provider, owner, repo, &label).await,
         LabelCommand::Create {
             name,
@@ -108,10 +111,15 @@ async fn fetch_labels(
     repo: &str,
     page: Option<usize>,
     per_page: Option<usize>,
+    format: OutputFormat,
 ) -> Result<(), ()> {
     match provider.fetch_labels(owner, repo, page, per_page).await {
         Ok(labels) => {
-            pretty_print(&labels);
+            match format {
+                OutputFormat::Text => pretty_print(&labels),
+                OutputFormat::Json => println!("{}", serde_json::to_string_pretty(&labels).unwrap()),
+                OutputFormat::Yaml => println!("{}", serde_yaml::to_string(&labels).unwrap()),
+            }
             Ok(())
         },
         Err(e) => {
@@ -136,7 +144,16 @@ async fn create_label(provider: &dyn RepoProvider, owner: &str, repo: &str, labe
 }
 
 fn pretty_print(labels: &[Label]) {
-    let mut table = pretty_table("Label", "Description");
+    let mut table = Table::new();
+    let mut header = Row::new();
+    header
+        .add_cell(Cell::new("Label"))
+        .add_cell(Cell::new("Color"))
+        .add_cell(Cell::new("Description"));
+    table
+        .load_preset(UTF8_BORDERS_ONLY)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .add_row(header);
     add_labels(&mut table, labels);
     println!("{table}");
 }

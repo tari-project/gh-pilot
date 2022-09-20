@@ -16,7 +16,8 @@ fn pretty_print(pr: PullRequest) {
     table
         .add_row(["URL", pr.url.as_ref()])
         .add_row(["State", pr.state.to_string().as_str()])
-        .add_row(["Merged", if matches!(pr.merged, Some(true)) { "Yes" } else { "No" }]);
+        .add_row(["Merged", if matches!(pr.merged, Some(true)) { "Yes" } else { "No" }])
+        .add_row(["Labels"]);
     add_labels(&mut table, &pr.labels);
     println!("{table}");
     println!("{}", pr.body.unwrap_or_else(|| "No body provided".into()));
