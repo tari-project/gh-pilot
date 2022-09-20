@@ -85,6 +85,7 @@ pub enum LabelCommand {
     #[clap(name = "assign")]
     Assign {
         /// A path to a file containing label definitions
+        #[clap(short = 'f', long = "file")]
         labels_file: String,
     },
     /// Edit an existing label

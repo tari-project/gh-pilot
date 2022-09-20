@@ -50,8 +50,18 @@ impl RepoRequest {
 
     pub async fn assign_labels(&self, proxy: &ClientProxy, labels: &[NewLabel]) -> Result<(), GithubApiError> {
         let url = format!("/repos/{}/{}/labels", self.owner, self.repo);
-        let req = proxy.post(url).json(labels);
-        proxy.send(req).await
+        let mut errors = vec![];
+        for label in labels {
+            let req = proxy.post(url.as_str()).json(label);
+            if let Err(e) = proxy.send::<()>(req).await {
+                errors.push(e);
+            }
+        }
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(GithubApiError::MultipleErrors(errors))
+        }
     }
 
     pub async fn edit_label(&self, proxy: &ClientProxy, label: &str, new: &NewLabel) -> Result<bool, GithubApiError> {

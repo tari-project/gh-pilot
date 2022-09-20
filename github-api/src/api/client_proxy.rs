@@ -75,7 +75,13 @@ impl ClientProxy {
             .await
             .map_err(|e| GithubApiError::HttpClientError(e.to_string()))?;
         match response.status() {
-            StatusCode::OK => response
+            StatusCode::OK |
+            StatusCode::CREATED |
+            StatusCode::ACCEPTED |
+            StatusCode::PARTIAL_CONTENT |
+            StatusCode::RESET_CONTENT |
+            StatusCode::MULTI_STATUS |
+            StatusCode::ALREADY_REPORTED => response
                 .json()
                 .await
                 .map_err(|e| GithubApiError::DeserializationError(e.to_string())),
