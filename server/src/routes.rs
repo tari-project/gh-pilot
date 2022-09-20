@@ -47,12 +47,12 @@ pub async fn github_webhook(
     pubsub: PubSubActorRef,
 ) -> Result<HttpResponse, ServerError> {
     let headers = req.headers();
-    debug!("Received webhook request");
+    debug!("💻 Received webhook request");
     let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
-    trace!("Decoded payload body. {} bytes", payload.bytes().len());
+    trace!("💻 Decoded payload body. {} bytes", payload.bytes().len());
     if let Err(e) = validate_signature(headers, payload) {
         error!(
-            "The webhook signature is invalid. This event will not be processed. {}",
+            "💻 The webhook signature is invalid. This event will not be processed. {}",
             e
         );
         return Err(ServerError::InvalidSignature);
@@ -62,33 +62,33 @@ pub async fn github_webhook(
         .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
         .to_str()
         .map_err(|_| ServerError::InvalidEventHeader("x-github-event is not a valid string".into()))?;
-    trace!("Extracted event name: {}", event_name);
+    trace!("💻 Extracted event name: {}", event_name);
     match GithubEvent::try_from_webhook_info(event_name, payload) {
         Ok(event) => {
-            info!("Github Event Received: [{}], \"{}\"", event_name, event.summary());
+            info!("💻 Github Event Received: [{}], \"{}\"", event_name, event.summary());
             dispatch_event_to_pubsub(pubsub, event_name, event)?;
             Ok(HttpResponse::Ok().finish())
         },
         Err(GithubProviderError::UnknownEvent(s)) => {
             info!(
-                "/webhook handler could not handle an \"{}\" event. Discarding it and moving on.",
+                "💻 /webhook handler could not handle an \"{}\" event. Discarding it and moving on.",
                 s
             );
             Ok(HttpResponse::Ok().finish())
         },
         Err(GithubProviderError::EventDeserializationError(s)) => {
             warn!(
-                "/webhook handler could not deserialize a \"{}\". Turn on TRACE level to get more details and maybe \
-                 file a bug report?",
+                "💻 /webhook handler could not deserialize a \"{}\". Turn on TRACE level to get more details and \
+                 maybe file a bug report?",
                 event_name
             );
-            trace!("{}", s);
-            trace!("JSON payload:\n{}", payload);
+            trace!("💻 {}", s);
+            trace!("💻 JSON payload:\n{}", payload);
             Ok(HttpResponse::Ok().finish())
         },
         Err(e) => {
             warn!(
-                "/webhook handler received an unexpected error: {}. Dropping it like yesterday's news.",
+                "💻 /webhook handler received an unexpected error: {}. Dropping it like yesterday's news.",
                 e.to_string()
             );
             Ok(HttpResponse::Ok().finish())
@@ -101,24 +101,24 @@ fn validate_signature(headers: &HeaderMap, payload: &str) -> Result<(), ServerEr
     let mut secret = get_secret()?;
     check_valid_signature(secret.as_str(), signature, payload)?;
     secret.zeroize();
-    trace!("Received webhook signature check passed");
+    trace!("💻 Received webhook signature check passed");
     Ok(())
 }
 
 fn dispatch_event_to_pubsub(pubsub: PubSubActorRef, event_name: &str, event: GithubEvent) -> Result<(), ServerError> {
     let msg = GithubEventMessage::new(event_name, event);
-    trace!("Dispatching {} to pubsub", event_name);
+    trace!("💻 Dispatching {} to pubsub", event_name);
     match pubsub.try_send(msg) {
         Err(SendError::Full(_)) => {
-            warn!("PubSub message queue is full");
+            warn!("💻 PubSub message queue is full");
             Err(ServerError::MailboxFull)
         },
         Err(SendError::Closed(_)) => {
-            warn!("PubSub message queue is closed");
+            warn!("💻 PubSub message queue is closed");
             Err(ServerError::MailboxClosed)
         },
         Ok(()) => {
-            trace!("Github event message was dispatched ok.");
+            trace!("💻 Github event message was dispatched ok.");
             Ok(())
         },
     }

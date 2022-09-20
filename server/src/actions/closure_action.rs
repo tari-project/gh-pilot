@@ -66,7 +66,7 @@ impl Supervised for ClosureActionExecutor {}
 
 impl SystemService for ClosureActionExecutor {
     fn service_started(&mut self, _ctx: &mut Context<Self>) {
-        debug!("Closure Action Service is running.");
+        debug!("📝 Closure Action Service is running.");
     }
 }
 
@@ -74,16 +74,16 @@ impl Actor for ClosureActionExecutor {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Self::Context) {
-        debug!("Closure Action actor has started.");
+        debug!("📝 Closure Action actor has started.");
     }
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> Running {
-        debug!("Closure Action actor is stopping.");
+        debug!("📝 Closure Action actor is stopping.");
         Running::Stop
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        debug!("Closure Action actor has stopped.");
+        debug!("📝 Closure Action actor has stopped.");
     }
 }
 
@@ -92,19 +92,19 @@ impl Handler<ClosureActionMessage> for ClosureActionExecutor {
 
     fn handle(&mut self, msg: ClosureActionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let (name, event_name, event, action) = msg.to_parts();
-        debug!("Starting task \"{}\" for \"{}\"", name, event_name);
+        debug!("📝 Starting task \"{}\" for \"{}\"", name, event_name);
         Box::pin(async move {
-            debug!("Running closure action");
+            debug!("📝 Running closure action");
             let f = action.function;
             let result = tokio::task::spawn_blocking(move || {
                 f(event_name, event);
             })
             .await;
             match result {
-                Ok(()) => debug!("Closure Task completely happily."),
-                Err(e) => debug!("Closure task wasn't happy. {}", e.to_string()),
+                Ok(()) => debug!("📝 Closure Task completely happily."),
+                Err(e) => debug!("📝 Closure task wasn't happy. {}", e.to_string()),
             }
-            debug!("Completed execution of task \"{}\"", name);
+            debug!("📝 Completed execution of task \"{}\"", name);
         })
     }
 }

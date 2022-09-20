@@ -58,7 +58,7 @@ impl PubSubActor {
             Actions::Closure(c) => self.dispatch_closure_action(*c.clone(), event_name, event),
             Actions::Github(a) => self.dispatch_github_action(*a.clone(), event_name, event),
             Actions::NullAction => {
-                info!("NullAction was dispatched. Doing nothing");
+                info!("📰 NullAction was dispatched. Doing nothing");
                 Ok(())
             },
         }
@@ -97,16 +97,16 @@ impl Actor for PubSubActor {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Self::Context) {
-        debug!("PubSub actor has started.");
+        debug!("📰 PubSub actor has started.");
     }
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> Running {
-        debug!("PubSub actor is stopping.");
+        debug!("📰 PubSub actor is stopping.");
         Running::Stop
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        debug!("PubSub actor has stopped.");
+        debug!("📰 PubSub actor has stopped.");
     }
 }
 
@@ -114,11 +114,11 @@ impl Handler<GithubEventMessage> for PubSubActor {
     type Result = ();
 
     fn handle(&mut self, msg: GithubEventMessage, _ctx: &mut Self::Context) -> Self::Result {
-        trace!("PubSub received github event message: {}", msg.name());
+        trace!("📰 PubSub received github event message: {}", msg.name());
         let rules = self.rules.read();
         // FIXME: Return an error properly
         if rules.is_err() {
-            warn!("Could not access rules. {}", rules.err().unwrap().to_string());
+            warn!("📰 Could not access rules. {}", rules.err().unwrap().to_string());
             return;
         }
         let rules = rules.unwrap();
@@ -131,21 +131,21 @@ impl Handler<GithubEventMessage> for PubSubActor {
             if rule_triggered.is_some() {
                 rules_matched += 1;
                 info!(
-                    "Rule \"{}\" triggered for \"{}\". Running its actions.",
+                    "📰 Rule \"{}\" triggered for \"{}\". Running its actions.",
                     rule.name(),
                     msg.name()
                 );
                 let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
                 for action in rule.actions().cloned() {
-                    trace!("Preparing task \"{}\"", name);
+                    trace!("📰 Preparing task \"{}\"", name);
                     let dispatch_result = self.dispatch_message(action, event_name.clone(), event.clone());
                     if let Err(e) = dispatch_result {
-                        warn!("There was an issue dispatching {}: {}", name, e.to_string());
+                        warn!("📰 There was an issue dispatching {}: {}", name, e.to_string());
                     }
                 }
             }
         }
-        debug!("{} rules matched event \"{}\"", rules_matched, event_name);
+        debug!("📰 {} rules matched event \"{}\"", rules_matched, event_name);
     }
 }
 

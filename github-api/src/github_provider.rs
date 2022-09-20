@@ -25,7 +25,7 @@ impl Default for GithubProvider {
     fn default() -> Self {
         GithubProvider::from_environment().unwrap_or_else(|err| {
             warn!(
-                "Could not create default Github Provider instance using environment variables. {}. Setting \
+                "🐙 Could not create default Github Provider instance using environment variables. {}. Setting \
                  credentials to blank (and almost certainly incorrect) values.",
                 err.to_string()
             );

@@ -3,12 +3,12 @@ use github_pilot_api::{models::SimpleUser, provider_traits::UserProvider, wrappe
 use log::*;
 
 pub async fn run_user_cmd<S: AsRef<str>>(provider: &dyn UserProvider, profile: S) -> Result<(), ()> {
-    debug!("Fetching user..{}", profile.as_ref());
+    debug!("👨 Fetching user..{}", profile.as_ref());
     let handle = GithubHandle::from(profile.as_ref());
     let details = provider.fetch_details(&handle).await.map_err(|_| ())?;
     match details {
         Some(p) => pretty_print(&p),
-        None => info!("User {} was not found", profile.as_ref()),
+        None => info!("👨 User {} was not found", profile.as_ref()),
     }
     Ok(())
 }

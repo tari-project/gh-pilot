@@ -28,7 +28,7 @@ impl<'pr> PullRequestHeuristics<'pr> {
         } else {
             PullRequestSize::Huge
         };
-        trace!("PR size heuristic: {:?}", size);
+        trace!("🐙⛰ PR size heuristic: {:?}", size);
         size
     }
 
@@ -47,7 +47,7 @@ impl<'pr> PullRequestHeuristics<'pr> {
         let commit_count = self.pr.commits.unwrap_or(2) as f64;
         let files_changed = self.pr.changed_files.unwrap_or(1) as f64;
         let complexity = complexity_heuristic(additions, deletions, commit_count, files_changed);
-        trace!("PR complexity heuristic: {:?}", complexity);
+        trace!("🐙⛰ PR complexity heuristic: {:?}", complexity);
         complexity
     }
 
@@ -74,7 +74,7 @@ fn complexity_heuristic(
     // But the total number of changes is important too.
     let size_complexity = total.powf(1.25) / (additions.abs_diff(deletions).max(10) as f64).sqrt();
     let complexity_score = 3.0 * commit_count + 1.5 * files_changed + size_complexity;
-    trace!("Complexity score: {}", complexity_score);
+    trace!("🐙⛰ Complexity score: {}", complexity_score);
     match complexity_score as usize {
         0..=20 => PullRequestComplexity::Low,
         21..=250 => PullRequestComplexity::Medium,
