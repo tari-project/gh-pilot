@@ -2,25 +2,79 @@
 # https://github.com/tari-project/tari/blob/development/Contributing.md
 # You can apply these to your repo with the command
 # $ ghp-cli -o owner -r repo labels assign -f presets/labels.yml
-- name: C-bug
-  description: Something isn't working
-  color: d73a4a
-
 - name: CR-insufficient_context
   description: 'The PR body does not provide enough information to fully describe the changes requested.'
   color: FBE057
 
-- name: 'C-Documentation'
-  description: 'This PR or issue is related to documentation.'
+# Categorisation (C) - These labels identify the type of PR or issue. This helps interested parties find issues or PRs
+# that they are interested in
+
+- name: C-Documentation
+  description: Changes are limited to docs
   color: 56a6ff
 
-- name: 'C-Duplicate'
+- name: C-Duplicate
   description: This issue or pull request already exists
-  color: cfd3d7
+  color: cfd3ff
 
-- name: good first issue
+- name: C-Good_first_issue
   description: Good for newcomers
   color: 7057ff
+
+- name: C-Consensus_breaking
+  description: Changes consensus rules and would require a hard-fork
+  color: af00af
+
+- name: C-RFC
+  description: This PR introduces or contributes to an RFC.
+  color: 4080ff
+
+- name: C-tests
+  description: This PR exclusively adds new test cases.
+  color: fbcaff
+
+- name: C-benchmark
+  description: This PR exclusively adds or fixes benchmark code.
+  color: 5b3aff
+
+- name: C-formatting
+  description: Only formatting changes have been applied
+  color: b0b0ff
+
+- name: C-tech_debt
+  description: Paying back tech-debt.
+  color: 40f0ff
+
+- name: C-performance
+  description: No new functions but ^^^ performance. Should contain benchmarks
+  color: 5b8aff
+
+- name: C-tracking_issue
+  description: This is a tracking issue for an RFC implementation.
+  color: 3570df
+
+- name: C-bug
+  description: Something isn't working
+  color: d73a4a
+
+# "P" labels are process-related and used to identify where we are in the CI code/review/merge process.
+# They are often managed by the CI bots.
+
+- name: P-waiting_on_author
+  description: The approval process is paused pending action from the PR author.
+  color: fbca04
+
+- name: P-waiting_on_reviewer
+  description: The approval process is paused pending action from a reviewer.
+  color: ebea04
+
+- name: P-approved
+  description: The PR has been approved and will be merged soon.
+  color: d0ff00
+
+- name: P-queued_for_merge
+  description: The PR is being merged by the CI process.
+  color: ebca14
 
 - name: P-conflicts
   description: The PR has merge conflicts that need to be resolved
