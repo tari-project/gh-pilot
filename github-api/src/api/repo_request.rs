@@ -2,7 +2,7 @@ use reqwest::StatusCode;
 
 use crate::{
     api::{error::ErrorItem, ClientProxy, GithubApiError},
-    models::{Label, Repository},
+    models::{Contributor, Label, Repository, UserType},
     wrappers::NewLabel,
 };
 
@@ -88,5 +88,16 @@ impl RepoRequest {
         let url = format!("/repos/{}/{}/labels/{label}", self.owner, self.repo);
         let req = proxy.patch(url).json(new);
         proxy.send(req).await
+    }
+
+    pub async fn fetch_contributors(&self, proxy: &ClientProxy) -> Result<Vec<Contributor>, GithubApiError> {
+        let url = format!("/repos/{}/{}/contributors", self.owner, self.repo);
+        let req = proxy.get(&url, false);
+        let contributors: Vec<Contributor> = proxy.send(req).await?;
+        let contributors = contributors
+            .into_iter()
+            .filter(|c| !c.login.is_empty() && matches!(c.user_type, Some(UserType::User)))
+            .collect::<Vec<Contributor>>();
+        Ok(contributors)
     }
 }

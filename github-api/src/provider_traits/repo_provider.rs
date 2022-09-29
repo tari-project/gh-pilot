@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     error::GithubProviderError,
-    models::{Label, Repository},
+    models::{Contributor, Label, Repository},
     wrappers::NewLabel,
 };
 
@@ -26,4 +26,9 @@ pub trait RepoProvider {
         label: &str,
         new: &NewLabel,
     ) -> Result<bool, GithubProviderError>;
+}
+
+#[async_trait]
+pub trait Contributors {
+    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError>;
 }
