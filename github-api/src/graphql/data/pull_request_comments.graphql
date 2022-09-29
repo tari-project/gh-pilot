@@ -1,0 +1,32 @@
+query PullRequestComments($owner: String!, $repo: String!, $pr_number:Int!) {
+    repository(owner:$owner, name:$repo) {
+        pullRequest(number: $pr_number) {
+            title
+            comments(last:10) {
+                edges {
+                    node {
+                        bodyText
+                        createdAt
+                        author {
+                            __typename
+                            login
+                        }
+                    }
+                }
+            }
+            reviewThreads(last: 10) {
+                nodes {
+                    comments(last: 10) {
+                        nodes {
+                            bodyText
+                            createdAt
+#                            author {
+#                                login
+#                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
