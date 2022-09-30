@@ -30,7 +30,7 @@ pub async fn run_label_cmd(provider: &dyn RepoProvider, owner: &str, repo: &str,
             color,
             description,
         } => {
-            let new_name = name.unwrap_or(label.clone());
+            let new_name = name.unwrap_or_else(|| label.clone());
             let new_label = NewLabel::new(new_name, color, description);
             edit_label(provider, owner, repo, label, new_label).await
         },

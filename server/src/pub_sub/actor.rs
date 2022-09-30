@@ -73,9 +73,9 @@ impl PubSubActor {
         let name = format!("ClosureAction-{}", timestamp());
         let msg = ClosureActionMessage::new(name, ev_name, ev, params);
         let executor = ClosureActionExecutor::from_registry();
-        executor.try_send(msg).map_err(|e| {
-            PubSubError::DispatchError(format!("Could not dispatch Closure Action message. {}", e.to_string()))
-        })
+        executor
+            .try_send(msg)
+            .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Closure Action message. {}", e)))
     }
 
     fn dispatch_github_action(
@@ -87,9 +87,9 @@ impl PubSubActor {
         let name = format!("GithubAction-{}", timestamp());
         let msg = GithubActionMessage::new(name, ev_name, ev, params);
         let executor = GithubActionExecutor::from_registry();
-        executor.try_send(msg).map_err(|e| {
-            PubSubError::DispatchError(format!("Could not dispatch Github Action message. {}", e.to_string()))
-        })
+        executor
+            .try_send(msg)
+            .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Github Action message. {}", e)))
     }
 }
 

@@ -12,7 +12,7 @@ pub fn timestamp() -> String {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs().to_string())
-        .unwrap_or("0000000".to_string())
+        .unwrap_or_else(|_| "0000000".to_string())
 }
 
 pub fn check_valid_signature(secret: &str, signature: &str, payload: &str) -> Result<(), ServerError> {
@@ -40,9 +40,7 @@ pub fn get_secret() -> Result<String, ServerError> {
 pub fn extract_signature(headers: &HeaderMap) -> Result<&str, ServerError> {
     headers
         .get("x-hub-signature-256")
-        .ok_or(ServerError::InvalidSignatureHeader(
-            "x-hub-signature-256 is missing".into(),
-        ))?
+        .ok_or_else(|| ServerError::InvalidSignatureHeader("x-hub-signature-256 is missing".into()))?
         .to_str()
         .map_err(|_| ServerError::InvalidSignatureHeader("x-hub-signature-256 is not a valid string".into()))
 }

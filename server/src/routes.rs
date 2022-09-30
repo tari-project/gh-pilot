@@ -59,7 +59,7 @@ pub async fn github_webhook(
     }
     let event_name = headers
         .get("x-github-event")
-        .ok_or(ServerError::InvalidEventHeader("x-github-event is missing".into()))?
+        .ok_or_else(|| ServerError::InvalidEventHeader("x-github-event is missing".into()))?
         .to_str()
         .map_err(|_| ServerError::InvalidEventHeader("x-github-event is not a valid string".into()))?;
     trace!("💻 Extracted event name: {}", event_name);
