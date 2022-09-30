@@ -1,0 +1,87 @@
+{
+    "repository": {
+      "pullRequest": {
+        "title": "perf: lazily compress RistrettoPublicKey",
+        "comments": {
+          "nodes": [
+            {
+              "bodyText": "I looked at this for a few minutes and even when locking the dependency proc-macro2 = {version=\"=1.0.32\", optional = true} ran into other issues (no function or associated item named from_str_unchecked found for struct proc_macro2::Literal in the current scope).",
+              "createdAt": "2022-01-07T08:23:17Z",
+              "author": {
+                "__typename": "User",
+                "login": "sdbondi"
+              }
+            },
+            {
+              "bodyText": "I looked at this for a few minutes and even when locking the dependency proc-macro2 = {version=\"=1.0.32\", optional = true} ran into other issues (no function or associated item named from_str_unchecked found for struct proc_macro2::Literal in the current scope).\n\nYeah I see the same. Probably worth bumping the toolchain instead of trying to play old dependency whack-a-mole.",
+              "createdAt": "2022-01-07T08:34:08Z",
+              "author": {
+                "__typename": "User",
+                "login": "delta1"
+              }
+            },
+            {
+              "bodyText": "Let's carry on discussions for solutions in #74",
+              "createdAt": "2022-01-07T08:42:52Z",
+              "author": {
+                "__typename": "User",
+                "login": "sdbondi"
+              }
+            }
+          ]
+        },
+        "reviewThreads": {
+          "nodes": [
+            {
+              "line": 17,
+              "originalLine": 17,
+              "originalStartLine": null,
+              "path": "Cargo.toml",
+              "resolvedBy": null,
+              "comments": {
+                "nodes": [
+                  {
+                    "bodyText": "OCD sort + add once_cell dependency",
+                    "createdAt": "2022-01-05T08:23:18Z",
+                    "author": {
+                      "__typename": "User",
+                      "login": "sdbondi"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "line": null,
+              "originalLine": 50,
+              "originalStartLine": null,
+              "path": "Cargo.toml",
+              "resolvedBy": {
+                "login": "sdbondi"
+              },
+              "comments": {
+                "nodes": [
+                  {
+                    "bodyText": "Zeroize is also used in the underlying dalek crate",
+                    "createdAt": "2022-01-19T05:35:15Z",
+                    "author": {
+                      "__typename": "User",
+                      "login": "delta1"
+                    }
+                  },
+                  {
+                    "bodyText": "#75 has been merged",
+                    "createdAt": "2022-03-08T04:14:29Z",
+                    "author": {
+                      "__typename": "User",
+                      "login": "sdbondi"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+}

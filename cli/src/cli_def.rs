@@ -31,6 +31,8 @@ pub enum Commands {
     PullRequest {
         #[clap(short, long)]
         number: u64,
+        #[clap(subcommand)]
+        sub_command: PullRequestCommand,
     },
     /// Query or manipulate an issue
     Issue {
@@ -147,6 +149,18 @@ impl Display for OutputFormat {
             OutputFormat::Yaml => write!(f, "yml"),
         }
     }
+}
+
+#[derive(Debug, Subcommand)]
+pub enum PullRequestCommand {
+    /// Fetches a PR
+    Fetch,
+    /// Adds a label to a PR
+    AddLabel(LabelArg),
+    /// Removes a label from a PR
+    RemoveLabel(LabelArg),
+    /// Retrieve the comments and review comment threads for a PR
+    Comments,
 }
 
 #[cfg(test)]

@@ -2,7 +2,7 @@ query PullRequestCommentsQL($owner: String!, $repo: String!, $pr_number:Int!) {
     repository(owner:$owner, name:$repo) {
         pullRequest(number: $pr_number) {
             title
-            comments(last:200) {
+            comments(last:100) {
                 nodes {
                     bodyText
                     createdAt
@@ -12,7 +12,7 @@ query PullRequestCommentsQL($owner: String!, $repo: String!, $pr_number:Int!) {
                     }
                 }
             }
-            reviewThreads(last: 50) {
+            reviewThreads(last: 100) {
                 nodes {
                     line
                     originalLine
@@ -22,7 +22,7 @@ query PullRequestCommentsQL($owner: String!, $repo: String!, $pr_number:Int!) {
                         __typename
                         login
                     }
-                    comments(last: 25) {
+                    comments(last: 100) {
                         nodes {
                             bodyText
                             createdAt

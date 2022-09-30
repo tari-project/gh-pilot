@@ -1,4 +1,5 @@
 use graphql_client::GraphQLQuery;
+use serde::{Deserialize, Serialize};
 
 use crate::models::DateTime;
 
@@ -11,21 +12,24 @@ use crate::models::DateTime;
 )]
 pub struct PullRequestCommentsQL;
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Comment {
-    body: String,
-    created_at: DateTime,
-    author: String,
+    pub body: String,
+    pub created_at: DateTime,
+    pub author: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CommentThread {
-    path: String,
-    original_line: Option<i64>,
-    comments: Vec<Comment>,
+    pub path: String,
+    pub original_line: Option<i64>,
+    pub comments: Vec<Comment>,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PullRequestComments {
-    comments: Vec<Comment>,
-    threads: Vec<CommentThread>,
+    pub comments: Vec<Comment>,
+    pub threads: Vec<CommentThread>,
 }
 
 impl From<pull_request_comments_ql::ResponseData> for PullRequestComments {
@@ -90,5 +94,22 @@ impl From<pull_request_comments_ql::ResponseData> for PullRequestComments {
             .unwrap_or_default();
 
         PullRequestComments { comments, threads }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::graphql::PullRequestComments;
+
+    #[test]
+    fn derserialization() {
+        let json = include_str!("data/sample_thread.json");
+        let raw =
+            serde_json::from_str::<super::pull_request_comments_ql::ResponseData>(json).expect("Failed to deserialize");
+        println!("{:?}", raw);
+        let threads = PullRequestComments::from(raw);
+        assert_eq!(threads.comments.len(), 3);
+        assert_eq!(threads.threads.len(), 2);
+        assert_eq!(threads.threads[0].comments.len(), 1);
     }
 }
