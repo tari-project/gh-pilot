@@ -10,6 +10,7 @@ pub fn pretty_table(header_label: &str, header_value: &str) -> Table {
     name_row
         .add_cell(cc(Color::Green, header_label))
         .add_cell(cc(Color::Green, header_value));
+    table.add_row(name_row);
     table
 }
 

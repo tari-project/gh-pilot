@@ -92,7 +92,8 @@ impl RepoRequest {
 
     pub async fn fetch_contributors(&self, proxy: &ClientProxy) -> Result<Vec<Contributor>, GithubApiError> {
         let url = format!("/repos/{}/{}/contributors", self.owner, self.repo);
-        let req = proxy.get(&url, false);
+        let req = proxy.get(&url, false).query(&[("page", 1), ("per_page", 100)]);
+        // TODO - use the "link" response header to get all pages.
         let contributors: Vec<Contributor> = proxy.send(req).await?;
         let contributors = contributors
             .into_iter()

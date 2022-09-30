@@ -1,4 +1,5 @@
 mod cli_def;
+mod contributors;
 mod issue;
 mod labels;
 mod pretty_print;
@@ -10,7 +11,13 @@ use cli_def::{Cli, Commands};
 use github_pilot_api::GithubProvider;
 use log::*;
 
-use crate::{issue::run_issue_cmd, labels::run_label_cmd, pull_request::run_pr_cmd, user::run_user_cmd};
+use crate::{
+    contributors::run_contributor_cmd,
+    issue::run_issue_cmd,
+    labels::run_label_cmd,
+    pull_request::run_pr_cmd,
+    user::run_user_cmd,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), ()> {
@@ -24,6 +31,7 @@ async fn main() -> Result<(), ()> {
         Commands::PullRequest { number } => run_pr_cmd(&provider, owner, repo, number).await,
         Commands::Issue { number, sub_command } => run_issue_cmd(&provider, owner, repo, number, sub_command).await,
         Commands::Labels { sub_command } => run_label_cmd(&provider, owner, repo, sub_command).await,
+        Commands::Contributors => run_contributor_cmd(&provider, owner, repo).await,
     }
 }
 
