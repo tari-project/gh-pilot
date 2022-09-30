@@ -44,6 +44,8 @@ pub enum Commands {
         #[clap(subcommand)]
         sub_command: LabelCommand,
     },
+    /// List contributors to the repo
+    Contributors,
 }
 
 #[derive(Debug, Subcommand)]

@@ -6,8 +6,8 @@ use log::*;
 use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
     error::GithubProviderError,
-    models::{Issue, Label, PullRequest, Repository, SimpleUser},
-    provider_traits::{IssueProvider, PullRequestProvider, RepoProvider, UserProvider},
+    models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
+    provider_traits::{Contributors, IssueProvider, PullRequestProvider, RepoProvider, UserProvider},
     wrappers::{GithubHandle, IssueId, NewLabel},
 };
 
@@ -163,6 +163,15 @@ impl RepoProvider for GithubProvider {
     ) -> Result<bool, GithubProviderError> {
         let repo = RepoRequest::new(owner, repo);
         let result = repo.edit_label(&self.client, label, new).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl Contributors for GithubProvider {
+    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.fetch_contributors(&self.client).await?;
         Ok(result)
     }
 }

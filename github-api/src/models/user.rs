@@ -25,7 +25,7 @@ pub struct SimpleUser {
     pub starred_url: Option<String>,
     pub subscriptions_url: Option<Url>,
     #[serde(rename = "type")]
-    pub user_type: Option<String>,
+    pub user_type: Option<UserType>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
@@ -43,4 +43,28 @@ impl ToString for UserType {
             UserType::Organization => "Organization".to_string(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Contributor {
+    pub login: String,
+    pub id: i64,
+    pub node_id: String,
+    pub site_admin: bool,
+    pub contributions: i64,
+    pub avatar_url: Option<String>,
+    pub gravatar_id: Option<String>,
+    pub url: Option<String>,
+    pub html_url: Option<String>,
+    pub followers_url: Option<String>,
+    pub following_url: Option<String>,
+    pub gists_url: Option<String>,
+    pub starred_url: Option<String>,
+    pub subscriptions_url: Option<String>,
+    pub organizations_url: Option<String>,
+    pub repos_url: Option<String>,
+    pub events_url: Option<String>,
+    pub received_events_url: Option<String>,
+    #[serde(rename = "type")]
+    pub user_type: Option<UserType>,
 }

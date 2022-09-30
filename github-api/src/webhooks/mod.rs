@@ -85,7 +85,7 @@ impl GithubEvent {
             Self::Issues(iss) => format!("Issue {}: {}", iss.action.to_string(), iss.issue.title),
             Self::Label(lab) => format!("Label {}: {}", lab.action.to_string(), lab.label.name),
             Self::Ping(p) => format!("Ping: {}", p.zen),
-            Self::PullRequest(pr) => format!("Pull request {}: {}", pr.action.to_string(), pr.pull_request.title),
+            Self::PullRequest(pr) => format!("Pull request {}: {}", pr.action, pr.pull_request.title),
             Self::PullRequestReview(r) => {
                 format!("Pull request review {}: {}", r.action.to_string(), r.pull_request.title)
             },
@@ -114,7 +114,7 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{
-        models::{AuthorAssociation, State},
+        models::{AuthorAssociation, State, UserType},
         webhooks::{
             GithubEvent,
             IssueCommentAction,
@@ -230,7 +230,7 @@ mod test {
                     pr.info.organization.clone().unwrap().url,
                     "https://api.github.com/orgs/tari-project"
                 );
-                assert_eq!(pr.info.sender.user_type, Some("User".to_string()));
+                assert_eq!(pr.info.sender.user_type, Some(UserType::User));
             },
             _ => panic!("Not a pull_request event"),
         }

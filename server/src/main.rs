@@ -5,11 +5,7 @@ async fn main() {
     env_logger::init();
     let config = ServerConfig::new("127.0.0.1", 8330);
     match run_server(config).await {
-        Ok(_) => {
-            println!("Bye!");
-        },
-        Err(e) => {
-            eprintln!("{}", e.to_string())
-        },
+        Ok(_) => println!("Bye!"),
+        Err(e) => eprintln!("{e}"),
     }
 }
