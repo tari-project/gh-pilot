@@ -1,5 +1,11 @@
+use graphql_client::GraphQLQuery;
+
 use crate::{
     api::{ClientProxy, GithubApiError, IssueRequest},
+    graphql::{
+        pr_comments::{pull_request_comments_ql, PullRequestCommentsQL},
+        PullRequestComments,
+    },
     models::{Label, PullRequest},
 };
 
@@ -51,5 +57,17 @@ impl PullRequestRequest {
         // prs are also issues
         let issue = IssueRequest::new(&self.owner, &self.repo, self.pull);
         issue.remove_label(label, proxy).await
+    }
+
+    pub async fn comments(&self, proxy: &ClientProxy) -> Result<PullRequestComments, GithubApiError> {
+        let vars = pull_request_comments_ql::Variables {
+            owner: self.owner.clone(),
+            repo: self.repo.clone(),
+            pr_number: self.pull as i64,
+        };
+        let body = PullRequestCommentsQL::build_query(vars);
+        let req = proxy.post("/graphql").json(&body);
+        let ql_result: pull_request_comments_ql::ResponseData = proxy.send(req).await?;
+        Ok(ql_result.into())
     }
 }
