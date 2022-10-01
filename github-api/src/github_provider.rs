@@ -6,8 +6,16 @@ use log::*;
 use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
     error::GithubProviderError,
+    graphql::PullRequestComments,
     models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
-    provider_traits::{Contributors, IssueProvider, PullRequestProvider, RepoProvider, UserProvider},
+    provider_traits::{
+        Contributors,
+        IssueProvider,
+        PullRequestCommentsProvider,
+        PullRequestProvider,
+        RepoProvider,
+        UserProvider,
+    },
     wrappers::{GithubHandle, IssueId, NewLabel},
 };
 
@@ -172,6 +180,21 @@ impl Contributors for GithubProvider {
     async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError> {
         let repo = RepoRequest::new(owner, repo);
         let result = repo.fetch_contributors(&self.client).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl PullRequestCommentsProvider for GithubProvider {
+    async fn fetch_pull_request_comments(&self, pr_id: &IssueId) -> Result<PullRequestComments, GithubProviderError> {
+        trace!(
+            "⏩ Fetching pull request comments for PR {}/{}#{}",
+            pr_id.owner,
+            pr_id.repo,
+            pr_id.number
+        );
+        let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
+        let result = pr.fetch_comments(&self.client).await?;
         Ok(result)
     }
 }

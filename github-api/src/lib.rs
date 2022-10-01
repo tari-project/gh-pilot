@@ -1,7 +1,7 @@
 pub mod api;
 pub mod error;
 mod github_provider;
-mod graphql;
+pub mod graphql;
 mod macros;
 pub mod models;
 pub mod models_plus;

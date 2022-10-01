@@ -26,6 +26,8 @@ pub enum GithubApiError {
     MultipleErrors(Vec<ErrorItem>),
     #[error("reqwest client error: {0}")]
     ReqwestError(String),
+    #[error("The GraphQL query returned errors: {0}")]
+    GraphQLError(String),
 }
 
 #[derive(Clone)]

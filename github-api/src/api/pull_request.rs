@@ -1,5 +1,11 @@
+use graphql_client::{GraphQLQuery, Response};
+
 use crate::{
     api::{ClientProxy, GithubApiError, IssueRequest},
+    graphql::{
+        pr_comments::{pull_request_comments_ql, PullRequestCommentsQL},
+        PullRequestComments,
+    },
     models::{Label, PullRequest},
 };
 
@@ -51,5 +57,31 @@ impl PullRequestRequest {
         // prs are also issues
         let issue = IssueRequest::new(&self.owner, &self.repo, self.pull);
         issue.remove_label(label, proxy).await
+    }
+
+    pub async fn fetch_comments(&self, proxy: &ClientProxy) -> Result<PullRequestComments, GithubApiError> {
+        let vars = pull_request_comments_ql::Variables {
+            owner: self.owner.clone(),
+            repo: self.repo.clone(),
+            pr_number: self.pull as i64,
+        };
+        let body = PullRequestCommentsQL::build_query(vars);
+        let req = proxy.post("/graphql").json(&body);
+        let response: Response<pull_request_comments_ql::ResponseData> = proxy.send(req).await?;
+        if let Some(data) = response.data {
+            Ok(data.into())
+        } else {
+            match response.errors {
+                None => Err(GithubApiError::DeserializationError(
+                    "No data came back in the response".into(),
+                )),
+                Some(errs) => Err(GithubApiError::GraphQLError(
+                    errs.into_iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<String>>()
+                        .join("; "),
+                )),
+            }
+        }
     }
 }

@@ -28,7 +28,7 @@ async fn main() -> Result<(), ()> {
     let repo = cli.repo.as_str();
     match cli.command {
         Commands::User { profile } => run_user_cmd(&provider, &profile).await,
-        Commands::PullRequest { number } => run_pr_cmd(&provider, owner, repo, number).await,
+        Commands::PullRequest { number, sub_command } => run_pr_cmd(&provider, owner, repo, number, sub_command).await,
         Commands::Issue { number, sub_command } => run_issue_cmd(&provider, owner, repo, number, sub_command).await,
         Commands::Labels { sub_command } => run_label_cmd(&provider, owner, repo, sub_command).await,
         Commands::Contributors => run_contributor_cmd(&provider, owner, repo).await,

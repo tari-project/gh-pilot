@@ -1,28 +1,35 @@
-query PullRequestComments($owner: String!, $repo: String!, $pr_number:Int!) {
+query PullRequestCommentsQL($owner: String!, $repo: String!, $pr_number:Int!) {
     repository(owner:$owner, name:$repo) {
         pullRequest(number: $pr_number) {
             title
-            comments(last:10) {
-                edges {
-                    node {
-                        bodyText
-                        createdAt
-                        author {
-                            __typename
-                            login
-                        }
+            comments(last:100) {
+                nodes {
+                    bodyText
+                    createdAt
+                    author {
+                        __typename
+                        login
                     }
                 }
             }
-            reviewThreads(last: 10) {
+            reviewThreads(last: 100) {
                 nodes {
-                    comments(last: 10) {
+                    line
+                    originalLine
+                    originalStartLine
+                    path
+                    resolvedBy {
+                        __typename
+                        login
+                    }
+                    comments(last: 100) {
                         nodes {
                             bodyText
                             createdAt
-#                            author {
-#                                login
-#                            }
+                            author {
+                                __typename
+                                login
+                            }
                         }
                     }
                 }
@@ -30,3 +37,4 @@ query PullRequestComments($owner: String!, $repo: String!, $pr_number:Int!) {
         }
     }
 }
+
