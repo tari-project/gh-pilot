@@ -7,6 +7,8 @@ use crate::{
         PullRequestComments,
     },
     models::{Label, PullRequest},
+    models_plus::{MergeParameters, MergeResult},
+    wrappers::IssueId,
 };
 
 pub struct PullRequestRequest {
@@ -14,6 +16,12 @@ pub struct PullRequestRequest {
     repo: String,
     pull: u64,
     url: String,
+}
+
+impl From<&IssueId> for PullRequestRequest {
+    fn from(id: &IssueId) -> Self {
+        Self::new(&id.owner, &id.repo, id.number)
+    }
 }
 
 impl PullRequestRequest {
@@ -82,6 +90,19 @@ impl PullRequestRequest {
                         .join("; "),
                 )),
             }
+        }
+    }
+
+    pub async fn merge(&self, proxy: &ClientProxy, params: MergeParameters) -> Result<MergeResult, GithubApiError> {
+        let url = format!("{}/merge", self.url);
+        let req = proxy.put(url.as_str()).json(&params);
+        match proxy.send::<MergeResult>(req).await {
+            Ok(r) => Ok(r),
+            Err(GithubApiError::HttpResponse(code)) if code == 405 => {
+                let msg = format!("The PR {}/{}#{} could not be merged.", self.owner, self.repo, self.pull);
+                Err(GithubApiError::MergeError(msg))
+            },
+            Err(e) => Err(e),
         }
     }
 }

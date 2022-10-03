@@ -2,3 +2,5 @@
 //! The code is kept separate to avoid messing with the code generation tools.
 
 mod pull_request;
+
+pub use pull_request::*;

@@ -8,7 +8,7 @@ use github_pilot_api::{
 use log::*;
 
 use crate::{
-    cli_def::PullRequestCommand,
+    cli_def::{MergeArgs, PullRequestCommand},
     pretty_print::{add_labels, pretty_table},
 };
 
@@ -32,6 +32,7 @@ pub async fn run_pr_cmd(
             Err(e) => warn!("⏩ Error removing label from PR: {e}"),
         },
         PullRequestCommand::Comments => fetch_comments(provider, id).await,
+        PullRequestCommand::Merge(params) => merge_pull_request(provider, &id, params).await,
     }
     Ok(())
 }
@@ -50,6 +51,25 @@ async fn fetch_comments(provider: &dyn PullRequestCommentsProvider, id: IssueId)
     match provider.fetch_pull_request_comments(&id).await {
         Ok(comments) => print_comments(comments),
         Err(e) => warn!("⏩ Error fetching PR: {e}"),
+    }
+}
+
+async fn merge_pull_request(provider: &dyn PullRequestProvider, id: &IssueId, params: MergeArgs) {
+    match provider.merge_pull_request(id, params.into()).await {
+        Ok(r) => {
+            if r.merged {
+                info!(
+                    "⏩ PR {}/{}#{} was merged successfully. {}",
+                    id.owner, id.repo, id.number, r.message
+                );
+            } else {
+                warn!(
+                    "⏩ The PR {}/{}#{} was NOT merged. {}",
+                    id.owner, id.repo, id.number, r.message
+                );
+            }
+        },
+        Err(e) => warn!("⏩ Error merging PR: {e}"),
     }
 }
 

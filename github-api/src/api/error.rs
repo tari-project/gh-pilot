@@ -28,6 +28,8 @@ pub enum GithubApiError {
     ReqwestError(String),
     #[error("The GraphQL query returned errors: {0}")]
     GraphQLError(String),
+    #[error("The PR could not be merged: {0}")]
+    MergeError(String),
 }
 
 #[derive(Clone)]

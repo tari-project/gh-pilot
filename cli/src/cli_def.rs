@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use github_pilot_api::models_plus::{MergeMethod, MergeParameters};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -161,6 +162,31 @@ pub enum PullRequestCommand {
     RemoveLabel(LabelArg),
     /// Retrieve the comments and review comment threads for a PR
     Comments,
+    /// Try to merge the PR
+    Merge(MergeArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct MergeArgs {
+    /// Override the title for the commit message
+    pub commit_title: Option<String>,
+    /// Override the commit message for the merge
+    pub commit_message: Option<String>,
+    /// Require the HEAD to have this SHA value before allowing a merge
+    pub sha: Option<String>,
+    /// Specify the merge method. Can be one of: merge, rebase, or squash. Default is merge.
+    pub merge_method: Option<MergeMethod>,
+}
+
+impl From<MergeArgs> for MergeParameters {
+    fn from(a: MergeArgs) -> Self {
+        MergeParameters {
+            commit_title: a.commit_title,
+            commit_message: a.commit_message,
+            sha: a.sha,
+            merge_method: a.merge_method.unwrap_or_default(),
+        }
+    }
 }
 
 #[cfg(test)]
