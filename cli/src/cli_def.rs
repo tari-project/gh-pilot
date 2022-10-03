@@ -169,15 +169,15 @@ pub enum PullRequestCommand {
 #[derive(Debug, Args)]
 pub struct MergeArgs {
     /// Override the title for the commit message
-    #[clap(short='t', long="title")]
+    #[clap(short = 't', long = "title")]
     pub commit_title: Option<String>,
     /// Override the commit message for the merge
-    #[clap(long="message")]
+    #[clap(long = "message")]
     pub commit_message: Option<String>,
     /// Require the HEAD to have this SHA value before allowing a merge
     pub sha: Option<String>,
     /// Specify the merge method. Can be one of: merge, rebase, or squash. Default is merge.
-    #[clap(short='m', long="method")]
+    #[clap(short = 'm', long = "method")]
     pub merge_method: Option<MergeMethod>,
 }
 

@@ -1,4 +1,5 @@
 use graphql_client::{GraphQLQuery, Response};
+use reqwest::StatusCode;
 
 use crate::{
     api::{ClientProxy, GithubApiError, IssueRequest},
@@ -7,7 +8,7 @@ use crate::{
         PullRequestComments,
     },
     models::{Label, PullRequest},
-    models_plus::{MergeParameters, MergeResult},
+    models_plus::{MergeParameters, MergeResult, MergeValidationError},
     wrappers::IssueId,
 };
 
@@ -96,13 +97,36 @@ impl PullRequestRequest {
     pub async fn merge(&self, proxy: &ClientProxy, params: MergeParameters) -> Result<MergeResult, GithubApiError> {
         let url = format!("{}/merge", self.url);
         let req = proxy.put(url.as_str()).json(&params);
-        match proxy.send::<MergeResult>(req).await {
-            Ok(r) => Ok(r),
-            Err(GithubApiError::HttpResponse(code)) if code == 405 => {
-                let msg = format!("The PR {}/{}#{} could not be merged.", self.owner, self.repo, self.pull);
+
+        let response = req
+            .send()
+            .await
+            .map_err(|e| GithubApiError::HttpClientError(e.to_string()))?;
+        match response.status() {
+            StatusCode::OK => {
+                let r: MergeResult = response
+                    .json()
+                    .await
+                    .map_err(|e| GithubApiError::DeserializationError(e.to_string()))?;
+                Ok(r)
+            },
+            StatusCode::NOT_FOUND | StatusCode::FORBIDDEN | StatusCode::METHOD_NOT_ALLOWED | StatusCode::CONFLICT => {
+                Err(GithubApiError::MergeError(
+                    response
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "No further details were given. 🤷‍".into()),
+                ))
+            },
+            StatusCode::UNPROCESSABLE_ENTITY => {
+                let err_msg: MergeValidationError = response
+                    .json()
+                    .await
+                    .map_err(|e| GithubApiError::DeserializationError(e.to_string()))?;
+                let msg = format!("Could not merge PR. {}, {}", err_msg.message, err_msg.errors.join(", "));
                 Err(GithubApiError::MergeError(msg))
             },
-            Err(e) => Err(e),
+            code => Err(GithubApiError::HttpResponse(code)),
         }
     }
 }

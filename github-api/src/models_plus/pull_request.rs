@@ -12,6 +12,13 @@ pub struct MergeParameters {
     pub merge_method: MergeMethod,
 }
 
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct MergeValidationError {
+    pub message: String,
+    pub documentation_url: String,
+    pub errors: Vec<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MergeMethod {
