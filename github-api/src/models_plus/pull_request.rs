@@ -6,8 +6,11 @@ use crate::models::PullRequest;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct MergeParameters {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub commit_title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub commit_message: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sha: Option<String>,
     pub merge_method: MergeMethod,
 }
@@ -16,6 +19,7 @@ pub struct MergeParameters {
 pub struct MergeValidationError {
     pub message: String,
     pub documentation_url: String,
+    #[serde(default)]
     pub errors: Vec<String>,
 }
 
