@@ -1,6 +1,12 @@
 use async_trait::async_trait;
 
-use crate::{error::GithubProviderError, graphql::PullRequestComments, models::PullRequest, wrappers::IssueId};
+use crate::{
+    error::GithubProviderError,
+    graphql::PullRequestComments,
+    models::PullRequest,
+    models_plus::{MergeParameters, MergeResult},
+    wrappers::IssueId,
+};
 
 #[async_trait]
 pub trait PullRequestProvider {
@@ -10,6 +16,12 @@ pub trait PullRequestProvider {
         repo: &str,
         number: u64,
     ) -> Result<PullRequest, GithubProviderError>;
+
+    async fn merge_pull_request(
+        &self,
+        id: &IssueId,
+        params: MergeParameters,
+    ) -> Result<MergeResult, GithubProviderError>;
 }
 
 #[async_trait]

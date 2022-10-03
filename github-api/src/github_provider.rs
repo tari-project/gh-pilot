@@ -8,6 +8,7 @@ use crate::{
     error::GithubProviderError,
     graphql::PullRequestComments,
     models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
+    models_plus::{MergeParameters, MergeResult},
     provider_traits::{
         Contributors,
         IssueProvider,
@@ -81,6 +82,16 @@ impl PullRequestProvider for GithubProvider {
     ) -> Result<PullRequest, GithubProviderError> {
         let pr = PullRequestRequest::new(owner, repo, number);
         let result = pr.fetch(&self.client).await?;
+        Ok(result)
+    }
+
+    async fn merge_pull_request(
+        &self,
+        id: &IssueId,
+        params: MergeParameters,
+    ) -> Result<MergeResult, GithubProviderError> {
+        let pr = PullRequestRequest::from(id);
+        let result = pr.merge(&self.client, params).await?;
         Ok(result)
     }
 }
