@@ -30,5 +30,5 @@ pub trait RepoProvider {
 
 #[async_trait]
 pub trait Contributors {
-    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError>;
+    async fn fetch_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError>;
 }

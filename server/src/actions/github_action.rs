@@ -121,12 +121,12 @@ impl Actor for GithubActionExecutor {
     }
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> Running {
-        println!("🐙 Github Action Executor is stopping");
+        debug!("🐙 Github Action Executor is stopping");
         Running::Stop
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        println!("🐙 Github Action Executor has stopped");
+        debug!("🐙 Github Action Executor has stopped");
     }
 }
 

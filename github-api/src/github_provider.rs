@@ -190,7 +190,7 @@ impl RepoProvider for GithubProvider {
 
 #[async_trait]
 impl Contributors for GithubProvider {
-    async fn get_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError> {
+    async fn fetch_contributors(&self, owner: &str, repo: &str) -> Result<Vec<Contributor>, GithubProviderError> {
         let repo = RepoRequest::new(owner, repo);
         let result = repo.fetch_contributors(&self.client).await?;
         Ok(result)
@@ -200,12 +200,7 @@ impl Contributors for GithubProvider {
 #[async_trait]
 impl PullRequestCommentsProvider for GithubProvider {
     async fn fetch_pull_request_comments(&self, pr_id: &IssueId) -> Result<PullRequestComments, GithubProviderError> {
-        trace!(
-            "⏩ Fetching pull request comments for PR {}/{}#{}",
-            pr_id.owner,
-            pr_id.repo,
-            pr_id.number
-        );
+        trace!("⏩ Fetching pull request comments for PR {pr_id}");
         let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
         let result = pr.fetch_comments(&self.client).await?;
         Ok(result)
