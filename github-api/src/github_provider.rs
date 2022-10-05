@@ -6,7 +6,7 @@ use log::*;
 use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
     error::GithubProviderError,
-    graphql::PullRequestComments,
+    graphql::{review_counts::ReviewCounts, PullRequestComments},
     models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
@@ -14,6 +14,7 @@ use crate::{
         IssueProvider,
         PullRequestCommentsProvider,
         PullRequestProvider,
+        PullRequestReviewSummary,
         RepoProvider,
         UserProvider,
     },
@@ -206,6 +207,16 @@ impl PullRequestCommentsProvider for GithubProvider {
         );
         let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
         let result = pr.fetch_comments(&self.client).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl PullRequestReviewSummary for GithubProvider {
+    async fn fetch_review_summary(&self, pr_id: &IssueId) -> Result<ReviewCounts, GithubProviderError> {
+        trace!("👀 Fetching pull request reviews for PR");
+        let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
+        let result = pr.fetch_review_counts(&self.client).await?;
         Ok(result)
     }
 }

@@ -7,7 +7,7 @@ use crate::{models::DateTime, wrappers::IssueId};
     schema_path = "src/graphql/data/schema.graphql",
     query_path = "src/graphql/data/pr_review_counts.graphql",
     deprecated = "warn",
-    response_derives = "Debug, Clone"
+    response_derives = "Debug, Clone, PartialEq, Eq"
 )]
 pub struct PullRequestReviewCountsQL;
 
@@ -22,6 +22,34 @@ pub struct ReviewCounts {
     id: IssueId,
     title: String,
     reviews: Vec<ReviewSummary>,
+}
+
+impl ReviewCounts {
+    pub fn total(&self) -> usize {
+        self.total_count
+    }
+
+    pub fn id(&self) -> &IssueId {
+        &self.id
+    }
+
+    pub fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub fn approvals(&self) -> usize {
+        use pull_request_review_counts_ql::PullRequestReviewState::APPROVED;
+        self.reviews.iter().filter(|&r| r.state == APPROVED).count()
+    }
+
+    pub fn changes_requested(&self) -> bool {
+        use pull_request_review_counts_ql::PullRequestReviewState::CHANGES_REQUESTED;
+        self.reviews.iter().any(|r| r.state == CHANGES_REQUESTED)
+    }
+
+    pub fn reviewers(&self) -> Vec<String> {
+        self.reviews.iter().map(|r| r.author.clone()).collect()
+    }
 }
 
 impl From<pull_request_review_counts_ql::ResponseData> for ReviewCounts {
