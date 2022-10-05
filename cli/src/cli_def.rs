@@ -164,6 +164,8 @@ pub enum PullRequestCommand {
     Comments,
     /// Try to merge the PR
     Merge(MergeArgs),
+    /// Fetch review statistics
+    Reviews,
 }
 
 #[derive(Debug, Args)]

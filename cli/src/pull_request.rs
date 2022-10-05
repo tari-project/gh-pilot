@@ -1,7 +1,7 @@
 use github_pilot_api::{
-    graphql::PullRequestComments,
+    graphql::{review_counts::ReviewCounts, PullRequestComments},
     models::PullRequest,
-    provider_traits::{IssueProvider, PullRequestCommentsProvider, PullRequestProvider},
+    provider_traits::{IssueProvider, PullRequestCommentsProvider, PullRequestProvider, PullRequestReviewSummary},
     wrappers::IssueId,
     GithubProvider,
 };
@@ -33,6 +33,7 @@ pub async fn run_pr_cmd(
         },
         PullRequestCommand::Comments => fetch_comments(provider, id).await,
         PullRequestCommand::Merge(params) => merge_pull_request(provider, &id, params).await,
+        PullRequestCommand::Reviews => fetch_review_summary(provider, id).await,
     }
     Ok(())
 }
@@ -50,7 +51,14 @@ async fn fetch_pr(provider: &dyn PullRequestProvider, id: IssueId) {
 async fn fetch_comments(provider: &dyn PullRequestCommentsProvider, id: IssueId) {
     match provider.fetch_pull_request_comments(&id).await {
         Ok(comments) => print_comments(comments),
-        Err(e) => warn!("⏩ Error fetching PR: {e}"),
+        Err(e) => warn!("⏩ Error fetching PR comments: {e}"),
+    }
+}
+
+async fn fetch_review_summary(provider: &dyn PullRequestReviewSummary, id: IssueId) {
+    match provider.fetch_review_summary(&id).await {
+        Ok(summary) => print_review_summary(&summary),
+        Err(e) => warn!("⏩ Error fetching PR review summary: {e}"),
     }
 }
 
@@ -109,4 +117,13 @@ fn print_comments(comments: PullRequestComments) {
             }
         }
     }
+}
+
+fn print_review_summary(summary: &ReviewCounts) {
+    let mut table = pretty_table("PR Reviews", summary.title());
+    table
+        .add_row(["Reviewers", summary.reviewers().join(" ").as_str()])
+        .add_row(["Approvals", summary.approvals().to_string().as_str()])
+        .add_row(["Changes requested", summary.changes_requested().to_string().as_str()]);
+    println!("{table}");
 }

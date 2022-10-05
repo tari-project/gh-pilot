@@ -5,6 +5,7 @@ use crate::{
     api::{ClientProxy, GithubApiError, IssueRequest},
     graphql::{
         pr_comments::{pull_request_comments_ql, PullRequestCommentsQL},
+        review_counts::{pull_request_review_counts_ql, PullRequestReviewCountsQL, ReviewCounts},
         PullRequestComments,
     },
     models::{Label, PullRequest},
@@ -82,7 +83,33 @@ impl PullRequestRequest {
         } else {
             match response.errors {
                 None => Err(GithubApiError::DeserializationError(
-                    "No data came back in the response".into(),
+                    "No data came back in the PR comments response".into(),
+                )),
+                Some(errs) => Err(GithubApiError::GraphQLError(
+                    errs.into_iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<String>>()
+                        .join("; "),
+                )),
+            }
+        }
+    }
+
+    pub async fn fetch_review_counts(&self, proxy: &ClientProxy) -> Result<ReviewCounts, GithubApiError> {
+        let vars = pull_request_review_counts_ql::Variables {
+            owner: self.owner.clone(),
+            repo: self.repo.clone(),
+            pr_number: self.pull as i64,
+        };
+        let body = PullRequestReviewCountsQL::build_query(vars);
+        let req = proxy.post("/graphql").json(&body);
+        let response: Response<pull_request_review_counts_ql::ResponseData> = proxy.send(req).await?;
+        if let Some(data) = response.data {
+            Ok(data.into())
+        } else {
+            match response.errors {
+                None => Err(GithubApiError::DeserializationError(
+                    "No data came back in the Review Summary response".into(),
                 )),
                 Some(errs) => Err(GithubApiError::GraphQLError(
                     errs.into_iter()
