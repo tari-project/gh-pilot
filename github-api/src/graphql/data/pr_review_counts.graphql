@@ -1,0 +1,24 @@
+query PullRequestReviewCountsQL($owner: String!, $repo: String!, $pr_number:Int!) {
+    repository(owner:$owner, name:$repo) {
+        owner {
+            __typename
+            login
+        }
+        name
+        pullRequest(number: $pr_number) {
+            title
+            number
+            reviews(states: [APPROVED, CHANGES_REQUESTED], first:100) {
+                totalCount
+                nodes {
+                    author {
+                        __typename
+                        login
+                    }
+                    createdAt
+                    state
+                }
+            }
+        }
+    }
+}
