@@ -152,6 +152,14 @@ impl MergeExecutor {
 
     // Check that all _required_ checks have passed successfully
     fn have_all_required_checks_passed(checks: &CheckRunStatus) -> bool {
+        debug!("⏫ The roll up status is {:?}", checks.overall_status());
+        let (total, required, passed) = checks.checks().fold((0, 0, 0), |(total, required, passed), c| {
+            let total = total + 1;
+            let required = required + i32::from(c.is_required);
+            let passed = passed + i32::from(matches!(c.result, check_run_status_ql::CheckConclusionState::SUCCESS));
+            (total, required, passed)
+        });
+        debug!("⏫ PR has {total} checks, {passed} passed / {required} required.");
         // First look at the rollup status
         match checks.overall_status() {
             Some(check_run_status_ql::StatusState::SUCCESS) => {
@@ -162,10 +170,7 @@ impl MergeExecutor {
                 debug!("⏫ Github reports that the rolled up status of the PR checks is FAILURE");
                 false
             },
-            _ => checks
-                .checks()
-                .filter(|run| run.is_required)
-                .all(|run| matches!(run.result, check_run_status_ql::CheckConclusionState::SUCCESS)),
+            _ => passed >= required,
         }
     }
 

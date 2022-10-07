@@ -43,7 +43,7 @@ impl FromStr for IssueId {
         let mut split = s.split('#');
         let repo = split
             .next()
-            .ok_or(IssueIdParseError::FormatError("The string was empty".into()))?;
+            .ok_or_else(|| IssueIdParseError::FormatError("The string was empty".into()))?;
         let number = split.next().ok_or_else(|| {
             IssueIdParseError::FormatError("The `#{number}` portion of the string was missing or incomplete".into())
         })?;
