@@ -94,13 +94,11 @@ mod rules {
             },
             RuleBuilder::new("AutoMerge™")
                 .when(PullRequest::labeled_with("P-merge"))
+                .when(PullRequest::edited())
                 // .when( PullRequest::approved()) <- TODO add this predicate
                 // .when(PullRequestComment::added()) <- TODO add this predicate
                 // .when(CheckRunComplete::success()) <- TODO add this predicate
-                .execute(Actions::auto_merge()
-                    .with_min_acks(1)
-                    .with_min_reviews(0)
-                    .build())
+                .execute(Actions::auto_merge().build())
                 .submit(),
         ];
 
