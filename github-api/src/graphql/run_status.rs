@@ -1,3 +1,5 @@
+use std::slice::Iter;
+
 use graphql_client::GraphQLQuery;
 use log::warn;
 
@@ -14,7 +16,7 @@ type URI = Url;
 )]
 pub struct CheckRunStatusQL;
 
-pub struct RunStatuses {
+pub struct CheckRunStatus {
     commit_url: Url,
     committed_at: DateTime,
     overall_status: Option<check_run_status_ql::StatusState>,
@@ -22,14 +24,14 @@ pub struct RunStatuses {
 }
 
 pub struct RunStatus {
-    name: String,
-    completed_at: DateTime,
-    result: check_run_status_ql::CheckConclusionState,
-    status: check_run_status_ql::CheckStatusState,
-    is_required: bool,
+    pub name: String,
+    pub completed_at: DateTime,
+    pub result: check_run_status_ql::CheckConclusionState,
+    pub status: check_run_status_ql::CheckStatusState,
+    pub is_required: bool,
 }
 
-impl Default for RunStatuses {
+impl Default for CheckRunStatus {
     fn default() -> Self {
         Self {
             commit_url: Url::from(""),
@@ -40,7 +42,25 @@ impl Default for RunStatuses {
     }
 }
 
-impl From<check_run_status_ql::ResponseData> for RunStatuses {
+impl CheckRunStatus {
+    pub fn commit_url(&self) -> &Url {
+        &self.commit_url
+    }
+
+    pub fn committed_at(&self) -> &DateTime {
+        &self.committed_at
+    }
+
+    pub fn overall_status(&self) -> Option<&check_run_status_ql::StatusState> {
+        self.overall_status.as_ref()
+    }
+
+    pub fn checks(&self) -> Iter<RunStatus> {
+        self.checks.iter()
+    }
+}
+
+impl From<check_run_status_ql::ResponseData> for CheckRunStatus {
     // these damn nested structs are a nightmare to navigate. Flattening and tidying up into a nicer struct.
     fn from(res: check_run_status_ql::ResponseData) -> Self {
         use check_run_status_ql::{
@@ -56,7 +76,7 @@ impl From<check_run_status_ql::ResponseData> for RunStatuses {
                     commits: C { nodes: Some(v) },
                 }),
             }) => v,
-            _ => return RunStatuses::default(),
+            _ => return CheckRunStatus::default(),
         };
         let Commit {
             url: commit_url,
@@ -65,7 +85,7 @@ impl From<check_run_status_ql::ResponseData> for RunStatuses {
             check_suites,
         } = match statuses.into_iter().next() {
             Some(Some(CN { commit: c })) => c,
-            _ => return RunStatuses::default(),
+            _ => return CheckRunStatus::default(),
         };
         let overall_status = status_check_rollup.map(|s| s.state);
         let checks = match check_suites {
@@ -122,7 +142,7 @@ impl From<check_run_status_ql::ResponseData> for RunStatuses {
             None => vec![],
         };
 
-        RunStatuses {
+        CheckRunStatus {
             commit_url,
             committed_at,
             overall_status,
@@ -134,13 +154,13 @@ impl From<check_run_status_ql::ResponseData> for RunStatuses {
 #[cfg(test)]
 mod test {
     use super::check_run_status_ql::{CheckConclusionState, CheckStatusState, ResponseData, StatusState};
-    use crate::graphql::RunStatuses;
+    use crate::graphql::CheckRunStatus;
 
     #[test]
     fn deserialization() {
         let json = include_str!("data/sample_check_run.json");
         let res: ResponseData = serde_json::from_str(json).unwrap();
-        let status = RunStatuses::from(res);
+        let status = CheckRunStatus::from(res);
         assert_eq!(status.overall_status, Some(StatusState::SUCCESS));
         assert_eq!(
             status.commit_url.as_ref(),

@@ -6,10 +6,11 @@ use log::*;
 use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
     error::GithubProviderError,
-    graphql::{review_counts::ReviewCounts, PullRequestComments},
+    graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
     models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
+        CheckRunStatusProvider,
         Contributors,
         IssueProvider,
         PullRequestCommentsProvider,
@@ -217,6 +218,16 @@ impl PullRequestReviewSummary for GithubProvider {
         trace!("👀 Fetching pull request reviews for PR");
         let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
         let result = pr.fetch_review_counts(&self.client).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl CheckRunStatusProvider for GithubProvider {
+    async fn fetch_check_run(&self, pr_id: &IssueId) -> Result<CheckRunStatus, GithubProviderError> {
+        trace!("✅ Fetching check run status for PR");
+        let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
+        let result = pr.fetch_last_check_run(&self.client).await?;
         Ok(result)
     }
 }

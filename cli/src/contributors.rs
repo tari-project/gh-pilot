@@ -8,7 +8,7 @@ pub async fn run_contributor_cmd(provider: &GithubProvider, owner: &str, repo: &
         warn!("⏩ Error fetching contributors: {}", e.to_string());
     })?;
     println!("👀 {} Contributors for {owner}/{repo}:", contributors.len());
-    let mut table = pretty_table("Name", "Contributions");
+    let mut table = pretty_table(&["Name", "Contributions"]);
     for contributor in contributors {
         table.add_row([
             contributor.login.as_str(),
