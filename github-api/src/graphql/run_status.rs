@@ -5,6 +5,7 @@ use log::warn;
 
 use crate::models::{DateTime, Url};
 
+#[allow(clippy::upper_case_acronyms)]
 type URI = Url;
 
 #[derive(GraphQLQuery)]
@@ -89,56 +90,53 @@ impl From<check_run_status_ql::ResponseData> for CheckRunStatus {
         };
         let overall_status = status_check_rollup.map(|s| s.state);
         let checks = match check_suites {
-            Some(cs) => {
-                let checks = cs
-                    .nodes
-                    .into_iter()
-                    .flatten()
-                    .flatten()
-                    .flat_map(|node| {
-                        let app_name = node
-                            .app
-                            .map(|app| app.name)
-                            .unwrap_or_else(|| "App name not provided".to_string());
-                        match node.check_runs {
-                            Some(cr) => {
-                                let run_count = cr.total_count as usize;
-                                let fetched = cr.nodes.iter().flatten().flatten().count();
-                                if run_count != fetched {
-                                    warn!(
-                                        "There are {run_count} check runs for {app_name}, but only {fetched} were \
-                                         fetched. File a bug report saying we need proper pagination in the \
-                                         run_status query code."
-                                    );
-                                }
-                                cr.nodes
-                                    .into_iter()
-                                    .flatten()
-                                    .flatten()
-                                    .map(|run| {
-                                        let name = run.name;
-                                        let completed_at = run.completed_at.unwrap_or_default();
-                                        let result = run.conclusion.unwrap_or_else(|| {
-                                            check_run_status_ql::CheckConclusionState::Other("unknown".to_string())
-                                        });
-                                        let status = run.status;
-                                        let is_required = run.is_required;
-                                        RunStatus {
-                                            name,
-                                            completed_at,
-                                            result,
-                                            status,
-                                            is_required,
-                                        }
-                                    })
-                                    .collect::<Vec<RunStatus>>()
-                            },
-                            None => vec![],
-                        }
-                    })
-                    .collect();
-                checks
-            },
+            Some(cs) => cs
+                .nodes
+                .into_iter()
+                .flatten()
+                .flatten()
+                .flat_map(|node| {
+                    let app_name = node
+                        .app
+                        .map(|app| app.name)
+                        .unwrap_or_else(|| "App name not provided".to_string());
+                    match node.check_runs {
+                        Some(cr) => {
+                            let run_count = cr.total_count as usize;
+                            let fetched = cr.nodes.iter().flatten().flatten().count();
+                            if run_count != fetched {
+                                warn!(
+                                    "There are {run_count} check runs for {app_name}, but only {fetched} were \
+                                     fetched. File a bug report saying we need proper pagination in the run_status \
+                                     query code."
+                                );
+                            }
+                            cr.nodes
+                                .into_iter()
+                                .flatten()
+                                .flatten()
+                                .map(|run| {
+                                    let name = run.name;
+                                    let completed_at = run.completed_at.unwrap_or_default();
+                                    let result = run.conclusion.unwrap_or_else(|| {
+                                        check_run_status_ql::CheckConclusionState::Other("unknown".to_string())
+                                    });
+                                    let status = run.status;
+                                    let is_required = run.is_required;
+                                    RunStatus {
+                                        name,
+                                        completed_at,
+                                        result,
+                                        status,
+                                        is_required,
+                                    }
+                                })
+                                .collect::<Vec<RunStatus>>()
+                        },
+                        None => vec![],
+                    }
+                })
+                .collect(),
             None => vec![],
         };
 
