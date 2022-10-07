@@ -19,6 +19,6 @@ mod action_params;
 mod executor;
 mod message;
 
-pub use action_params::MergeActionParams;
+pub use action_params::{MergeActionParams, MergeActionParamsBuilder};
 pub use executor::MergeExecutor;
 pub use message::MergeActionMessage;
