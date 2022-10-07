@@ -171,11 +171,39 @@ impl MergeExecutor {
 
     /// Carries out the merge action. The action depends on the state of `[MergeActionParams::auto-merge]`.
     async fn execute_merge_action(&self, params: &MergeActionParams, id: &IssueId) {
-        if params.perform_merge() {
-            self.merge_pr(id).await;
-        } else {
-            self.add_label(id, params.merge_label()).await;
+        let label = params.merge_label();
+        let merge_label_status = self.check_merge_label(label, id).await;
+        match (merge_label_status, params.perform_merge()) {
+            (Ok(true), true) => self.merge_pr(id).await,
+            (Ok(false), false) => self.add_label(id, params.merge_label()).await,
+            (Ok(false), true) => {
+                info!(
+                    "⏫ We _could_ have merged this PR, but the merge label, `{label}` is not attached to the PR, so \
+                     we thought it best not to right now."
+                );
+            },
+            (Err(e), true) => {
+                warn!(
+                    "⏫ We wanted to merged this PR, but could not check that the merge label, `{label}` was present \
+                     because of some error: {e}. You should merge manually, or resolve the issue and trigger this \
+                     action again."
+                );
+            },
+            (Err(e), false) => {
+                warn!(
+                    "⏫ We wanted to add the merge label, `{label}` but couldn't determine if it was already present, \
+                     due to this error: {e}. You can add the label manually, or resolve the issue and trigger this \
+                     action again."
+                );
+            },
+            (Ok(true), false) => {
+                debug!("⏫ Was about to add merge label, `{label}`, but it's already added. Nothing more to do here.");
+            },
         }
+    }
+
+    async fn check_merge_label(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError> {
+        self.issues.label_exists(label, id).await
     }
 
     async fn merge_pr(&self, id: &IssueId) {
@@ -183,6 +211,7 @@ impl MergeExecutor {
             merge_method: MergeMethod::Squash,
             ..Default::default()
         };
+        debug!("⏫ Attempting to merge PR {id}.");
         match self.provider.merge_pull_request(id, params).await {
             Ok(_) => info!("⏫ Merged PR {id}. Thank you for using AutoMerge™"),
             Err(e) => warn!("⏫ Could not merge PR {id}. {e}"),
