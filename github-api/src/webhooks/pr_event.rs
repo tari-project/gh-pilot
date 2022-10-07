@@ -6,6 +6,7 @@ use crate::{
     api::PullRequestRequest,
     models::PullRequest,
     webhooks::{PullRequestAction, PullRequestEvent},
+    wrappers::IssueId,
 };
 
 impl PullRequestEvent {
@@ -27,6 +28,10 @@ impl PullRequestEvent {
 
     pub fn to_request(&self) -> PullRequestRequest {
         PullRequestRequest::new(self.owner(), self.repo(), self.number())
+    }
+
+    pub fn as_issue_id(&self) -> IssueId {
+        IssueId::new(self.owner(), self.repo(), self.number())
     }
 }
 

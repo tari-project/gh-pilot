@@ -80,15 +80,9 @@ async fn merge_pull_request(provider: &dyn PullRequestProvider, id: &IssueId, pa
     match provider.merge_pull_request(id, params.into()).await {
         Ok(r) => {
             if r.merged {
-                info!(
-                    "⏩ PR {}/{}#{} was merged successfully. {}",
-                    id.owner, id.repo, id.number, r.message
-                );
+                info!("⏩ PR {id} was merged successfully. {}", r.message);
             } else {
-                warn!(
-                    "⏩ The PR {}/{}#{} was NOT merged. {}",
-                    id.owner, id.repo, id.number, r.message
-                );
+                warn!("⏩ The PR {id} was NOT merged. {}", r.message);
             }
         },
         Err(e) => warn!("⏩ Error merging PR: {e}"),

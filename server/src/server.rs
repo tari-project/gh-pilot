@@ -92,6 +92,16 @@ mod rules {
                     .execute(action)
                     .submit()
             },
+            RuleBuilder::new("AutoMerge™")
+                .when(PullRequest::labeled_with("P-merge"))
+                // .when( PullRequest::approved()) <- TODO add this predicate
+                // .when(PullRequestComment::added()) <- TODO add this predicate
+                // .when(CheckRunComplete::success()) <- TODO add this predicate
+                .execute(Actions::auto_merge()
+                    .with_min_acks(1)
+                    .with_min_reviews(0)
+                    .build())
+                .submit(),
         ];
 
         let msg = ReplaceRulesMessage { new_rules: rules };

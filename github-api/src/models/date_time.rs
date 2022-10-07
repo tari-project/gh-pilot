@@ -17,6 +17,10 @@ impl DateTime {
     pub fn into_datetime(self) -> Timestamp {
         self.0
     }
+
+    pub fn now() -> Self {
+        Self(Utc::now())
+    }
 }
 
 impl Default for DateTime {

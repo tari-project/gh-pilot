@@ -13,6 +13,9 @@ use crate::{
         GithubActionExecutor,
         GithubActionMessage,
         GithubActionParams,
+        MergeActionMessage,
+        MergeActionParams,
+        MergeExecutor,
     },
     pub_sub::{GithubEventMessage, PubSubError, ReplaceRulesMessage},
     rules::Rule,
@@ -55,6 +58,7 @@ impl PubSubActor {
         event: GithubEvent,
     ) -> Result<(), PubSubError> {
         match action.as_ref() {
+            Actions::AutoMerge(p) => self.dispatch_merge_action(*p.clone(), event_name, event),
             Actions::Closure(c) => self.dispatch_closure_action(*c.clone(), event_name, event),
             Actions::Github(a) => self.dispatch_github_action(*a.clone(), event_name, event),
             Actions::NullAction => {
@@ -76,6 +80,20 @@ impl PubSubActor {
         executor
             .try_send(msg)
             .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Closure Action message. {}", e)))
+    }
+
+    fn dispatch_merge_action(
+        &self,
+        params: MergeActionParams,
+        ev_name: String,
+        ev: GithubEvent,
+    ) -> Result<(), PubSubError> {
+        let name = format!("MergeAction-{}", timestamp());
+        let msg = MergeActionMessage::new(name, ev_name, ev, params);
+        let executor = MergeExecutor::from_registry();
+        executor
+            .try_send(msg)
+            .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Merge Action message. {}", e)))
     }
 
     fn dispatch_github_action(

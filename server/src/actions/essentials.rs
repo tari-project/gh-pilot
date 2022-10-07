@@ -1,7 +1,12 @@
 use github_pilot_api::webhooks::GithubEvent;
 use log::warn;
 
-use crate::actions::{closure_action::ClosureActionParams, github_action::GithubActionParams};
+use crate::actions::{
+    closure_action::ClosureActionParams,
+    github_action::GithubActionParams,
+    merge_action::MergeActionParamsBuilder,
+    MergeActionParams,
+};
 
 // Implementation notes: --
 // Actions must actually be Actors. This lets them have state. Then the action tasks will be messages that are
@@ -18,6 +23,7 @@ use crate::actions::{closure_action::ClosureActionParams, github_action::GithubA
 
 #[derive(Clone)]
 pub enum Actions {
+    AutoMerge(Box<MergeActionParams>),
     // An action that executes an arbitrary closure when the rule is triggered. Use with care. With great power comes
     // great responsibility.
     Closure(Box<ClosureActionParams>),
@@ -33,6 +39,10 @@ impl Actions {
 
     pub fn github() -> GithubActionBuilder {
         GithubActionBuilder::new()
+    }
+
+    pub fn auto_merge() -> MergeActionBuilder {
+        MergeActionBuilder::default()
     }
 
     /// Not sure why you'd want this, but here for completeness :)
@@ -114,6 +124,55 @@ impl GithubActionBuilder {
     }
 }
 
+pub struct MergeActionBuilder {
+    params: MergeActionParamsBuilder,
+}
+
+impl Default for MergeActionBuilder {
+    fn default() -> Self {
+        Self {
+            params: MergeActionParams::builder(),
+        }
+    }
+}
+
+impl MergeActionBuilder {
+    pub fn with_min_acks(mut self, acks: usize) -> Self {
+        self.params = self.params.acks_required(acks);
+        self
+    }
+
+    pub fn with_min_reviews(mut self, reviews: usize) -> Self {
+        self.params = self.params.reviews_required(reviews);
+        self
+    }
+
+    pub fn skip_checks(mut self) -> Self {
+        self.params = self.params.all_checks_must_pass(false);
+        self
+    }
+
+    pub fn with_merge_label(mut self, label: &str) -> Self {
+        self.params = self.params.merge_label(label);
+        self
+    }
+
+    pub fn auto_merge(mut self) -> Self {
+        self.params = self.params.perform_merge(true);
+        self
+    }
+
+    pub fn add_ack_pattern(mut self, pattern: &str) -> Self {
+        self.params = self.params.ack_pattern(pattern);
+        self
+    }
+
+    pub fn build(self) -> Actions {
+        let params = self.params.build();
+        Actions::AutoMerge(Box::new(params))
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -169,6 +228,30 @@ mod test {
         match action {
             Actions::Github(p) => assert_eq!(*p, GithubActionParams::CheckConflicts),
             _ => panic!("Expected a CheckConflicts action"),
+        }
+    }
+
+    #[test]
+    fn auto_merge_builder() {
+        let action = Actions::auto_merge()
+            .with_min_acks(2)
+            .with_min_reviews(1)
+            .skip_checks()
+            .with_merge_label("moo-rge")
+            .auto_merge()
+            .add_ack_pattern("whack")
+            .build();
+
+        match action {
+            Actions::AutoMerge(p) => {
+                assert_eq!(p.min_acks_required(), 2);
+                assert_eq!(p.min_reviews_required(), 1);
+                assert_eq!(p.all_checks_must_pass(), false);
+                assert_eq!(p.merge_label(), "moo-rge");
+                assert_eq!(p.perform_merge(), true);
+                assert!(p.is_ack("whack"));
+            },
+            _ => panic!("Expected an AutoMerge action"),
         }
     }
 }

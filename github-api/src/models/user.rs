@@ -45,7 +45,7 @@ impl ToString for UserType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct Contributor {
     pub login: String,
     pub id: i64,

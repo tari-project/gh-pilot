@@ -26,10 +26,22 @@ pub struct CommentThread {
     pub comments: Vec<Comment>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct PullRequestComments {
     pub comments: Vec<Comment>,
     pub threads: Vec<CommentThread>,
+}
+
+impl PullRequestComments {
+    /// Utility function to add a custom comment to the thread. Primarily used for testing.
+    pub fn add_comment(&mut self, login: &str, comment: &str) -> &mut Self {
+        self.comments.push(Comment {
+            body: comment.to_string(),
+            created_at: DateTime::now(),
+            author: login.into(),
+        });
+        self
+    }
 }
 
 impl From<pull_request_comments_ql::ResponseData> for PullRequestComments {

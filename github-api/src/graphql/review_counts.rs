@@ -114,3 +114,43 @@ impl From<pull_request_review_counts_ql::ResponseData> for ReviewCounts {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use pull_request_review_counts_ql::PullRequestReviewState;
+
+    use super::*;
+
+    #[test]
+    fn review_counts() {
+        let counts = ReviewCounts {
+            total_count: 3,
+            id: IssueId::new("me", "proj", 12),
+            title: "Foom".to_string(),
+            reviews: vec![
+                ReviewSummary {
+                    author: "bob".to_string(),
+                    state: PullRequestReviewState::APPROVED,
+                    created_at: DateTime::now(),
+                },
+                ReviewSummary {
+                    author: "andy".to_string(),
+                    state: PullRequestReviewState::CHANGES_REQUESTED,
+                    created_at: DateTime::now(),
+                },
+                ReviewSummary {
+                    author: "mary".to_string(),
+                    state: PullRequestReviewState::APPROVED,
+                    created_at: DateTime::now(),
+                },
+            ],
+        };
+
+        assert_eq!(counts.total(), 3);
+        assert_eq!(counts.approvals(), 2);
+        assert!(counts.changes_requested());
+        assert_eq!(counts.reviewers(), vec!["bob", "andy", "mary"]);
+        assert_eq!(counts.id(), &IssueId::new("me", "proj", 12));
+        assert_eq!(counts.title(), "Foom");
+    }
+}
