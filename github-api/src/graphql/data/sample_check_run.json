@@ -1,0 +1,104 @@
+{
+    "repository": {
+      "pullRequest": {
+        "commits": {
+          "nodes": [
+            {
+              "commit": {
+                "url": "https://github.com/tari-project/gh-pilot/commit/c13501c51f6a3f5183f5921aa89d68110a29f0f4",
+                "committedDate": "2022-09-20T15:30:05Z",
+                "statusCheckRollup": {
+                  "state": "SUCCESS"
+                },
+                "checkSuites": {
+                  "totalCount": 4,
+                  "nodes": [
+                    {
+                      "app": {
+                        "name": "GitHub Actions"
+                      },
+                      "checkRuns": {
+                        "totalCount": 1,
+                        "nodes": [
+                          {
+                            "completedAt": "2022-09-20T15:35:54Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "clippy_check",
+                            "status": "COMPLETED",
+                            "summary": null
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "app": {
+                        "name": "GitHub Actions"
+                      },
+                      "checkRuns": {
+                        "totalCount": 1,
+                        "nodes": [
+                          {
+                            "completedAt": "2022-09-20T15:32:28Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "check-title",
+                            "status": "COMPLETED",
+                            "summary": null
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "app": {
+                        "name": "GitHub Actions"
+                      },
+                      "checkRuns": {
+                        "totalCount": 2,
+                        "nodes": [
+                          {
+                            "completedAt": "2022-09-20T15:42:12Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "cargo test (stable)",
+                            "status": "COMPLETED",
+                            "summary": null
+                          },
+                          {
+                            "completedAt": "2022-09-20T15:40:49Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "cargo test (nightly-2022-09-13)",
+                            "status": "COMPLETED",
+                            "summary": null
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "app": {
+                        "name": "GitHub Actions"
+                      },
+                      "checkRuns": {
+                        "totalCount": 1,
+                        "nodes": [
+                          {
+                            "completedAt": "2022-09-20T15:36:07Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "check-title",
+                            "status": "COMPLETED",
+                            "summary": null
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+}

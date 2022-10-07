@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct Url(String);
 
 impl Display for Url {
@@ -14,6 +14,12 @@ impl Display for Url {
 impl AsRef<str> for Url {
     fn as_ref(&self) -> &str {
         self.0.as_str()
+    }
+}
+
+impl<S: Into<String>> From<S> for Url {
+    fn from(s: S) -> Self {
+        Self(s.into())
     }
 }
 
