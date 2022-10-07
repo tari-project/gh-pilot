@@ -6,6 +6,8 @@ use crate::{
     graphql::{
         pr_comments::{pull_request_comments_ql, PullRequestCommentsQL},
         review_counts::{pull_request_review_counts_ql, PullRequestReviewCountsQL, ReviewCounts},
+        run_status::{check_run_status_ql, CheckRunStatusQL},
+        CheckRunStatus,
         PullRequestComments,
     },
     models::{Label, PullRequest},
@@ -110,6 +112,32 @@ impl PullRequestRequest {
             match response.errors {
                 None => Err(GithubApiError::DeserializationError(
                     "No data came back in the Review Summary response".into(),
+                )),
+                Some(errs) => Err(GithubApiError::GraphQLError(
+                    errs.into_iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<String>>()
+                        .join("; "),
+                )),
+            }
+        }
+    }
+
+    pub async fn fetch_last_check_run(&self, proxy: &ClientProxy) -> Result<CheckRunStatus, GithubApiError> {
+        let vars = check_run_status_ql::Variables {
+            owner: self.owner.clone(),
+            repo: self.repo.clone(),
+            pr_number: self.pull as i64,
+        };
+        let body = CheckRunStatusQL::build_query(vars);
+        let req = proxy.post("/graphql").json(&body);
+        let response: Response<check_run_status_ql::ResponseData> = proxy.send(req).await?;
+        if let Some(data) = response.data {
+            Ok(data.into())
+        } else {
+            match response.errors {
+                None => Err(GithubApiError::DeserializationError(
+                    "No data came back in the check run response".into(),
                 )),
                 Some(errs) => Err(GithubApiError::GraphQLError(
                     errs.into_iter()

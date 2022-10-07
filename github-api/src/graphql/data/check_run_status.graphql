@@ -1,0 +1,35 @@
+query CheckRunStatusQL($owner: String!, $repo: String!, $pr_number: Int!) {
+    repository(owner: $owner, name:$repo) {
+        pullRequest(number:$pr_number) {
+            commits(last: 1) {
+                nodes {
+                    commit {
+                        url
+                        committedDate
+                        statusCheckRollup {
+                            state
+                        }
+                        checkSuites(last: 10) {
+                            totalCount
+                            nodes {
+                                app {
+                                    name
+                                }
+                                checkRuns(last: 10) {
+                                    totalCount
+                                    nodes {
+                                        completedAt
+                                        conclusion
+                                        isRequired(pullRequestNumber: $pr_number)
+                                        name
+                                        status
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

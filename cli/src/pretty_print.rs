@@ -1,15 +1,15 @@
 use comfy_table::{presets::UTF8_BORDERS_ONLY, Cell, Color, ContentArrangement, Row, Table};
 use github_pilot_api::models::Label;
 
-pub fn pretty_table(header_label: &str, header_value: &str) -> Table {
+pub fn pretty_table(headings: &[&str]) -> Table {
     let mut table = Table::new();
     table
         .load_preset(UTF8_BORDERS_ONLY)
         .set_content_arrangement(ContentArrangement::Dynamic);
     let mut name_row = Row::new();
-    name_row
-        .add_cell(cc(Color::Green, header_label))
-        .add_cell(cc(Color::Green, header_value));
+    for heading in headings {
+        name_row.add_cell(cc(Color::Green, heading));
+    }
     table.add_row(name_row);
     table
 }

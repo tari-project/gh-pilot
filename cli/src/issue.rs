@@ -33,7 +33,7 @@ pub async fn run_issue_cmd(
 }
 
 fn pretty_print(issue: Issue) {
-    let mut table = pretty_table("Title", issue.title.as_str());
+    let mut table = pretty_table(&["Title", issue.title.as_str()]);
     table
         .add_row(["URL", issue.url.as_ref()])
         .add_row(["State", issue.state.to_string().as_str()])

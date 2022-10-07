@@ -166,6 +166,8 @@ pub enum PullRequestCommand {
     Merge(MergeArgs),
     /// Fetch review statistics
     Reviews,
+    /// Fetch last check run status (The result of the checks that are configured to run after each PR change).
+    Check,
 }
 
 #[derive(Debug, Args)]

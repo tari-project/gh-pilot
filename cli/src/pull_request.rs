@@ -1,7 +1,13 @@
 use github_pilot_api::{
-    graphql::{review_counts::ReviewCounts, PullRequestComments},
+    graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
     models::PullRequest,
-    provider_traits::{IssueProvider, PullRequestCommentsProvider, PullRequestProvider, PullRequestReviewSummary},
+    provider_traits::{
+        CheckRunStatusProvider,
+        IssueProvider,
+        PullRequestCommentsProvider,
+        PullRequestProvider,
+        PullRequestReviewSummary,
+    },
     wrappers::IssueId,
     GithubProvider,
 };
@@ -34,6 +40,7 @@ pub async fn run_pr_cmd(
         PullRequestCommand::Comments => fetch_comments(provider, id).await,
         PullRequestCommand::Merge(params) => merge_pull_request(provider, &id, params).await,
         PullRequestCommand::Reviews => fetch_review_summary(provider, id).await,
+        PullRequestCommand::Check => fetch_last_check_run(provider, id).await,
     }
     Ok(())
 }
@@ -58,7 +65,14 @@ async fn fetch_comments(provider: &dyn PullRequestCommentsProvider, id: IssueId)
 async fn fetch_review_summary(provider: &dyn PullRequestReviewSummary, id: IssueId) {
     match provider.fetch_review_summary(&id).await {
         Ok(summary) => print_review_summary(&summary),
-        Err(e) => warn!("⏩ Error fetching PR review summary: {e}"),
+        Err(e) => warn!("⏩👀 Error fetching PR review summary: {e}"),
+    }
+}
+
+async fn fetch_last_check_run(provider: &dyn CheckRunStatusProvider, id: IssueId) {
+    match provider.fetch_check_run(&id).await {
+        Ok(run_status) => print_run_status(&run_status),
+        Err(e) => warn!("⏩✅ Error fetching PR review summary: {e}"),
     }
 }
 
@@ -82,7 +96,7 @@ async fn merge_pull_request(provider: &dyn PullRequestProvider, id: &IssueId, pa
 }
 
 fn pretty_print(pr: PullRequest) {
-    let mut table = pretty_table("Title", pr.title.as_str());
+    let mut table = pretty_table(&["Title", pr.title.as_str()]);
     table
         .add_row(["URL", pr.url.as_ref()])
         .add_row(["State", pr.state.to_string().as_str()])
@@ -120,10 +134,35 @@ fn print_comments(comments: PullRequestComments) {
 }
 
 fn print_review_summary(summary: &ReviewCounts) {
-    let mut table = pretty_table("PR Reviews", summary.title());
+    let mut table = pretty_table(&["PR Reviews", summary.title()]);
     table
         .add_row(["Reviewers", summary.reviewers().join(" ").as_str()])
         .add_row(["Approvals", summary.approvals().to_string().as_str()])
         .add_row(["Changes requested", summary.changes_requested().to_string().as_str()]);
+    println!("{table}");
+}
+
+fn print_run_status(summary: &CheckRunStatus) {
+    let overall = serde_json::to_string(&summary.overall_status()).unwrap();
+    println!(
+        "Check Run status for commit {} at {}",
+        summary.commit_url(),
+        summary.committed_at()
+    );
+    println!("Overall result: {overall}");
+    let mut table = pretty_table(&["Name", "Completed At", "Result", "Status", "Required"]);
+    for run in summary.checks() {
+        let completed_at = run.completed_at.to_string();
+        let result = serde_json::to_string(&run.result).unwrap();
+        let status = serde_json::to_string(&run.status).unwrap();
+        let req = run.is_required.to_string();
+        table.add_row([
+            run.name.as_str(),
+            completed_at.as_str(),
+            result.as_str(),
+            status.as_str(),
+            req.as_str(),
+        ]);
+    }
     println!("{table}");
 }

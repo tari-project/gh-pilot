@@ -19,6 +19,12 @@ impl DateTime {
     }
 }
 
+impl Default for DateTime {
+    fn default() -> Self {
+        Self(Timestamp::from_utc(chrono::NaiveDateTime::from_timestamp(0, 0), Utc))
+    }
+}
+
 impl AsRef<Timestamp> for DateTime {
     fn as_ref(&self) -> &Timestamp {
         &self.0
