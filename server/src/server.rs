@@ -40,7 +40,7 @@ mod rules {
         actions::Actions,
         error::ServerError,
         heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
-        predicates::PullRequest,
+        predicates::{PullRequest, PullRequestComment},
         pub_sub::{PubSubActor, ReplaceRulesMessage},
         rules::RuleBuilder,
     };
@@ -95,8 +95,8 @@ mod rules {
             RuleBuilder::new("AutoMerge™")
                 .when(PullRequest::labeled_with("P-merge"))
                 .when(PullRequest::edited())
-                .when( PullRequest::approved())
-                // .when(PullRequestComment::added()) <- TODO add this predicate
+                .when(PullRequest::approved())
+                .when(PullRequestComment::added())
                 // .when(CheckRunComplete::success()) <- TODO add this predicate
                 .execute(Actions::auto_merge().build())
                 .submit(),
