@@ -3,13 +3,16 @@ use serde::{Deserialize, Serialize};
 pub mod issue_event;
 mod models;
 pub mod pr_event;
+mod status_check_events;
 
 pub use models::*;
+pub use status_check_events::*;
 
 use crate::error::GithubProviderError;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
+    CheckSuiteEvent(CheckSuiteEvent),
     CommitComment(CommitCommentEvent),
     IssueComment(IssueCommentEvent),
     Issues(IssuesEvent),
@@ -30,6 +33,10 @@ pub enum GithubEvent {
 impl GithubEvent {
     pub fn try_from_webhook_info(event: &str, body: &str) -> Result<Self, GithubProviderError> {
         match event {
+            "check_suite" => {
+                let event: CheckSuiteEvent = serde_json::from_str(body)?;
+                Ok(GithubEvent::CheckSuiteEvent(event))
+            },
             "commit_comment" => {
                 let value: CommitCommentEvent = serde_json::from_str(body)?;
                 Ok(Self::CommitComment(value))
@@ -76,6 +83,7 @@ impl GithubEvent {
 
     pub fn summary(&self) -> String {
         match self {
+            Self::CheckSuiteEvent(e) => e.check_suite.summary(),
             Self::CommitComment(c) => format!("Commit comment from {}: {}", c.info.sender.login, c.comment.body),
             Self::IssueComment(c) => format!(
                 "Issue comment from {}: {}",

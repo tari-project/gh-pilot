@@ -1,3 +1,4 @@
+mod app;
 mod branch;
 mod comments;
 mod commits;
@@ -18,6 +19,7 @@ mod repository;
 mod team;
 mod user;
 
+pub use app::*;
 pub use branch::Branch;
 pub use comments::*;
 pub use commits::*;
