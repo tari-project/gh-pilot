@@ -1,3 +1,5 @@
+extern crate core;
+
 pub mod actions;
 pub mod config;
 pub mod error;

@@ -15,6 +15,7 @@ newtype!(LabelName, String, str);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum PullRequestPredicate {
+    Approved,
     Assigned(Option<UserName>),
     Labeled(Option<LabelName>),
     ReviewRequestRemoved(Option<UserName>),
@@ -190,6 +191,12 @@ impl PullRequest {
     pub fn poor_justification() -> Self {
         Self {
             trigger: PullRequestPredicate::PoorJustification,
+        }
+    }
+
+    pub fn approved() -> Self {
+        Self {
+            trigger: PullRequestPredicate::Approved,
         }
     }
 }
