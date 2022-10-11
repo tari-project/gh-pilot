@@ -114,7 +114,7 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{
-        models::{AuthorAssociation, State, UserType},
+        models::{AuthorAssociation, ReviewState, State, UserType},
         webhooks::{
             GithubEvent,
             IssueCommentAction,
@@ -325,6 +325,23 @@ mod test {
                 _ => panic!("PR review event action was not 'edited'"),
             },
             _ => panic!("Not a PullRequestReviewComment event"),
+        }
+    }
+
+    #[test]
+    fn pr_review_commented() {
+        let data = include_str!("../test_data/pr_review_event.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review", data).unwrap();
+        match event {
+            GithubEvent::PullRequestReview(ev) => {
+                assert!(matches!(ev.action, PullRequestReviewAction::Submitted));
+                assert_eq!(ev.info.sender.login, "jorgeantonio21");
+                let review = ev.review;
+                assert!(matches!(review.state, ReviewState::Commented));
+                assert_eq!(review.node_id, "PRR_kwDOCCIzW85DsRe7");
+                assert_eq!(review.commit_id, "6ec69020efbb56752797f05f86cde07704e1d256");
+            },
+            _ => panic!("Not a PullRequestReview event"),
         }
     }
 }

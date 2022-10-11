@@ -95,7 +95,7 @@ mod rules {
             RuleBuilder::new("AutoMerge™")
                 .when(PullRequest::labeled_with("P-merge"))
                 .when(PullRequest::edited())
-                // .when( PullRequest::approved()) <- TODO add this predicate
+                .when( PullRequest::approved())
                 // .when(PullRequestComment::added()) <- TODO add this predicate
                 // .when(CheckRunComplete::success()) <- TODO add this predicate
                 .execute(Actions::auto_merge().build())

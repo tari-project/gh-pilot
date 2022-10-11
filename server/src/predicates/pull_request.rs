@@ -1,6 +1,7 @@
 use github_pilot_api::{
+    models::ReviewState,
     newtype,
-    webhooks::{GithubEvent, PullRequestAction, PullRequestEvent},
+    webhooks::{GithubEvent, PullRequestAction, PullRequestEvent, PullRequestReviewEvent},
 };
 use log::trace;
 
@@ -15,6 +16,7 @@ newtype!(LabelName, String, str);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum PullRequestPredicate {
+    Approved,
     Assigned(Option<UserName>),
     Labeled(Option<LabelName>),
     ReviewRequestRemoved(Option<UserName>),
@@ -192,13 +194,21 @@ impl PullRequest {
             trigger: PullRequestPredicate::PoorJustification,
         }
     }
+
+    pub fn approved() -> Self {
+        Self {
+            trigger: PullRequestPredicate::Approved,
+        }
+    }
 }
 
 impl RulePredicate for PullRequest {
     fn matches(&self, event: &GithubEventMessage) -> bool {
         // The match expressions are quite complicated, so I've done multiple matches in the interest of readability
-        // rather than one huge match. Firstly the event MUST be a PullRequest event, and we will be needing to
-        // interrogate the PR action field and the PR itself, so we extract those in the match
+        // rather than one huge match.
+        //
+        // Firstly check if the event is a PullRequest event, which covers the majority of cases, and we will be
+        // needing to interrogate the PR action field and the PR itself, so we extract those in the match
         if let GithubEvent::PullRequest(PullRequestEvent {
             action, pull_request, ..
         }) = event.event()
@@ -264,6 +274,12 @@ impl RulePredicate for PullRequest {
                 // Anything else does not match
                 _ => false,
             }
+        // For PR reviews, we must extract the pull request review event
+        } else if let GithubEvent::PullRequestReview(PullRequestReviewEvent { review, .. }) = event.event() {
+            match review.state {
+                ReviewState::Approved => self.trigger == PullRequestPredicate::Approved,
+                _ => false,
+            }
         } else {
             // Anything else does not match
             false
@@ -273,7 +289,7 @@ impl RulePredicate for PullRequest {
 
 #[cfg(test)]
 mod test {
-    use github_pilot_api::webhooks::{GithubEvent, PullRequestEvent};
+    use github_pilot_api::webhooks::GithubEvent;
 
     use super::{LabelName, PullRequest, PullRequestPredicate, UserName};
     use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};
@@ -353,9 +369,17 @@ mod test {
     #[test]
     fn pull_request_predicate_matches() {
         let data = include_str!("../../test-data/pr_event.json");
-        let pr_event: PullRequestEvent = serde_json::from_str(data).unwrap();
-        let msg = GithubEventMessage::new("test", GithubEvent::PullRequest(pr_event));
+        let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
+        let msg = GithubEventMessage::new("test", event);
         assert!(PullRequest::opened().matches(&msg));
         assert_eq!(PullRequest::merged().matches(&msg), false);
+    }
+
+    #[test]
+    fn pr_review_approval_matches() {
+        let data = include_str!("../../test-data/pr_review_approved.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review", data).unwrap();
+        let msg = GithubEventMessage::new("test", event);
+        assert!(PullRequest::approved().matches(&msg));
     }
 }
