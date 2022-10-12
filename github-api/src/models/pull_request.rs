@@ -71,7 +71,7 @@ pub struct PullRequest {
     pub review_comment_url: Url,
     pub comments_url: Url,
     pub statuses_url: Url,
-    pub number: usize,
+    pub number: u64,
     pub state: State,
     pub locked: bool,
     pub title: String,
@@ -128,8 +128,8 @@ pub struct IssuePullRequest {
 pub struct CheckRunPullRequest {
     pub base: GitReferenceShort,
     pub head: GitReferenceShort,
-    pub id: usize,
-    pub number: usize,
+    pub id: u64,
+    pub number: u64,
     pub url: Url,
 }
 

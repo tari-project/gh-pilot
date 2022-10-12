@@ -115,26 +115,6 @@ impl ToString for CheckSuiteStatus {
     }
 }
 
-impl CheckSuite {
-    pub fn summary(&self) -> String {
-        let prs = self
-            .pull_requests
-            .iter()
-            .map(|pr| format!("PR#{}", pr.id))
-            .collect::<Vec<String>>();
-        let status = self.status.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string());
-        let conclusion = self
-            .conclusion
-            .map(|c| c.to_string())
-            .unwrap_or_else(|| "N/A".to_string());
-        format!(
-            "Check suite {} for PRs {} {status}: {conclusion}",
-            self.id,
-            prs.join(",")
-        )
-    }
-}
-
 #[cfg(test)]
 mod test {
     use crate::{
