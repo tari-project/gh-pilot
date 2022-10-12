@@ -1,6 +1,6 @@
 //! Additional implementations for IssueEvent are kept here to avoid messing with the code generation tools in models.rs
 
-use crate::{api::IssueRequest, models::Issue, webhooks::IssuesEvent};
+use crate::{api::IssueRequest, models::Issue, webhook_events::IssuesEvent};
 
 impl IssuesEvent {
     pub fn owner(&self) -> &str {
@@ -26,7 +26,7 @@ impl IssuesEvent {
 
 #[cfg(test)]
 mod test {
-    use crate::webhooks::models::IssuesEvent;
+    use crate::webhook_events::models::IssuesEvent;
 
     #[test]
     fn issue_metadata() {

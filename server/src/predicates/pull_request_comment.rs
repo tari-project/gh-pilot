@@ -1,4 +1,4 @@
-use github_pilot_api::webhooks::{GithubEvent, PullRequestReviewCommentEvent};
+use github_pilot_api::webhook_events::{GithubEvent, PullRequestReviewCommentEvent};
 
 use crate::{predicates::pull_request::UserName, pub_sub::GithubEventMessage, rules::RulePredicate};
 
@@ -28,7 +28,7 @@ impl PullRequestComment {
 
 impl RulePredicate for PullRequestComment {
     fn matches(&self, event: &GithubEventMessage) -> bool {
-        use github_pilot_api::webhooks::PullRequestReviewCommentAction::*;
+        use github_pilot_api::webhook_events::PullRequestReviewCommentAction::*;
         use PullRequestCommentPredicate::*;
         if let GithubEvent::PullRequestReviewComment(PullRequestReviewCommentEvent { action, info, .. }) = event.event()
         {
@@ -45,7 +45,7 @@ impl RulePredicate for PullRequestComment {
 
 #[cfg(test)]
 mod test {
-    use github_pilot_api::webhooks::GithubEvent;
+    use github_pilot_api::webhook_events::GithubEvent;
 
     use crate::{
         predicates::pull_request_comment::PullRequestComment,

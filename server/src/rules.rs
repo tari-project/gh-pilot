@@ -3,7 +3,7 @@
 //! For example
 //!
 //! ```
-//!   # use github_pilot_api::webhooks::{GithubEvent, PullRequestEvent};
+//!   # use github_pilot_api::webhook_events::{GithubEvent, PullRequestEvent};
 //!   # use ghp_server::actions::Actions;
 //!   # use ghp_server::predicates::PullRequest;
 //!   # use ghp_server::rules::RuleBuilder;

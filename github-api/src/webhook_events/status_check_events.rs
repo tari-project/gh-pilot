@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     models::{App, CheckRunPullRequest, CommitSimple, DateTime, Url},
-    webhooks::CommonEventFields,
+    webhook_events::CommonEventFields,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -137,7 +137,7 @@ impl CheckSuite {
 
 #[cfg(test)]
 mod test {
-    use crate::webhooks::{
+    use crate::webhook_events::{
         status_check_events::{CheckSuiteConclusion, CheckSuiteStatus},
         GithubEvent,
     };

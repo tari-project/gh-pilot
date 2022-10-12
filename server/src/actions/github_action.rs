@@ -22,7 +22,7 @@ use std::sync::Arc;
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
 use github_pilot_api::{
     provider_traits::IssueProvider,
-    webhooks::{GithubEvent, IssuesEvent, PullRequestEvent},
+    webhook_events::{GithubEvent, IssuesEvent, PullRequestEvent},
     wrappers::IssueId,
     GithubProvider,
 };

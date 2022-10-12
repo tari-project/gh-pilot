@@ -1,14 +1,21 @@
 use serde::{Deserialize, Serialize};
 
-pub mod issue_event;
-mod models;
-pub mod pr_event;
-mod status_check_events;
-
-pub use models::*;
-pub use status_check_events::*;
-
-use crate::error::GithubProviderError;
+use crate::{
+    error::GithubProviderError,
+    webhook_events::{
+        CheckSuiteEvent,
+        CommitCommentEvent,
+        IssueCommentEvent,
+        IssuesEvent,
+        LabelEvent,
+        PingEvent,
+        PullRequestEvent,
+        PullRequestReviewCommentEvent,
+        PullRequestReviewEvent,
+        PushEvent,
+        StatusEvent,
+    },
+};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
@@ -123,7 +130,7 @@ impl GithubEvent {
 mod test {
     use crate::{
         models::{AuthorAssociation, ReviewState, State, UserType},
-        webhooks::{
+        webhook_events::{
             GithubEvent,
             IssueCommentAction,
             IssuesEventAction,

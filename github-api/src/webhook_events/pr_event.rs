@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use crate::{
     api::PullRequestRequest,
     models::PullRequest,
-    webhooks::{PullRequestAction, PullRequestEvent},
+    webhook_events::{PullRequestAction, PullRequestEvent},
     wrappers::IssueId,
 };
 

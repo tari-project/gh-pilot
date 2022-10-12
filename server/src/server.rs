@@ -33,7 +33,7 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
 
 mod rules {
     use actix::Addr;
-    use github_pilot_api::webhooks::PullRequestAction;
+    use github_pilot_api::webhook_events::PullRequestAction;
     use log::info;
 
     use crate::{

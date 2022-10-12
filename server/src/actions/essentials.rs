@@ -1,4 +1,4 @@
-use github_pilot_api::webhooks::GithubEvent;
+use github_pilot_api::webhook_events::GithubEvent;
 use log::warn;
 
 use crate::actions::{
