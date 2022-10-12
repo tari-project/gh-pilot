@@ -15,6 +15,7 @@ use crate::{
         PushEvent,
         StatusEvent,
     },
+    wrappers::IssueId,
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -122,6 +123,24 @@ impl GithubEvent {
         match &self {
             Self::PullRequest(pr) => Some(pr),
             _ => None,
+        }
+    }
+
+    /// If this event is related to a pull request, this method conveniently returns the PR details as an [`IssueId`].
+    pub fn related_pull_request(&self) -> Option<IssueId> {
+        match &self {
+            GithubEvent::CheckSuiteEvent(ev) => ev.first_related_pr(),
+            GithubEvent::PullRequest(ev) => Some(ev.as_issue_id()),
+            GithubEvent::PullRequestReview(ev) => Some(ev.related_pull_request()),
+            GithubEvent::PullRequestReviewComment(ev) => Some(ev.related_pull_request()),
+            GithubEvent::Push(_) => None,
+            GithubEvent::Status(_) => None,
+            GithubEvent::Label(_) => None,
+            GithubEvent::CommitComment(_) => None,
+            GithubEvent::IssueComment(_) => None,
+            GithubEvent::Issues(_) => None,
+            GithubEvent::Ping(_) => None,
+            GithubEvent::UnknownEvent { .. } => None,
         }
     }
 }

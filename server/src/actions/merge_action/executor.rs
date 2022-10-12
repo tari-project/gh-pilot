@@ -265,10 +265,16 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 params,
             } = msg;
             debug!("⏫ MergeExecutor handler is running task \"{name}\" for event \"{event_name}\"");
-            trace!("   on github event: {}", event.summary());
-            let id = match event.pull_request() {
-                Some(pr) => pr.as_issue_id(),
-                None => return,
+            trace!("⏫ on github event: {}", event.summary());
+            let id = match event.related_pull_request() {
+                Some(pr) => {
+                    debug!("⏫ Extracted pull request details for {pr}");
+                    pr
+                },
+                None => {
+                    debug!("⏫ Could not find a related pull request for event {event_name}");
+                    return;
+                },
             };
             let contributors = match this.fetch_contributors(&id).await {
                 Ok(contributors) => contributors,
