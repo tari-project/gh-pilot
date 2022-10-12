@@ -1,4 +1,7 @@
-use github_pilot_api::webhooks::{CheckSuiteConclusion, CheckSuiteStatus, GithubEvent};
+use github_pilot_api::{
+    models::{CheckSuiteConclusion, CheckSuiteStatus},
+    GithubEvent,
+};
 
 use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};
 

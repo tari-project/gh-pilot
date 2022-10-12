@@ -1,5 +1,5 @@
 use actix::Message;
-use github_pilot_api::webhooks::GithubEvent;
+use github_pilot_api::GithubEvent;
 
 use crate::actions::merge_action::action_params::MergeActionParams;
 

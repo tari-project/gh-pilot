@@ -1,14 +1,21 @@
 use serde::{Deserialize, Serialize};
 
-pub mod issue_event;
-mod models;
-pub mod pr_event;
-mod status_check_events;
-
-pub use models::*;
-pub use status_check_events::*;
-
-use crate::error::GithubProviderError;
+use crate::{
+    error::GithubProviderError,
+    models::{
+        CheckSuiteEvent,
+        CommitCommentEvent,
+        IssueCommentEvent,
+        IssuesEvent,
+        LabelEvent,
+        PingEvent,
+        PullRequestEvent,
+        PullRequestReviewCommentEvent,
+        PullRequestReviewEvent,
+        PushEvent,
+        StatusEvent,
+    },
+};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
@@ -122,20 +129,23 @@ impl GithubEvent {
 #[cfg(test)]
 mod test {
     use crate::{
-        models::{AuthorAssociation, ReviewState, State, UserType},
-        webhooks::{
-            GithubEvent,
+        github_event::GithubEvent,
+        models::{
+            AuthorAssociation,
             IssueCommentAction,
             IssuesEventAction,
             PullRequestAction,
             PullRequestReviewAction,
             PullRequestReviewCommentAction,
+            ReviewState,
+            State,
+            UserType,
         },
     };
 
     #[test]
     fn push_event() {
-        let data = include_str!("../test_data/push_event.json");
+        let data = include_str!("test_data/push_event.json");
         let event = GithubEvent::try_from_webhook_info("push", data).unwrap();
         match event {
             GithubEvent::Push(push) => {
@@ -149,7 +159,7 @@ mod test {
 
     #[test]
     fn push_event_2() {
-        let data = include_str!("../test_data/push_event2.json");
+        let data = include_str!("test_data/push_event2.json");
         let event = GithubEvent::try_from_webhook_info("push", data).unwrap();
         match event {
             GithubEvent::Push(push) => {
@@ -161,7 +171,7 @@ mod test {
 
     #[test]
     fn labelled_event() {
-        let data = include_str!("../test_data/labelled_event.json");
+        let data = include_str!("test_data/labelled_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         let pr = event.pull_request().expect("Labelled PR event did not include the PR");
         assert_eq!(pr.pull_request.state, State::Open);
@@ -177,7 +187,7 @@ mod test {
 
     #[test]
     fn pr_review_comment_event() {
-        let data = include_str!("../test_data/pr_review_comment_event.json");
+        let data = include_str!("test_data/pr_review_comment_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", data).unwrap();
         match event {
             GithubEvent::PullRequestReviewComment(c) => {
@@ -193,7 +203,7 @@ mod test {
 
     #[test]
     fn pr_opened_event() {
-        let data = include_str!("../test_data/pr_event.json");
+        let data = include_str!("test_data/pr_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
@@ -214,7 +224,7 @@ mod test {
 
     #[test]
     fn pr_edited_event() {
-        let data = include_str!("../test_data/pr_edited_event.json");
+        let data = include_str!("test_data/pr_edited_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
@@ -246,7 +256,7 @@ mod test {
 
     #[test]
     fn pr_sync_event() {
-        let data = include_str!("../test_data/pr_sync_event.json");
+        let data = include_str!("test_data/pr_sync_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request", data).unwrap();
         match event {
             GithubEvent::PullRequest(pr) => {
@@ -269,7 +279,7 @@ mod test {
 
     #[test]
     fn issue_assigned_event() {
-        let data = include_str!("../test_data/issue_event.json");
+        let data = include_str!("test_data/issue_event.json");
         let event = GithubEvent::try_from_webhook_info("issues", data).unwrap();
         match event {
             GithubEvent::Issues(ev) => {
@@ -290,7 +300,7 @@ mod test {
     /// Fix bug in deserializing the `GithubEvent::PullRequestReviewComment` event - 15/9/2022
     #[test]
     fn pr_review_comment() {
-        let data = include_str!("../test_data/pr_review_comment_event2.json");
+        let data = include_str!("test_data/pr_review_comment_event2.json");
         let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", data).unwrap();
         match event {
             GithubEvent::PullRequestReviewComment(ev) => {
@@ -305,7 +315,7 @@ mod test {
     /// Fix bug in deserializing the `GithubEvent::IssueComment` event - 15/9/2022
     #[test]
     fn issue_comment_1() {
-        let data = include_str!("../test_data/issue_comment1.json");
+        let data = include_str!("test_data/issue_comment1.json");
         let event = GithubEvent::try_from_webhook_info("issue_comment", data).unwrap();
         match event {
             GithubEvent::IssueComment(ev) => {
@@ -321,7 +331,7 @@ mod test {
     /// Fix bug in deserializing the `GithubEvent::PullRequestReview` event - 19/9/2022
     #[test]
     fn pr_review_1() {
-        let data = include_str!("../test_data/pull_request_review.json");
+        let data = include_str!("test_data/pull_request_review.json");
         let event = GithubEvent::try_from_webhook_info("pull_request_review", data).unwrap();
         match event {
             GithubEvent::PullRequestReview(ev) => match ev.action {
@@ -338,7 +348,7 @@ mod test {
 
     #[test]
     fn pr_review_commented() {
-        let data = include_str!("../test_data/pr_review_event.json");
+        let data = include_str!("test_data/pr_review_event.json");
         let event = GithubEvent::try_from_webhook_info("pull_request_review", data).unwrap();
         match event {
             GithubEvent::PullRequestReview(ev) => {

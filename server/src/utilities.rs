@@ -63,7 +63,7 @@ mod test {
         // Event 83308ad0-34cd-11ed-87f6-b93609568f2c
         let sig = "sha256=4a46a5402575f847b95322c07386afc14f78c34ebd41873e9e35e142f8039e3d";
 
-        let payload = include_str!("./data/signature_payload.json");
+        let payload = include_str!("../test-data/signature_payload.json");
         let secret = "this_is_my_very_safe_secret";
         match check_valid_signature(secret, sig, payload) {
             Ok(()) => (),
@@ -75,7 +75,7 @@ mod test {
     fn invalid_signature() {
         let sig = "sha256=123456402575f847b95322c07386afc14f78c34ebd41873e9e35e142f8039e3d";
 
-        let payload = include_str!("./data/signature_payload.json");
+        let payload = include_str!("../test-data/signature_payload.json");
         let secret = "this_is_my_very_safe_secret";
         match check_valid_signature(secret, sig, payload) {
             Err(ServerError::InvalidSignature) => {},

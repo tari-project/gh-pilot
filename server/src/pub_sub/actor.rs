@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use actix::{Actor, Context, Handler, Running, SystemService};
-use github_pilot_api::webhooks::GithubEvent;
+use github_pilot_api::GithubEvent;
 use log::*;
 
 use crate::{
