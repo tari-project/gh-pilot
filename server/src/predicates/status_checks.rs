@@ -30,3 +30,18 @@ impl RulePredicate for StatusCheck {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::predicates::status_checks::StatusCheck;
+
+    #[test]
+    fn check_suite_success() {
+        let data = include_str!("../../test-data/check_suite_event1.json");
+        let event = GithubEvent::try_from_webhook_info("check_suite", data).unwrap();
+        let msg = GithubEventMessage::new("check-suite", event);
+        let predicate = StatusCheck::suite_success();
+        assert!(predicate.matches(&msg));
+    }
+}

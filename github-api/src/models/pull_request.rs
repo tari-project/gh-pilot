@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::{
     common::Url,
-    git::GitReference,
+    git::{GitReference, GitReferenceShort},
     labels::Label,
     links::Links,
     team::SimpleTeam,
@@ -111,7 +111,6 @@ pub struct PullRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(deny_unknown_fields)]
 pub struct IssuePullRequest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub diff_url: Option<String>,
@@ -123,6 +122,15 @@ pub struct IssuePullRequest {
     pub url: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub merged_at: Option<DateTime>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CheckRunPullRequest {
+    pub base: GitReferenceShort,
+    pub head: GitReferenceShort,
+    pub id: usize,
+    pub number: usize,
+    pub url: Url,
 }
 
 #[cfg(test)]

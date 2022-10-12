@@ -6,7 +6,7 @@ use crate::models::{
     SimpleUser,
 };
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct RepositoryReference {
     pub id: u64,
     pub name: String,

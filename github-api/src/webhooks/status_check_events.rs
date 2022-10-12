@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    models::{App, CommitSimple, DateTime, PullRequest, Url},
+    models::{App, CheckRunPullRequest, CommitSimple, DateTime, Url},
     webhooks::CommonEventFields,
 };
 
@@ -48,7 +48,7 @@ pub struct CheckSuite {
     /// An array of pull requests that match this check suite. A pull request matches a check suite if they have the
     /// same `head_sha` and `head_branch`. When the check suite's `head_branch` is in a forked repository it will be
     /// `null` and the `pull_requests` array will be empty.
-    pub pull_requests: Vec<PullRequest>,
+    pub pull_requests: Vec<CheckRunPullRequest>,
     /// The summary status for all check runs that are part of the check suite. Can be `requested`, `in_progress`, or
     /// `completed`.
     pub status: Option<CheckSuiteStatus>,
@@ -120,7 +120,7 @@ impl CheckSuite {
         let prs = self
             .pull_requests
             .iter()
-            .map(|pr| format!("{}(#{})", pr.title, pr.id))
+            .map(|pr| format!("PR#{}", pr.id))
             .collect::<Vec<String>>();
         let status = self.status.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string());
         let conclusion = self
