@@ -71,6 +71,8 @@ pub enum CheckSuiteConclusion {
     TimedOut,
     #[serde(rename = "action_required")]
     ActionRequired,
+    #[serde(rename = "skipped")]
+    Skipped,
     #[serde(rename = "stale")]
     Stale,
 }
@@ -84,6 +86,7 @@ impl ToString for CheckSuiteConclusion {
             Self::Cancelled => "cancelled".to_string(),
             Self::TimedOut => "timed_out".to_string(),
             Self::ActionRequired => "action_required".to_string(),
+            Self::Skipped => "skipped".to_string(),
             Self::Stale => "stale".to_string(),
         }
     }
