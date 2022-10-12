@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    models::{App, CheckRunPullRequest, CommitSimple, DateTime, Url},
-    webhook_events::CommonEventFields,
-};
+use crate::models::{App, CheckRunPullRequest, CommitSimple, CommonEventFields, DateTime, Url};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum CheckSuiteAction {
@@ -137,9 +134,9 @@ impl CheckSuite {
 
 #[cfg(test)]
 mod test {
-    use crate::webhook_events::{
-        status_check_events::{CheckSuiteConclusion, CheckSuiteStatus},
-        GithubEvent,
+    use crate::{
+        github_event::GithubEvent,
+        models::status_check_events::{CheckSuiteConclusion, CheckSuiteStatus},
     };
 
     #[test]

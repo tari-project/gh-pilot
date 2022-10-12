@@ -1,11 +1,8 @@
-//! Additional implementations for PullRequestEvent are kept here to avoid messing with the code generation tools in
-//! models.rs
 use std::fmt::{Display, Formatter};
 
 use crate::{
     api::PullRequestRequest,
-    models::PullRequest,
-    webhook_events::{PullRequestAction, PullRequestEvent},
+    models::{PullRequest, PullRequestAction, PullRequestEvent},
     wrappers::IssueId,
 };
 

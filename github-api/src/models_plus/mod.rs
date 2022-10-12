@@ -3,6 +3,6 @@
 
 mod deserializers;
 mod pull_request;
-
+mod pull_request_event;
 pub use deserializers::*;
 pub use pull_request::*;

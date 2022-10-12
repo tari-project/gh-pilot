@@ -1,7 +1,7 @@
 use github_pilot_api::{
-    models::ReviewState,
+    models::{PullRequestAction, PullRequestEvent, PullRequestReviewEvent, ReviewState},
     newtype,
-    webhook_events::{GithubEvent, PullRequestAction, PullRequestEvent, PullRequestReviewEvent},
+    GithubEvent,
 };
 use log::trace;
 
@@ -289,7 +289,7 @@ impl RulePredicate for PullRequest {
 
 #[cfg(test)]
 mod test {
-    use github_pilot_api::webhook_events::GithubEvent;
+    use github_pilot_api::GithubEvent;
 
     use super::{LabelName, PullRequest, PullRequestPredicate, UserName};
     use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};

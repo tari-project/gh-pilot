@@ -21,9 +21,10 @@ use std::sync::Arc;
 
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
 use github_pilot_api::{
+    models::{IssuesEvent, PullRequestEvent},
     provider_traits::IssueProvider,
-    webhook_events::{GithubEvent, IssuesEvent, PullRequestEvent},
     wrappers::IssueId,
+    GithubEvent,
     GithubProvider,
 };
 use log::*;

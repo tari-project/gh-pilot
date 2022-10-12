@@ -1,5 +1,5 @@
 use actix::Message;
-use github_pilot_api::webhook_events::GithubEvent;
+use github_pilot_api::GithubEvent;
 
 use crate::{pub_sub::PubSubError, rules::Rule};
 

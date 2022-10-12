@@ -23,7 +23,7 @@
 //! ```
 use actix::prelude::*;
 use actix_web::{get, http::header::HeaderMap, post, web, web::Data, HttpRequest, HttpResponse, Responder};
-use github_pilot_api::{error::GithubProviderError, webhook_events::GithubEvent};
+use github_pilot_api::{error::GithubProviderError, GithubEvent};
 use log::*;
 use zeroize::Zeroize;
 
