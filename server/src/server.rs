@@ -40,7 +40,7 @@ mod rules {
         actions::Actions,
         error::ServerError,
         heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
-        predicates::{PullRequest, PullRequestComment},
+        predicates::{PullRequest, PullRequestComment, StatusCheck},
         pub_sub::{PubSubActor, ReplaceRulesMessage},
         rules::RuleBuilder,
     };
@@ -97,7 +97,7 @@ mod rules {
                 .when(PullRequest::edited())
                 .when(PullRequest::approved())
                 .when(PullRequestComment::added())
-                // .when(CheckRunComplete::success()) <- TODO add this predicate
+                .when(StatusCheck::suite_success())
                 .execute(Actions::auto_merge().build())
                 .submit(),
         ];
