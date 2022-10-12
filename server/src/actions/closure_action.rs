@@ -102,7 +102,7 @@ impl Handler<ClosureActionMessage> for ClosureActionExecutor {
             .await;
             match result {
                 Ok(()) => debug!("📝 Closure Task completely happily."),
-                Err(e) => debug!("📝 Closure task wasn't happy. {}", e.to_string()),
+                Err(e) => debug!("📝 Closure task wasn't happy. {e}"),
             }
             debug!("📝 Completed execution of task \"{}\"", name);
         })

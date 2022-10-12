@@ -5,7 +5,7 @@ use crate::pretty_print::pretty_table;
 
 pub async fn run_contributor_cmd(provider: &GithubProvider, owner: &str, repo: &str) -> Result<(), ()> {
     let contributors = provider.fetch_contributors(owner, repo).await.map_err(|e| {
-        warn!("⏩ Error fetching contributors: {}", e.to_string());
+        warn!("⏩ Error fetching contributors: {e}",);
     })?;
     println!("👀 {} Contributors for {owner}/{repo}:", contributors.len());
     let mut table = pretty_table(&["Name", "Contributions"]);

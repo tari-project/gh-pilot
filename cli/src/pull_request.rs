@@ -29,12 +29,12 @@ pub async fn run_pr_cmd(
     match cmd {
         PullRequestCommand::Fetch => fetch_pr(provider, id).await,
         PullRequestCommand::AddLabel(l) => match provider.add_label(&id, l.label.as_str()).await {
-            Ok(_) => info!("⏩ '{}' added to PR {}/{}", l.label, id.repo, id.number),
-            Err(e) => warn!("⏩ Error adding label to PR: {}", e.to_string()),
+            Ok(_) => info!("⏩ '{}' added to PR {id}", l.label),
+            Err(e) => warn!("⏩ Error adding label to PR: {e}"),
         },
         PullRequestCommand::RemoveLabel(l) => match provider.remove_label(&id, l.label.as_str(), false).await {
-            Ok(true) => info!("⏩ '{}' removed from PR {}/{}", l.label, id.repo, id.number),
-            Ok(false) => info!("⏩ '{}' was not present on PR {}/{}", l.label, id.repo, id.number),
+            Ok(true) => info!("⏩ '{}' removed from PR {id}", l.label),
+            Ok(false) => info!("⏩ '{}' was not present on PR {id}", l.label),
             Err(e) => warn!("⏩ Error removing label from PR: {e}"),
         },
         PullRequestCommand::Comments => fetch_comments(provider, id).await,

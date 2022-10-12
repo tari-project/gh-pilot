@@ -174,7 +174,7 @@ impl GithubActionExecutor {
         let req = IssueId::new(owner, repo, issue_number);
         let res = provider.add_label(&req, label).await;
         if let Err(e) = res {
-            warn!("🐙🏷 Failed to add label to issue: {}", e.to_string());
+            warn!("🐙🏷 Failed to add label to issue: {e}");
         }
     }
 
@@ -208,26 +208,17 @@ impl GithubActionExecutor {
         let req = IssueId::new(owner, repo, pr_number);
         let res = provider.add_label(&req, label).await;
         if let Err(e) = res {
-            warn!("🐙🏷 Failed to add label to PR: {}", e.to_string());
+            warn!("🐙🏷 Failed to add label to PR: {e}");
         }
     }
 
     async fn remove_label_from_pr(provider: &Arc<GithubProvider>, event: &PullRequestEvent, label: &String) {
-        let repo = event.repo();
-        let owner = event.owner();
-        let pr_number = event.number();
-        debug!("🐙🏷 Removing label {} from PR {}/{}#{}", label, owner, repo, pr_number);
-        let req = IssueId::new(owner, repo, pr_number);
+        let req = IssueId::new(event.owner(), event.repo(), event.number());
+        debug!("🐙🏷 Removing label [{label}] from PR {req}");
         match provider.remove_label(&req, label, false).await {
-            Ok(true) => info!("🐙🏷 '{}' removed from PR {}/{}#{}", label, owner, repo, pr_number),
-            Ok(false) => info!(
-                "🐙🏷 '{}' not found on PR {}/{}#{}, so nothing to remove 😏",
-                label, owner, repo, pr_number
-            ),
-            Err(e) => warn!(
-                "🐙🏷 '{}' removal failed on PR: {}/{}#{}. {}",
-                label, owner, repo, pr_number, e
-            ),
+            Ok(true) => info!("🐙🏷 [{label}] removed from PR {req}"),
+            Ok(false) => info!("🐙🏷 [{label}] not found on PR {req}, so nothing to remove 😏"),
+            Err(e) => warn!("🐙🏷 '{label}' removal failed on PR: {req}. {e}"),
         }
     }
 

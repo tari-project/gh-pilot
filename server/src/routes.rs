@@ -47,14 +47,11 @@ pub async fn github_webhook(
     pubsub: PubSubActorRef,
 ) -> Result<HttpResponse, ServerError> {
     let headers = req.headers();
-    debug!("💻 Received webhook request");
+    trace!("💻 Received webhook request: {}", req.uri());
     let payload = std::str::from_utf8(body.as_ref()).map_err(|e| ServerError::InvalidRequestBody(e.to_string()))?;
     trace!("💻 Decoded payload body. {} bytes", payload.bytes().len());
     if let Err(e) = validate_signature(headers, payload) {
-        error!(
-            "💻 The webhook signature is invalid. This event will not be processed. {}",
-            e
-        );
+        error!("💻 The webhook signature is invalid. This event will not be processed. {e}");
         return Err(ServerError::InvalidSignature);
     }
     let event_name = headers
@@ -65,32 +62,25 @@ pub async fn github_webhook(
     trace!("💻 Extracted event name: {}", event_name);
     match GithubEvent::try_from_webhook_info(event_name, payload) {
         Ok(event) => {
-            info!("💻 Github Event Received: [{}], \"{}\"", event_name, event.summary());
+            info!("💻 Github Event Received: [{event_name}], \"{}\"", event.summary());
             dispatch_event_to_pubsub(pubsub, event_name, event)?;
             Ok(HttpResponse::Ok().finish())
         },
         Err(GithubProviderError::UnknownEvent(s)) => {
-            info!(
-                "💻 /webhook handler could not handle an \"{}\" event. Discarding it and moving on.",
-                s
-            );
+            info!("💻 /webhook handler could not handle an \"{s}\" event. Discarding it and moving on.");
             Ok(HttpResponse::Ok().finish())
         },
         Err(GithubProviderError::EventDeserializationError(s)) => {
             warn!(
-                "💻 /webhook handler could not deserialize a \"{}\". Turn on TRACE level to get more details and \
-                 maybe file a bug report?",
-                event_name
+                "💻 /webhook handler could not deserialize a \"{event_name}\". Turn on TRACE level to get more \
+                 details and maybe file a bug report?"
             );
             trace!("💻 {}", s);
             trace!("💻 JSON payload:\n{}", payload);
             Ok(HttpResponse::Ok().finish())
         },
         Err(e) => {
-            warn!(
-                "💻 /webhook handler received an unexpected error: {}. Dropping it like yesterday's news.",
-                e.to_string()
-            );
+            warn!("💻 /webhook handler received an unexpected error: {e}. Dropping it like yesterday's news.");
             Ok(HttpResponse::Ok().finish())
         },
     }
@@ -101,7 +91,7 @@ fn validate_signature(headers: &HeaderMap, payload: &str) -> Result<(), ServerEr
     let mut secret = get_secret()?;
     check_valid_signature(secret.as_str(), signature, payload)?;
     secret.zeroize();
-    trace!("💻 Received webhook signature check passed");
+    trace!("💻 Github webhook signature check passed");
     Ok(())
 }
 

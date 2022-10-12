@@ -137,6 +137,7 @@ impl MergeExecutor {
     /// Checks whether the branch protection checks have passed yet
     async fn checks_passed(&self, params: &MergeActionParams, id: &IssueId) -> bool {
         if !params.all_checks_must_pass() {
+            debug!("⏫ MergeAction config does not require status checks to pass. Happy to proceed");
             return true;
         }
         let checks = match self.checks.fetch_check_run(id).await {
@@ -176,6 +177,7 @@ impl MergeExecutor {
 
     /// Carries out the merge action. The action depends on the state of `[MergeActionParams::auto-merge]`.
     async fn execute_merge_action(&self, params: &MergeActionParams, id: &IssueId) {
+        debug!("⏫🟢 Executing merge action for PR {id}");
         let label = params.merge_label();
         let merge_label_status = self.check_merge_label(label, id).await;
         match (merge_label_status, params.perform_merge()) {
@@ -216,7 +218,7 @@ impl MergeExecutor {
             merge_method: MergeMethod::Squash,
             ..Default::default()
         };
-        debug!("⏫ Attempting to merge PR {id}.");
+        debug!("⏫🟢 Attempting to merge PR {id}.");
         match self.provider.merge_pull_request(id, params).await {
             Ok(_) => info!("⏫ Merged PR {id}. Thank you for using AutoMerge™"),
             Err(e) => warn!("⏫ Could not merge PR {id}. {e}"),
@@ -265,7 +267,7 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 params,
             } = msg;
             debug!("⏫ MergeExecutor handler is running task \"{name}\" for event \"{event_name}\"");
-            trace!("⏫ on github event: {}", event.summary());
+            trace!("⏫ Event summary: {}", event.summary());
             let id = match event.related_pull_request() {
                 Some(pr) => {
                     debug!("⏫ Extracted pull request details for {pr}");
@@ -277,16 +279,19 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 },
             };
             let contributors = match this.fetch_contributors(&id).await {
-                Ok(contributors) => contributors,
+                Ok(contributors) => {
+                    trace!("⏫ Fetched {} contributors to {id}", contributors.len());
+                    contributors
+                },
                 Err(e) => {
                     warn!("⏫ Merge action could not get the list of contributors for PR {id}. {e}");
                     return;
                 },
             };
-            if this.check_acks(&params, &id, contributors).await &&
-                this.check_reviews(&params, &id).await &&
-                this.checks_passed(&params, &id).await
-            {
+            let acks_passed = this.check_acks(&params, &id, contributors).await;
+            let reviews_passed = this.check_reviews(&params, &id).await;
+            let checks_passed = this.checks_passed(&params, &id).await;
+            if acks_passed && reviews_passed && checks_passed {
                 this.execute_merge_action(&params, &id).await;
             }
         };
