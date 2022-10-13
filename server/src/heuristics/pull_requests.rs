@@ -55,9 +55,13 @@ impl<'pr> PullRequestHeuristics<'pr> {
     pub fn has_sufficient_context(&self) -> bool {
         let changes = self.total_changes();
         let body_length = self.pr.body.as_ref().map(|s| s.len()).unwrap_or(0);
-        // Want at least 150 characters,
+        // Want at least 100 characters,
         // and at least 1 character per 10 lines of code changed
-        body_length >= 150.max(changes / 10)
+        // but any message more than 10 lines (80 words or so), or 400 characters is probably fine
+        if body_length > 500 {
+            return true;
+        }
+        body_length >= 100.max(changes / 10)
     }
 }
 
