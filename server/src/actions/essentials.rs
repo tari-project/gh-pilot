@@ -8,19 +8,6 @@ use crate::actions::{
     MergeActionParams,
 };
 
-// Implementation notes: --
-// Actions must actually be Actors. This lets them have state. Then the action tasks will be messages that are
-// sent to the TaskRunner and distributed to the handling actors.
-//
-// webhook msg -> PubSub, checks rules.
-// For each rule triggered,
-// for each actor action referenced in `execute`,
-// build an action task message
-// send it to the relevant action actor
-//
-// action task message -> ActionTask Actor
-// Run task according to specification
-
 #[derive(Clone)]
 pub enum Actions {
     AutoMerge(Box<MergeActionParams>),

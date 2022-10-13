@@ -1,7 +1,7 @@
 use actix::Message;
 use github_pilot_api::GithubEvent;
 
-use crate::{pub_sub::PubSubError, rules::Rule};
+use crate::rules::Rule;
 
 #[derive(Debug, Clone)]
 pub struct GithubEventMessage {
@@ -39,7 +39,7 @@ pub struct ReplaceRulesMessage {
 }
 
 impl Message for ReplaceRulesMessage {
-    type Result = Result<usize, PubSubError>;
+    type Result = usize;
 }
 
 pub struct AddRuleMessage {
@@ -47,5 +47,5 @@ pub struct AddRuleMessage {
 }
 
 impl Message for AddRuleMessage {
-    type Result = Result<usize, PubSubError>;
+    type Result = usize;
 }

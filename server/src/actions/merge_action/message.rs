@@ -1,7 +1,7 @@
 use actix::Message;
 use github_pilot_api::GithubEvent;
 
-use crate::actions::merge_action::action_params::MergeActionParams;
+use crate::{actions::merge_action::action_params::MergeActionParams, pub_sub::ActionResult};
 
 #[derive(Clone)]
 pub struct MergeActionMessage {
@@ -39,5 +39,5 @@ impl MergeActionMessage {
 }
 
 impl Message for MergeActionMessage {
-    type Result = ();
+    type Result = ActionResult;
 }

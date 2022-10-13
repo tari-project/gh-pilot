@@ -4,6 +4,8 @@ use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervise
 use github_pilot_api::GithubEvent;
 use log::*;
 
+use crate::pub_sub::ActionResult;
+
 type ClosureActionFn = Arc<dyn Fn(String, GithubEvent) + Send + Sync>;
 
 /// An action implementation that wraps a closure
@@ -54,7 +56,7 @@ impl ClosureActionMessage {
 }
 
 impl Message for ClosureActionMessage {
-    type Result = ();
+    type Result = ActionResult;
 }
 
 #[derive(Default)]
@@ -88,7 +90,7 @@ impl Actor for ClosureActionExecutor {
 }
 
 impl Handler<ClosureActionMessage> for ClosureActionExecutor {
-    type Result = ResponseFuture<()>;
+    type Result = ResponseFuture<ActionResult>;
 
     fn handle(&mut self, msg: ClosureActionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let (name, event_name, event, action) = msg.to_parts();
@@ -100,11 +102,18 @@ impl Handler<ClosureActionMessage> for ClosureActionExecutor {
                 f(event_name, event);
             })
             .await;
-            match result {
-                Ok(()) => debug!("📝 Closure Task completely happily."),
-                Err(e) => debug!("📝 Closure task wasn't happy. {e}"),
-            }
+            let result = match result {
+                Ok(()) => {
+                    debug!("📝 Closure Task completely happily.");
+                    ActionResult::Success
+                },
+                Err(e) => {
+                    debug!("📝 Closure task wasn't happy. {e}");
+                    ActionResult::Failed
+                },
+            };
             debug!("📝 Completed execution of task \"{}\"", name);
+            result
         })
     }
 }

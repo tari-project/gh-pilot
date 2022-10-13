@@ -1,8 +1,9 @@
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, Running, SystemService};
+use actix::{Actor, Context, Handler, ResponseFuture, Running, SystemService};
 use github_pilot_api::GithubEvent;
 use log::*;
+use tokio::sync::RwLock;
 
 use crate::{
     actions::{
@@ -17,13 +18,13 @@ use crate::{
         MergeActionParams,
         MergeExecutor,
     },
-    pub_sub::{GithubEventMessage, PubSubError, ReplaceRulesMessage},
+    pub_sub::{ActionResult, GithubEventMessage, PubSubError, ReplaceRulesMessage},
     rules::Rule,
     utilities::timestamp,
 };
 
 pub struct PubSubActor {
-    rules: RwLock<Vec<Rule>>,
+    rules: Arc<RwLock<Vec<Rule>>>,
 }
 
 impl Default for PubSubActor {
@@ -35,78 +36,65 @@ impl Default for PubSubActor {
 impl PubSubActor {
     pub fn new() -> Self {
         Self {
-            rules: RwLock::new(Vec::new()),
+            rules: Arc::new(RwLock::new(Vec::new())),
         }
     }
 
-    fn add_rules(&mut self, clear_first: bool, rules: Vec<Rule>) -> Result<usize, PubSubError> {
-        let mut lock_guard = self
-            .rules
-            .write()
-            .map_err(|_| PubSubError::ReplaceRulesError("Pubsub actor write lock is poisoned".to_string()))?;
-        if clear_first {
-            lock_guard.clear();
-        }
-        rules.into_iter().for_each(|r| lock_guard.push(r));
-        Ok(lock_guard.len())
-    }
-
-    fn dispatch_message(
-        &self,
+    async fn dispatch_message(
         action: Arc<Actions>,
         event_name: String,
         event: GithubEvent,
-    ) -> Result<(), PubSubError> {
+    ) -> Result<ActionResult, PubSubError> {
         match action.as_ref() {
-            Actions::AutoMerge(p) => self.dispatch_merge_action(*p.clone(), event_name, event),
-            Actions::Closure(c) => self.dispatch_closure_action(*c.clone(), event_name, event),
-            Actions::Github(a) => self.dispatch_github_action(*a.clone(), event_name, event),
+            Actions::AutoMerge(p) => Self::dispatch_merge_action(*p.clone(), event_name, event).await,
+            Actions::Closure(c) => Self::dispatch_closure_action(*c.clone(), event_name, event).await,
+            Actions::Github(a) => Self::dispatch_github_action(*a.clone(), event_name, event).await,
             Actions::NullAction => {
                 info!("📰 NullAction was dispatched. Doing nothing");
-                Ok(())
+                Ok(ActionResult::Success)
             },
         }
     }
 
-    fn dispatch_closure_action(
-        &self,
+    async fn dispatch_closure_action(
         params: ClosureActionParams,
         ev_name: String,
         ev: GithubEvent,
-    ) -> Result<(), PubSubError> {
+    ) -> Result<ActionResult, PubSubError> {
         let name = format!("ClosureAction-{}", timestamp());
         let msg = ClosureActionMessage::new(name, ev_name, ev, params);
         let executor = ClosureActionExecutor::from_registry();
         executor
-            .try_send(msg)
+            .send(msg)
+            .await
             .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Closure Action message. {}", e)))
     }
 
-    fn dispatch_merge_action(
-        &self,
+    async fn dispatch_merge_action(
         params: MergeActionParams,
         ev_name: String,
         ev: GithubEvent,
-    ) -> Result<(), PubSubError> {
+    ) -> Result<ActionResult, PubSubError> {
         let name = format!("MergeAction-{}", timestamp());
         let msg = MergeActionMessage::new(name, ev_name, ev, params);
         let executor = MergeExecutor::from_registry();
         executor
-            .try_send(msg)
+            .send(msg)
+            .await
             .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Merge Action message. {}", e)))
     }
 
-    fn dispatch_github_action(
-        &self,
+    async fn dispatch_github_action(
         params: GithubActionParams,
         ev_name: String,
         ev: GithubEvent,
-    ) -> Result<(), PubSubError> {
+    ) -> Result<ActionResult, PubSubError> {
         let name = format!("GithubAction-{}", timestamp());
         let msg = GithubActionMessage::new(name, ev_name, ev, params);
         let executor = GithubActionExecutor::from_registry();
         executor
-            .try_send(msg)
+            .send(msg)
+            .await
             .map_err(|e| PubSubError::DispatchError(format!("Could not dispatch Github Action message. {}", e)))
     }
 }
@@ -129,44 +117,49 @@ impl Actor for PubSubActor {
 }
 
 impl Handler<GithubEventMessage> for PubSubActor {
-    type Result = ();
+    type Result = ResponseFuture<()>;
 
     fn handle(&mut self, msg: GithubEventMessage, _ctx: &mut Self::Context) -> Self::Result {
-        trace!("📰 PubSub received github event message: {}", msg.name());
-        let rules = self.rules.read();
-        // FIXME: Return an error properly
-        if rules.is_err() {
-            warn!("📰 Could not access rules. {}", rules.err().unwrap().to_string());
-            return;
-        }
-        let rules = rules.unwrap();
-        let mut rules_matched = 0usize;
-        let (event_name, event) = msg.clone().to_parts();
-        for rule in rules.iter() {
-            // Check if any of the predicates match
-            let rule_triggered = rule.matches(&msg);
-            // If so, dispatch a tasks to run the actions
-            if rule_triggered.is_some() {
-                rules_matched += 1;
-                info!("📰 Rule \"{}\" triggered for \"{}\".", rule.name(), msg.name());
-                let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
-                for action in rule.actions().cloned() {
-                    trace!("📰 Preparing task \"{name}\"");
-                    let dispatch_result = self.dispatch_message(action, event_name.clone(), event.clone());
-                    if let Err(e) = dispatch_result {
-                        warn!("📰 There was an issue dispatching {name}: {e}");
+        let copy_of_rules = self.rules.clone();
+        let fut = async move {
+            trace!("📰 PubSub received github event message: {}", msg.name());
+            let rules = copy_of_rules.read().await;
+            let mut rules_matched = 0usize;
+            let (event_name, event) = msg.clone().to_parts();
+            for rule in rules.iter() {
+                // Check if any of the predicates match
+                let rule_triggered = rule.matches(&msg);
+                // If so, dispatch a tasks to run the actions
+                if rule_triggered.is_some() {
+                    rules_matched += 1;
+                    info!("📰 Rule \"{}\" triggered for \"{}\".", rule.name(), msg.name());
+                    let name = format!("{}-{}.{}", rule.name(), event_name, timestamp());
+                    for action in rule.actions().cloned() {
+                        trace!("📰 Preparing task \"{name}\"");
+                        let dispatch_result = Self::dispatch_message(action, event_name.clone(), event.clone()).await;
+                        if let Err(e) = dispatch_result {
+                            warn!("📰 There was an issue dispatching {name}: {e}");
+                        }
                     }
                 }
             }
-        }
-        debug!("📰 {rules_matched} rules matched event \"{event_name}\"");
+            debug!("📰 {rules_matched} rules matched event \"{event_name}\"");
+        };
+        Box::pin(fut)
     }
 }
 
 impl Handler<ReplaceRulesMessage> for PubSubActor {
-    type Result = Result<usize, PubSubError>;
+    type Result = ResponseFuture<usize>;
 
     fn handle(&mut self, msg: ReplaceRulesMessage, _ctx: &mut Self::Context) -> Self::Result {
-        self.add_rules(true, msg.new_rules)
+        let rules = Arc::clone(&self.rules);
+        let fut = async move {
+            let mut my_rules = rules.write().await;
+            my_rules.clear();
+            msg.new_rules.into_iter().for_each(|r| my_rules.push(r));
+            my_rules.len()
+        };
+        Box::pin(fut)
     }
 }

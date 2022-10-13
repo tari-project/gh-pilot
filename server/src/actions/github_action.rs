@@ -29,6 +29,8 @@ use github_pilot_api::{
 };
 use log::*;
 
+use crate::pub_sub::ActionResult;
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GithubActionParams {
     // Adds a label to the PR or Issue (context dependent)
@@ -89,7 +91,7 @@ impl GithubActionMessage {
 }
 
 impl Message for GithubActionMessage {
-    type Result = ();
+    type Result = ActionResult;
 }
 
 pub struct GithubActionExecutor {
@@ -132,7 +134,7 @@ impl Actor for GithubActionExecutor {
 }
 
 impl Handler<GithubActionMessage> for GithubActionExecutor {
-    type Result = ResponseFuture<()>;
+    type Result = ResponseFuture<ActionResult>;
 
     fn handle(&mut self, msg: GithubActionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let provider = Arc::clone(&self.provider);
@@ -155,6 +157,7 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                 },
                 _ => {
                     warn!("🐙 Unimplemented event type for Github Action: {}", msg.event_name());
+                    ActionResult::Indeterminate
                 },
             }
         };
@@ -163,7 +166,7 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
 }
 
 impl GithubActionExecutor {
-    async fn add_label_to_issue(provider: &Arc<GithubProvider>, event: &IssuesEvent, label: &String) {
+    async fn add_label_to_issue(provider: &Arc<GithubProvider>, event: &IssuesEvent, label: &String) -> ActionResult {
         let repo = event.repo();
         let owner = event.owner();
         let issue_number = event.number();
@@ -175,83 +178,89 @@ impl GithubActionExecutor {
         let res = provider.add_label(&req, label).await;
         if let Err(e) = res {
             warn!("🐙🏷 Failed to add label to issue: {e}");
+            ActionResult::Failed
+        } else {
+            ActionResult::Success
         }
     }
 
-    async fn remove_label_from_issue(provider: &Arc<GithubProvider>, event: &IssuesEvent, label: &String) {
-        let repo = event.repo();
-        let owner = event.owner();
-        let issue_number = event.number();
-        debug!(
-            "🐙🏷 Removing label {} from issue {}/{}#{}",
-            label, owner, repo, issue_number
-        );
-        let req = IssueId::new(owner, repo, issue_number);
-        match provider.remove_label(&req, label, false).await {
-            Ok(true) => info!("🐙🏷 '{}' removed from issue {}/{}#{}", label, owner, repo, issue_number),
-            Ok(false) => info!(
-                "🐙🏷 '{}' not found on issue {}/{}#{}, so nothing to remove 😏",
-                label, owner, repo, issue_number
-            ),
-            Err(e) => warn!(
-                "🐙🏷 '{}' removal failed on issue {}/{}#{}. {}",
-                label, owner, repo, issue_number, e
-            ),
+    async fn remove_label_from_issue(
+        provider: &Arc<GithubProvider>,
+        event: &IssuesEvent,
+        label: &String,
+    ) -> ActionResult {
+        let id = IssueId::new(event.owner(), event.repo(), event.number());
+        debug!("🐙🏷 Removing label {label} from issue {id}");
+        match provider.remove_label(&id, label, false).await {
+            Ok(true) => {
+                info!("🐙🏷 '{label}' removed from issue {id}");
+                ActionResult::Success
+            },
+            Ok(false) => {
+                info!("🐙🏷 '{label}' not found on issue {id}, so nothing to remove 😏");
+                ActionResult::Success
+            },
+            Err(e) => {
+                warn!("🐙🏷 '{label}' removal failed on issue {id}. {e}");
+                ActionResult::Failed
+            },
         }
     }
 
-    async fn add_label_to_pr(provider: &Arc<GithubProvider>, event: &PullRequestEvent, label: &String) {
-        let repo = event.repo();
-        let owner = event.owner();
-        let pr_number = event.number();
-        debug!("🐙🏷 Adding label {} to PR {}/{}#{}", label, owner, repo, pr_number);
-        let req = IssueId::new(owner, repo, pr_number);
-        let res = provider.add_label(&req, label).await;
+    async fn add_label_to_pr(provider: &Arc<GithubProvider>, event: &PullRequestEvent, label: &String) -> ActionResult {
+        let id = IssueId::new(event.owner(), event.repo(), event.number());
+        debug!("🐙🏷 Adding label {label} to PR {id}");
+        let res = provider.add_label(&id, label).await;
         if let Err(e) = res {
-            warn!("🐙🏷 Failed to add label to PR: {e}");
+            warn!("🐙🏷 Failed to add label to PR {id}: {e}");
+            ActionResult::Failed
+        } else {
+            info!("🐙🏷 Added label {label} to PR {id}");
+            ActionResult::Success
         }
     }
 
-    async fn remove_label_from_pr(provider: &Arc<GithubProvider>, event: &PullRequestEvent, label: &String) {
-        let req = IssueId::new(event.owner(), event.repo(), event.number());
-        debug!("🐙🏷 Removing label [{label}] from PR {req}");
-        match provider.remove_label(&req, label, false).await {
-            Ok(true) => info!("🐙🏷 [{label}] removed from PR {req}"),
-            Ok(false) => info!("🐙🏷 [{label}] not found on PR {req}, so nothing to remove 😏"),
-            Err(e) => warn!("🐙🏷 '{label}' removal failed on PR: {req}. {e}"),
+    async fn remove_label_from_pr(
+        provider: &Arc<GithubProvider>,
+        event: &PullRequestEvent,
+        label: &String,
+    ) -> ActionResult {
+        let id = IssueId::new(event.owner(), event.repo(), event.number());
+        debug!("🐙🏷 Removing label [{label}] from PR {id}");
+        match provider.remove_label(&id, label, false).await {
+            Ok(true) => {
+                info!("🐙🏷 [{label}] removed from PR {id}");
+                ActionResult::Success
+            },
+            Ok(false) => {
+                info!("🐙🏷 [{label}] not found on PR {id}, so nothing to remove 😏");
+                ActionResult::Success
+            },
+            Err(e) => {
+                warn!("🐙🏷 '{label}' removal failed on PR: {id}. {e}");
+                ActionResult::Failed
+            },
         }
     }
 
-    async fn check_and_label_merge_conflicts(provider: Arc<GithubProvider>, event: &PullRequestEvent) {
-        let repo = event.repo();
-        let owner = event.owner();
-        let pr_number = event.number();
-        let req = IssueId::new(owner, repo, pr_number);
-        debug!(
-            "🐙🤺 Checking merge conflict status for PR {}/{}#{}",
-            owner, repo, pr_number
-        );
+    async fn check_and_label_merge_conflicts(provider: Arc<GithubProvider>, event: &PullRequestEvent) -> ActionResult {
+        let id = IssueId::new(event.owner(), event.repo(), event.number());
+        debug!("🐙🤺 Checking merge conflict status for PR {id}");
         let conflict_label = "P-conflicts";
         let pr = event.pull_request();
         let res = if pr.has_merge_conflicts() {
-            info!(
-                "🐙🤺 PR {}/{}#{} has merge conflicts. {} label added",
-                owner, repo, pr_number, conflict_label
-            );
-            provider.add_label(&req, conflict_label).await.map(|_| ())
+            info!("🐙🤺 PR {id} has merge conflicts. Adding label [{conflict_label}]");
+            provider.add_label(&id, conflict_label).await.map(|_| ())
         } else {
-            match provider.remove_label(&req, conflict_label, true).await {
+            match provider.remove_label(&id, conflict_label, true).await {
                 Ok(true) => {
-                    info!(
-                        "🐙🤺 Merge conflicts resolved on PR {}/{}#{}. Label removed.",
-                        owner, repo, pr_number
-                    );
+                    info!("🐙🤺 Merge conflicts resolved on PR {id}. Label removed.");
                     Ok(())
                 },
                 Ok(false) => {
                     trace!(
-                        "🐙🤺 Merge conflict label wasn't attached to the PR. There likely weren't merge conflicts in \
-                         the first place"
+                        "🐙🤺 Merge conflict label wasn't attached to the PR {id}. There likely weren't merge \
+                         conflicts in the first place"
                     );
                     Ok(())
                 },
@@ -259,10 +268,10 @@ impl GithubActionExecutor {
             }
         };
         if let Err(e) = res {
-            warn!(
-                "🐙🤺 Merge conflict status update failed on PR: {}/{}#{}. {}",
-                owner, repo, pr_number, e
-            );
+            warn!("🐙🤺 Merge conflict status update failed on PR: {id}. {e}");
+            ActionResult::Failed
+        } else {
+            ActionResult::Success
         }
     }
 }
