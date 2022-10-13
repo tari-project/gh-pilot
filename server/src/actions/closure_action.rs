@@ -102,18 +102,12 @@ impl Handler<ClosureActionMessage> for ClosureActionExecutor {
                 f(event_name, event);
             })
             .await;
-            let result = match result {
-                Ok(()) => {
-                    debug!("📝 Closure Task completely happily.");
-                    ActionResult::Success
-                },
-                Err(e) => {
-                    debug!("📝 Closure task wasn't happy. {e}");
-                    ActionResult::Failed
-                },
-            };
             debug!("📝 Completed execution of task \"{}\"", name);
-            result
+            ActionResult::from_result(
+                result,
+                || debug!("📝 Closure Task completely happily."),
+                |e| debug!("📝 Closure task wasn't happy. {e}"),
+            )
         })
     }
 }

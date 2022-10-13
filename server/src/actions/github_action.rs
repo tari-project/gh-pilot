@@ -176,12 +176,11 @@ impl GithubActionExecutor {
         );
         let req = IssueId::new(owner, repo, issue_number);
         let res = provider.add_label(&req, label).await;
-        if let Err(e) = res {
-            warn!("🐙🏷 Failed to add label to issue: {e}");
-            ActionResult::Failed
-        } else {
-            ActionResult::Success
-        }
+        ActionResult::from_result(
+            res,
+            || info!("🐙🏷 Added label {label} to issue {req}"),
+            |e| warn!("🐙🏷 Failed to add label to issue {req}: {e}"),
+        )
     }
 
     async fn remove_label_from_issue(
@@ -211,13 +210,11 @@ impl GithubActionExecutor {
         let id = IssueId::new(event.owner(), event.repo(), event.number());
         debug!("🐙🏷 Adding label {label} to PR {id}");
         let res = provider.add_label(&id, label).await;
-        if let Err(e) = res {
-            warn!("🐙🏷 Failed to add label to PR {id}: {e}");
-            ActionResult::Failed
-        } else {
-            info!("🐙🏷 Added label {label} to PR {id}");
-            ActionResult::Success
-        }
+        ActionResult::from_result(
+            res,
+            || info!("🐙🏷 Added label {label} to PR {id}"),
+            |e| warn!("🐙🏷 Failed to add label to PR {id}: {e}"),
+        )
     }
 
     async fn remove_label_from_pr(
@@ -267,11 +264,10 @@ impl GithubActionExecutor {
                 Err(e) => Err(e),
             }
         };
-        if let Err(e) = res {
-            warn!("🐙🤺 Merge conflict status update failed on PR: {id}. {e}");
-            ActionResult::Failed
-        } else {
-            ActionResult::Success
-        }
+        ActionResult::from_result(
+            res,
+            || debug!("🐙🤺 Merge conflict status check complete for PR {id}"),
+            |e| warn!("🐙🤺 Failed to check merge conflict status for PR {id}: {e}"),
+        )
     }
 }
