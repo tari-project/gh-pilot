@@ -32,20 +32,19 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
 }
 
 mod rules {
-    use actix::Addr;
+    use actix::{Addr, MailboxError};
     use github_pilot_api::models::PullRequestAction;
     use log::info;
 
     use crate::{
         actions::Actions,
-        error::ServerError,
         heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
         predicates::{PullRequest, PullRequestComment, StatusCheck},
         pub_sub::{PubSubActor, ReplaceRulesMessage},
         rules::RuleBuilder,
     };
 
-    pub async fn load_rules(pubsub: Addr<PubSubActor>) -> Result<usize, ServerError> {
+    pub async fn load_rules(pubsub: Addr<PubSubActor>) -> Result<usize, MailboxError> {
         // This can eventually be replaced with
         // RuleSet::from_json("./config/rules.json")
         // or whatever
@@ -104,9 +103,6 @@ mod rules {
 
         let msg = ReplaceRulesMessage { new_rules: rules };
 
-        pubsub
-            .send(msg)
-            .await?
-            .map_err(|e| ServerError::RuleConfigurationError(e.to_string()))
+        pubsub.send(msg).await
     }
 }

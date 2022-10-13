@@ -18,7 +18,10 @@ use github_pilot_api::{
 };
 use log::*;
 
-use crate::actions::merge_action::{message::MergeActionMessage, MergeActionParams};
+use crate::{
+    actions::merge_action::{message::MergeActionMessage, MergeActionParams},
+    pub_sub::ActionResult,
+};
 
 #[derive(Clone)]
 pub struct MergeExecutor {
@@ -176,7 +179,7 @@ impl MergeExecutor {
     }
 
     /// Carries out the merge action. The action depends on the state of `[MergeActionParams::auto-merge]`.
-    async fn execute_merge_action(&self, params: &MergeActionParams, id: &IssueId) {
+    async fn execute_merge_action(&self, params: &MergeActionParams, id: &IssueId) -> ActionResult {
         debug!("⏫🟢 Executing merge action for PR {id}");
         let label = params.merge_label();
         let merge_label_status = self.check_merge_label(label, id).await;
@@ -188,6 +191,7 @@ impl MergeExecutor {
                     "⏫ We _could_ have merged this PR, but the merge label, `{label}` is not attached to the PR, so \
                      we thought it best not to right now."
                 );
+                ActionResult::ConditionsNotMet
             },
             (Err(e), true) => {
                 warn!(
@@ -195,6 +199,7 @@ impl MergeExecutor {
                      because of some error: {e}. You should merge manually, or resolve the issue and trigger this \
                      action again."
                 );
+                ActionResult::Failed
             },
             (Err(e), false) => {
                 warn!(
@@ -202,9 +207,11 @@ impl MergeExecutor {
                      due to this error: {e}. You can add the label manually, or resolve the issue and trigger this \
                      action again."
                 );
+                ActionResult::Failed
             },
             (Ok(true), false) => {
                 debug!("⏫ Was about to add merge label, `{label}`, but it's already added. Nothing more to do here.");
+                ActionResult::Success
             },
         }
     }
@@ -213,23 +220,27 @@ impl MergeExecutor {
         self.issues.label_exists(label, id).await
     }
 
-    async fn merge_pr(&self, id: &IssueId) {
+    async fn merge_pr(&self, id: &IssueId) -> ActionResult {
         let params = MergeParameters {
             merge_method: MergeMethod::Squash,
             ..Default::default()
         };
         debug!("⏫🟢 Attempting to merge PR {id}.");
-        match self.provider.merge_pull_request(id, params).await {
-            Ok(_) => info!("⏫ Merged PR {id}. Thank you for using AutoMerge™"),
-            Err(e) => warn!("⏫ Could not merge PR {id}. {e}"),
-        }
+        let res = self.provider.merge_pull_request(id, params).await;
+        ActionResult::from_result(
+            res,
+            || info!("⏫ Merged PR {id}. Thank you for using AutoMerge™"),
+            |e| warn!("⏫ Could not merge PR {id}. {e}"),
+        )
     }
 
-    async fn add_label(&self, id: &IssueId, label: &str) {
-        match self.issues.add_label(id, label).await {
-            Ok(_) => info!("⏫ Added label {label} to PR {id}. Thank you for using AutoMerge™"),
-            Err(e) => warn!("⏫ Could not add label {label} to PR {id}. {e}"),
-        }
+    async fn add_label(&self, id: &IssueId, label: &str) -> ActionResult {
+        let res = self.issues.add_label(id, label).await;
+        ActionResult::from_result(
+            res,
+            || info!("⏫ Added label {label} to PR {id}. Thank you for using AutoMerge™"),
+            |e| warn!("⏫ Could not add label {label} to PR {id}. {e}"),
+        )
     }
 }
 
@@ -255,7 +266,7 @@ impl Supervised for MergeExecutor {}
 impl SystemService for MergeExecutor {}
 
 impl Handler<MergeActionMessage> for MergeExecutor {
-    type Result = ResponseFuture<()>;
+    type Result = ResponseFuture<ActionResult>;
 
     fn handle(&mut self, msg: MergeActionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let this = self.clone();
@@ -275,7 +286,7 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 },
                 None => {
                     debug!("⏫ Could not find a related pull request for event {event_name}");
-                    return;
+                    return ActionResult::Failed;
                 },
             };
             let contributors = match this.fetch_contributors(&id).await {
@@ -285,14 +296,16 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 },
                 Err(e) => {
                     warn!("⏫ Merge action could not get the list of contributors for PR {id}. {e}");
-                    return;
+                    return ActionResult::Failed;
                 },
             };
             let acks_passed = this.check_acks(&params, &id, contributors).await;
             let reviews_passed = this.check_reviews(&params, &id).await;
             let checks_passed = this.checks_passed(&params, &id).await;
             if acks_passed && reviews_passed && checks_passed {
-                this.execute_merge_action(&params, &id).await;
+                this.execute_merge_action(&params, &id).await
+            } else {
+                ActionResult::ConditionsNotMet
             }
         };
         Box::pin(fut)
