@@ -137,7 +137,7 @@ impl GithubEvent {
             GithubEvent::Status(_) => None,
             GithubEvent::Label(_) => None,
             GithubEvent::CommitComment(_) => None,
-            GithubEvent::IssueComment(_) => None,
+            GithubEvent::IssueComment(ev) => ev.related_pull_request(),
             GithubEvent::Issues(_) => None,
             GithubEvent::Ping(_) => None,
             GithubEvent::UnknownEvent { .. } => None,

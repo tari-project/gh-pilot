@@ -1,6 +1,9 @@
 use regex::Regex;
 
-use crate::models::{IssueComment, IssueCommentAction, IssueCommentEvent};
+use crate::{
+    models::{IssueComment, IssueCommentAction, IssueCommentEvent},
+    wrappers::IssueId,
+};
 
 pub const PR_REGEX: &str = r"github.com/[\w\-_]+/[\w\-_]+/pull/\d+";
 
@@ -16,6 +19,17 @@ impl IssueCommentEvent {
     /// Hell. why not both?
     pub fn is_on_pull_request(&self) -> bool {
         self.issue.is_pull_request() || self.comment.is_on_pull_request()
+    }
+
+    pub fn related_pull_request(&self) -> Option<IssueId> {
+        if self.is_on_pull_request() {
+            let owner = self.info.repository.owner.login.as_str();
+            let repo = self.info.repository.name.as_str();
+            let number = self.issue.number;
+            Some(IssueId::new(owner, repo, number))
+        } else {
+            None
+        }
     }
 }
 
@@ -48,6 +62,14 @@ mod test {
         assert!(comment.is_on_pull_request());
         assert!(comment.issue.is_pull_request());
         assert!(comment.comment.is_on_pull_request());
+    }
+
+    #[test]
+    fn related_pr_id() {
+        let data = include_str!("../test_data/issue_comment1.json");
+        let comment: IssueCommentEvent = serde_json::from_str(data).unwrap();
+        let id = comment.related_pull_request().unwrap();
+        assert_eq!(id.to_string(), "tari-project/gh-pilot#10");
     }
 
     #[test]
