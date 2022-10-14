@@ -381,4 +381,22 @@ mod test {
             _ => panic!("Not a PullRequestReview event"),
         }
     }
+
+    // Regression test for issue comment deserialization bug.
+    #[test]
+    fn issue_comment_event() {
+        let data = include_str!("test_data/issue_comment_event1.json");
+        let event = GithubEvent::try_from_webhook_info("issue_comment", data).unwrap();
+        match event {
+            GithubEvent::IssueComment(ev) => {
+                if let IssueCommentAction::Edited { changes, comment } = ev.action {
+                    assert!(matches!(changes.body, Some(c) if c.from == "ACK"));
+                    assert!(comment.is_none());
+                } else {
+                    panic!("Issue comment event action was not 'edited'");
+                }
+            },
+            _ => panic!("Not an Issue Comment event"),
+        }
+    }
 }

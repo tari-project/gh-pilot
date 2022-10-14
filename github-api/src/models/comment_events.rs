@@ -24,6 +24,7 @@ pub enum CommitCommentAction {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct IssueCommentEvent {
+    #[serde(flatten)]
     pub action: IssueCommentAction,
     pub comment: IssueComment,
     /// The [issue](https://docs.github.com/en/rest/reference/issues) the comment belongs to.
@@ -33,6 +34,7 @@ pub struct IssueCommentEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "action")]
 pub enum IssueCommentAction {
     #[doc = "issue_comment created event"]
     #[serde(rename = "created")]
@@ -44,7 +46,8 @@ pub enum IssueCommentAction {
     #[serde(rename = "edited")]
     Edited {
         changes: IssueCommentEditedChanges,
-        comment: IssueComment,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        comment: Option<IssueComment>,
     },
 }
 
