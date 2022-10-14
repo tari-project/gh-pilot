@@ -69,11 +69,11 @@
   color: ebea04
 
 - name: P-approved
-  description: The PR has been approved and will be merged soon.
+  description: The PR has at least one positive review.
   color: d0ff00
 
-- name: P-queued_for_merge
-  description: The PR is being merged by the CI process.
+- name: P-merge
+  description: The PR can me merged.
   color: ebca14
 
 - name: P-conflicts
