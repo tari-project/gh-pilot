@@ -97,7 +97,7 @@ mod rules {
                 .when(PullRequest::approved())
                 .when(PullRequestComment::added())
                 .when(StatusCheck::suite_success())
-                .execute(Actions::auto_merge().with_min_acks(1).build())
+                .execute(Actions::auto_merge().with_min_acks(1).auto_merge().build())
                 .submit(),
         ];
 
