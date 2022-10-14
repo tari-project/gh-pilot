@@ -3,6 +3,8 @@
 
 mod check_suite_event;
 mod deserializers;
+mod issue;
+mod issue_comment;
 mod pull_request;
 mod pull_request_event;
 mod pull_request_review_comment_event;
