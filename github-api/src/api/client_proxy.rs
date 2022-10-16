@@ -39,7 +39,7 @@ impl ClientProxy {
     }
 
     pub fn request<S: AsRef<str>>(&self, method: Method, path: S, auth: bool) -> RequestBuilder {
-        let url = [BASE_URL, path.as_ref()].join("");
+        let url = [BASE_URL, path.as_ref()].concat();
         let request = self.client.request(method, url);
 
         if auth {
