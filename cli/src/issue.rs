@@ -6,14 +6,7 @@ use crate::{
     pretty_print::{add_labels, pretty_table},
 };
 
-pub async fn run_issue_cmd(
-    provider: &dyn IssueProvider,
-    owner: &str,
-    repo: &str,
-    number: u64,
-    cmd: IssueCommand,
-) -> Result<(), ()> {
-    let id = IssueId::new(owner, repo, number);
+pub async fn run_issue_cmd(provider: &dyn IssueProvider, id: IssueId, cmd: IssueCommand) -> Result<(), ()> {
     match cmd {
         IssueCommand::Fetch => match provider.fetch_issue(&id).await {
             Ok(issue) => pretty_print(issue),

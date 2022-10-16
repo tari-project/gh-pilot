@@ -8,10 +8,10 @@ use github_pilot_api::models_plus::{MergeMethod, MergeParameters};
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Commands,
-    /// The organisation or repository owner (default: tari-project)
+    /// The organisation or repository owner (default: tari-project). Overridden by --id.
     #[clap(short, long, default_value = "tari-project")]
     pub owner: String,
-    /// The repository to query (default: tari)
+    /// The repository to query (default: tari). Overridden by --id.
     #[clap(short, long, default_value = "tari")]
     pub repo: String,
     #[clap(short = 'u', long = "user", env = "GH_PILOT_USERNAME")]
@@ -31,14 +31,22 @@ pub enum Commands {
     /// Fetches a pull request
     PullRequest {
         #[clap(short, long)]
-        number: u64,
+        number: Option<u64>,
+        /// The PR or Issue id to query. Overrides --owner, --repo and --number.
+        /// Must be a string of the form {org}/{repo}#{number}.
+        #[clap(short, long)]
+        id: Option<String>,
         #[clap(subcommand)]
         sub_command: PullRequestCommand,
     },
     /// Query or manipulate an issue
     Issue {
         #[clap(short, long)]
-        number: u64,
+        number: Option<u64>,
+        /// The PR or Issue id to query. Overrides --owner, --repo and --number.
+        /// Must be a string of the form {org}/{repo}#{number}.
+        #[clap(short, long)]
+        id: Option<String>,
         #[clap(subcommand)]
         sub_command: IssueCommand,
     },

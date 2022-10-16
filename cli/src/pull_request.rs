@@ -18,14 +18,7 @@ use crate::{
     pretty_print::{add_labels, pretty_table},
 };
 
-pub async fn run_pr_cmd(
-    provider: &GithubProvider,
-    owner: &str,
-    repo: &str,
-    number: u64,
-    cmd: PullRequestCommand,
-) -> Result<(), ()> {
-    let id = IssueId::new(owner, repo, number);
+pub async fn run_pr_cmd(provider: &GithubProvider, id: IssueId, cmd: PullRequestCommand) -> Result<(), ()> {
     match cmd {
         PullRequestCommand::Fetch => fetch_pr(provider, id).await,
         PullRequestCommand::AddLabel(l) => match provider.add_label(&id, l.label.as_str()).await {
