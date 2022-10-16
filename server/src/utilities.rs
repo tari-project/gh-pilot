@@ -11,8 +11,7 @@ use crate::error::ServerError;
 pub fn timestamp() -> String {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .map(|d| d.as_secs().to_string())
-        .unwrap_or_else(|_| "0000000".to_string())
+        .map_or_else(|_| "0000000".to_string(), |d| d.as_secs().to_string())
 }
 
 pub fn check_valid_signature(secret: &str, signature: &str, payload: &str) -> Result<(), ServerError> {
@@ -58,6 +57,7 @@ pub fn generate_hash(secret: &str, payload: &str) -> Result<Vec<u8>, ServerError
 #[cfg(test)]
 mod test {
     use crate::{error::ServerError, utilities::check_valid_signature};
+
     #[test]
     fn valid_signature() {
         // Event 83308ad0-34cd-11ed-87f6-b93609568f2c

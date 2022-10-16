@@ -72,7 +72,7 @@ impl From<pull_request_review_counts_ql::ResponseData> for ReviewCounts {
                     title: String::new(),
                     reviews: None,
                 };
-                (Default::default(), Default::default(), pr)
+                (String::default(), String::default(), pr)
             },
         };
         let title = pr.title.clone();
