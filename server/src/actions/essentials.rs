@@ -48,7 +48,7 @@ impl ClosureActionBuilder {
         Self { params: None }
     }
 
-    pub fn with<F: Fn(String, GithubEvent) + Send + Sync + 'static>(mut self, f: F) -> Self {
+    pub fn with<F: Fn(String, Option<GithubEvent>) + Send + Sync + 'static>(mut self, f: F) -> Self {
         self.params = Some(ClosureActionParams::with(f));
         self
     }

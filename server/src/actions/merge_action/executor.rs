@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use actix::{Actor, Context, Handler, ResponseFuture, Running, Supervised, SystemService};
+use actix::{Actor, Addr, Context, Handler, ResponseFuture, Running, Supervised, SystemService};
 use github_pilot_api::{
     error::GithubProviderError,
     graphql::{run_status::check_run_status_ql, CheckRunStatus, PullRequestComments},
@@ -14,13 +14,15 @@ use github_pilot_api::{
         PullRequestReviewSummary,
     },
     wrappers::IssueId,
+    GithubEvent,
     GithubProvider,
 };
 use log::*;
 
 use crate::{
     actions::merge_action::{message::MergeActionMessage, MergeActionParams},
-    pub_sub::ActionResult,
+    events::{BroadcastEvent, BroadcastEventMessage, Progress},
+    pub_sub::{ActionResult, PubSubActor},
 };
 
 #[derive(Clone)]
@@ -76,7 +78,14 @@ impl MergeExecutor {
     }
 
     /// Checks that the PR comments contain enough ACK comments from contributors
-    async fn check_acks(&self, params: &MergeActionParams, id: &IssueId, contributors: Vec<String>) -> bool {
+    async fn check_acks(
+        &self,
+        params: &MergeActionParams,
+        id: &IssueId,
+        contributors: Vec<String>,
+        bcast: Option<Addr<PubSubActor>>,
+        github_event: &GithubEvent,
+    ) -> bool {
         let comments = match self.comments.fetch_pull_request_comments(id).await {
             Ok(comments) => comments,
             Err(e) => {
@@ -85,12 +94,22 @@ impl MergeExecutor {
             },
         };
         trace!("⏫ PR {id} has {} comments", comments.comments.len());
-        let num_acks = Self::count_acks_sync(params, contributors, comments);
-        debug!(
-            "⏫ PR {id} has {num_acks} / {} required ACKs",
-            params.min_acks_required()
-        );
-        num_acks >= params.min_acks_required()
+        let progress = Self::count_acks_sync(params, contributors, comments);
+        debug!("⏫ PR {id} has {progress} required ACKs");
+        let acks_done = progress.current >= params.min_acks_required();
+        if acks_done {
+            Self::broadcast(bcast, BroadcastEvent::AcksThresholdReached, &github_event);
+        } else {
+            Self::broadcast(bcast, BroadcastEvent::AcksNeeded(Box::new(progress)), &github_event);
+        }
+        acks_done
+    }
+
+    fn broadcast(bcast: Option<Addr<PubSubActor>>, event: BroadcastEvent, github_event: &GithubEvent) {
+        if bcast.is_some() {
+            let msg = BroadcastEventMessage::new(event, Some(github_event.clone()));
+            PubSubActor::broadcast_event(&bcast, msg);
+        }
     }
 
     // sync function to make it easier to test
@@ -98,7 +117,7 @@ impl MergeExecutor {
         params: &MergeActionParams,
         mut contributors: Vec<String>,
         comments: PullRequestComments,
-    ) -> usize {
+    ) -> Progress {
         // Ignoring review comment threads for ACKS
         let num_acks = comments
             .comments
@@ -116,12 +135,18 @@ impl MergeExecutor {
                 }
             })
             .count();
-        num_acks
+        Progress::new(num_acks, params.min_acks_required())
     }
 
     /// Checks whether the minimum number of reviews from maintainers have been submitted. If changes have been
     /// requested, this method always returns false.
-    async fn check_reviews(&self, params: &MergeActionParams, id: &IssueId) -> bool {
+    async fn check_reviews(
+        &self,
+        params: &MergeActionParams,
+        id: &IssueId,
+        bcast: Option<Addr<PubSubActor>>,
+        github_event: &GithubEvent,
+    ) -> bool {
         let reviews = match self.reviews.fetch_review_summary(id).await {
             Ok(reviews) => reviews,
             Err(e) => {
@@ -134,7 +159,17 @@ impl MergeExecutor {
         let required = params.min_reviews_required();
         let total = reviews.total();
         debug!("👀 PR {id} has {total} reviews, {approved}/{required} required, changes_requested: {change_req}");
-        !change_req && approved >= required
+        let reviews_achieved = !change_req && approved >= required;
+        if change_req {
+            Self::broadcast(bcast.clone(), BroadcastEvent::ChangesRequested, &github_event);
+        }
+        if reviews_achieved {
+            Self::broadcast(bcast, BroadcastEvent::ReviewsThresholdReached, &github_event);
+        } else {
+            let progress = Progress::new(approved, required);
+            Self::broadcast(bcast, BroadcastEvent::ReviewsNeeded(Box::new(progress)), &github_event);
+        }
+        reviews_achieved
     }
 
     /// Checks whether the branch protection checks have passed yet
@@ -276,6 +311,7 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                 event_name,
                 event,
                 params,
+                broadcaster,
             } = msg;
             debug!("⏫ MergeExecutor handler is running task \"{name}\" for event \"{event_name}\"");
             trace!("⏫ Event summary: {}", event.summary());
@@ -299,8 +335,10 @@ impl Handler<MergeActionMessage> for MergeExecutor {
                     return ActionResult::Failed;
                 },
             };
-            let acks_passed = this.check_acks(&params, &id, contributors).await;
-            let reviews_passed = this.check_reviews(&params, &id).await;
+            let acks_passed = this
+                .check_acks(&params, &id, contributors, broadcaster.clone(), &event)
+                .await;
+            let reviews_passed = this.check_reviews(&params, &id, broadcaster, &event).await;
             let checks_passed = this.checks_passed(&params, &id).await;
             if acks_passed && reviews_passed && checks_passed {
                 this.execute_merge_action(&params, &id).await
@@ -374,7 +412,10 @@ mod test {
             .into_iter()
             .map(String::from)
             .collect::<Vec<String>>();
-        assert_eq!(MergeExecutor::count_acks_sync(&params, contributors, comments), 3);
+        assert_eq!(
+            MergeExecutor::count_acks_sync(&params, contributors, comments).current,
+            3
+        );
     }
 
     #[test]
@@ -386,7 +427,10 @@ mod test {
             .add_comment("bob", "ACK")
             .add_comment("bob", "👍");
         let contributors = vec!["bob".into()];
-        assert_eq!(MergeExecutor::count_acks_sync(&params, contributors, comments), 1);
+        assert_eq!(
+            MergeExecutor::count_acks_sync(&params, contributors, comments).current,
+            1
+        );
     }
 
     #[test]
@@ -395,9 +439,9 @@ mod test {
         let mut comments = PullRequestComments::default();
         comments.add_comment("bob", "ACK");
         let contributors = vec!["bob".into()];
-        assert_eq!(MergeExecutor::count_acks_sync(&params, vec![], comments), 0);
+        assert_eq!(MergeExecutor::count_acks_sync(&params, vec![], comments).current, 0);
         assert_eq!(
-            MergeExecutor::count_acks_sync(&params, contributors, PullRequestComments::default()),
+            MergeExecutor::count_acks_sync(&params, contributors, PullRequestComments::default()).current,
             0
         );
     }
@@ -416,6 +460,9 @@ mod test {
             .into_iter()
             .map(String::from)
             .collect::<Vec<String>>();
-        assert_eq!(MergeExecutor::count_acks_sync(&params, contributors, comments), 2);
+        assert_eq!(
+            MergeExecutor::count_acks_sync(&params, contributors, comments).current,
+            2
+        );
     }
 }

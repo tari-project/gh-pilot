@@ -8,4 +8,6 @@ pub enum PubSubError {
     AddRuleError(String),
     #[error("Could not dispatch message to the relevant executor. {0}")]
     DispatchError(String),
+    #[error("Could not complete an action due to missing information. {0}")]
+    CouldNotCompleteAction(String),
 }

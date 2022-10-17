@@ -79,3 +79,11 @@
 - name: P-conflicts
   description: The PR has merge conflicts that need to be resolved
   color: D50030
+
+- name: P-acks_required
+  description: The PR needs one or more ACKs from contributors
+  color: F50050
+
+- name: P-reviews_required
+  description: The PR needs one or more reviews from maintainers
+  color: e50040

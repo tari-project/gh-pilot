@@ -12,8 +12,8 @@
 //!     .execute(
 //!         Actions::closure()
 //!             .with(|name, msg| {
-//!                 let pr = msg.pull_request().unwrap();
-//!                 println!("PR {} opened", pr.number());
+//!                 let num = msg.unwrap().pull_request().unwrap().number();
+//!                 println!("PR {num} opened");
 //!             })
 //!             .build(),
 //!     );
