@@ -25,6 +25,8 @@ use std::{slice::Iter, sync::Arc};
 
 use crate::{actions::Actions, pub_sub::GithubEventMessage, utilities::timestamp};
 
+pub type ActionVec<'a> = Iter<'a, Arc<Actions>>;
+
 /// A [`Rule`] is a combination of predicates, notifications and actions.
 /// When the Github Pilot receives an event from the webhook, it will scan all its registered rules. For each rule
 /// that is triggered (because one/more of the predicates match the event), all notifications get sent out, and all
@@ -35,8 +37,13 @@ pub struct Rule {
 
 impl Rule {
     /// Return an iterator over this Rule's actions
-    pub(crate) fn actions(&self) -> Iter<Arc<Actions>> {
+    pub(crate) fn actions(&self) -> ActionVec {
         self.inner_rule.actions.iter()
+    }
+
+    /// Return an iterator over this Rule's "then" actions
+    pub(crate) fn then_actions(&self) -> ActionVec {
+        self.inner_rule.then_actions.iter()
     }
 
     /// Determine whether this rule's predicate match against the given github event, returning the first predicate
@@ -55,6 +62,7 @@ struct RuleInner {
     name: String,
     predicates: Vec<Arc<dyn RulePredicate>>,
     actions: Vec<Arc<Actions>>,
+    then_actions: Vec<Arc<Actions>>,
 }
 
 impl Default for RuleInner {
@@ -63,6 +71,7 @@ impl Default for RuleInner {
             name: RuleInner::time_stamped_name(),
             predicates: Vec::new(),
             actions: Vec::new(),
+            then_actions: Vec::new(),
         }
     }
 }
@@ -111,6 +120,12 @@ impl RuleBuilder {
     /// Add an action to the set of actions to fire when the rule matches. You may add any number of actions.
     pub fn execute(mut self, action: Actions) -> Self {
         self.inner_rule.actions.push(Arc::new(action));
+        self
+    }
+
+    /// Add an action to execute _only_ if the all primary actions (submitted in [`execute`] succeed.
+    pub fn then(mut self, action: Actions) -> Self {
+        self.inner_rule.then_actions.push(Arc::new(action));
         self
     }
 

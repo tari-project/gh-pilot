@@ -33,8 +33,6 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
 
 mod rules {
     use actix::{Addr, MailboxError};
-    use github_pilot_api::models::PullRequestAction;
-    use log::info;
 
     use crate::{
         actions::Actions,
@@ -68,29 +66,29 @@ mod rules {
                 .when(PullRequest::edited())
                 .execute(Actions::github().label_conflicts().build())
                 .submit(),
-            {
-                let action = Actions::closure()
-                    .with(|name, event| {
-                        let pr = event.pull_request().unwrap();
-                        let label = if let PullRequestAction::Labeled { label } = &pr.action {
-                            label.name.as_str()
-                        } else {
-                            "?"
-                        };
-                        info!(
-                            "{} on PR #{} has been labelled: [{}]. {}",
-                            name,
-                            pr.number,
-                            label,
-                            event.summary()
-                        )
-                    })
-                    .build();
-                RuleBuilder::new("(Log) Label added")
-                    .when(PullRequest::labeled())
-                    .execute(action)
-                    .submit()
-            },
+            RuleBuilder::new("Then action example")
+                .when(PullRequest::opened())
+                .execute(
+                    Actions::closure()
+                        .with(|name, event| {
+                            println!(
+                                "**** {name}. A pull request was opened: {} ****",
+                                event.pull_request().unwrap().pull_request.title
+                            );
+                        })
+                        .build(),
+                )
+                .then(
+                    Actions::closure()
+                        .with(|name, event| {
+                            println!(
+                                "**** {name}. And then this happened: {} ****",
+                                event.pull_request().unwrap().info.repository.owner.login
+                            );
+                        })
+                        .build(),
+                )
+                .submit(),
             RuleBuilder::new("AutoMerge™")
                 .when(PullRequest::labeled_with("P-merge"))
                 .when(PullRequest::edited())
