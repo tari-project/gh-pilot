@@ -138,19 +138,25 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
 
     fn handle(&mut self, msg: GithubActionMessage, _ctx: &mut Self::Context) -> Self::Result {
         let provider = Arc::clone(&self.provider);
+
         let fut = async move {
+            if let Some(id) = msg.event.related_pull_request() {
+                match msg.params {
+                    GithubActionParams::AddLabel { label } => {
+                        return Self::add_label_to_pr(&provider, &id, &label).await
+                    },
+                    GithubActionParams::RemoveLabel { label } => {
+                        return Self::remove_label_from_pr(&provider, &id, &label).await
+                    },
+                    _ => {}, // no-op
+                }
+            }
             match (msg.event(), msg.params()) {
                 (GithubEvent::Issues(event), GithubActionParams::AddLabel { label }) => {
                     Self::add_label_to_issue(&provider, event, label).await
                 },
                 (GithubEvent::Issues(event), GithubActionParams::RemoveLabel { label }) => {
                     Self::remove_label_from_issue(&provider, event, label).await
-                },
-                (GithubEvent::PullRequest(event), GithubActionParams::AddLabel { label }) => {
-                    Self::add_label_to_pr(&provider, event, label).await
-                },
-                (GithubEvent::PullRequest(event), GithubActionParams::RemoveLabel { label }) => {
-                    Self::remove_label_from_pr(&provider, event, label).await
                 },
                 (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts) => {
                     Self::check_and_label_merge_conflicts(provider, event).await
@@ -211,10 +217,9 @@ impl GithubActionExecutor {
         }
     }
 
-    async fn add_label_to_pr(provider: &Arc<GithubProvider>, event: &PullRequestEvent, label: &String) -> ActionResult {
-        let id = IssueId::new(event.owner(), event.repo(), event.number());
+    async fn add_label_to_pr(provider: &Arc<GithubProvider>, id: &IssueId, label: &String) -> ActionResult {
         debug!("🐙🏷 Adding label {label} to PR {id}");
-        let res = provider.add_label(&id, label).await;
+        let res = provider.add_label(id, label).await;
         ActionResult::from_result(
             res,
             || info!("🐙🏷 Added label {label} to PR {id}"),
@@ -222,14 +227,9 @@ impl GithubActionExecutor {
         )
     }
 
-    async fn remove_label_from_pr(
-        provider: &Arc<GithubProvider>,
-        event: &PullRequestEvent,
-        label: &String,
-    ) -> ActionResult {
-        let id = IssueId::new(event.owner(), event.repo(), event.number());
+    async fn remove_label_from_pr(provider: &Arc<GithubProvider>, id: &IssueId, label: &String) -> ActionResult {
         debug!("🐙🏷 Removing label [{label}] from PR {id}");
-        match provider.remove_label(&id, label, false).await {
+        match provider.remove_label(id, label, false).await {
             Ok(true) => {
                 info!("🐙🏷 [{label}] removed from PR {id}");
                 ActionResult::Success
