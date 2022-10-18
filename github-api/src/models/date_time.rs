@@ -10,7 +10,7 @@ use serde::{
 
 pub type Timestamp = chrono::DateTime<Utc>;
 
-#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, PartialEq, Eq, PartialOrd)]
 pub struct DateTime(#[serde(deserialize_with = "to_datetime")] Timestamp);
 
 impl DateTime {

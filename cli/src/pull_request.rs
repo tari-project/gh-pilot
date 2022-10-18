@@ -141,15 +141,8 @@ fn print_run_status(summary: &CheckRunStatus) {
     for run in summary.checks() {
         let completed_at = run.completed_at.to_string();
         let result = serde_json::to_string(&run.result).unwrap();
-        let status = serde_json::to_string(&run.status).unwrap();
         let req = run.is_required.to_string();
-        table.add_row([
-            run.name.as_str(),
-            completed_at.as_str(),
-            result.as_str(),
-            status.as_str(),
-            req.as_str(),
-        ]);
+        table.add_row([run.name.as_str(), completed_at.as_str(), result.as_str(), req.as_str()]);
     }
     println!("{table}");
 }

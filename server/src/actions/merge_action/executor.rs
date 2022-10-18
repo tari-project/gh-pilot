@@ -3,7 +3,7 @@ use std::sync::Arc;
 use actix::{Actor, Addr, Context, Handler, ResponseFuture, Running, Supervised, SystemService};
 use github_pilot_api::{
     error::GithubProviderError,
-    graphql::{run_status::check_run_status_ql, CheckRunStatus, PullRequestComments},
+    graphql::{run_status::check_run_status_ql::StatusState, CheckRunStatus, PullRequestComments},
     models_plus::{MergeMethod, MergeParameters},
     provider_traits::{
         CheckRunStatusProvider,
@@ -192,25 +192,15 @@ impl MergeExecutor {
     // Check that all _required_ checks have passed successfully
     fn have_all_required_checks_passed(checks: &CheckRunStatus) -> bool {
         debug!("⏫ The roll up status is {:?}", checks.overall_status());
-        let (total, required, passed) = checks.checks().fold((0, 0, 0), |(total, required, passed), c| {
-            let total = total + 1;
-            let required = required + i32::from(c.is_required);
-            let passed = passed + i32::from(matches!(c.result, check_run_status_ql::CheckConclusionState::SUCCESS));
-            (total, required, passed)
-        });
+        let (total, required, passed) = checks.totals();
         debug!("⏫ PR has {total} checks, {passed} passed / {required} required.");
         // First look at the rollup status
-        match checks.overall_status() {
-            Some(check_run_status_ql::StatusState::SUCCESS) => {
-                debug!("⏫ Github reports that the rolled up status of the PR checks is SUCCESS");
-                true
-            },
-            Some(check_run_status_ql::StatusState::FAILURE) => {
-                debug!("⏫ Github reports that the rolled up status of the PR checks is FAILURE");
-                false
-            },
-            _ => passed >= required,
+        if let Some(StatusState::SUCCESS) = checks.overall_status() {
+            debug!("⏫ Github reports that the rolled up status of the PR checks is SUCCESS");
+            return true;
         }
+        debug!("Status rollup was not success, but that's not always reliable. Checking individual checks");
+        checks.has_passed()
     }
 
     /// Carries out the merge action. The action depends on the state of `[MergeActionParams::auto-merge]`.
