@@ -55,7 +55,7 @@ impl GithubActionParams {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GithubActionMessage {
     name: String,
     event_name: String,
@@ -157,6 +157,11 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
                 },
                 _ => {
                     warn!("🐙 Unimplemented event type for Github Action: {}", msg.event_name());
+                    debug!(
+                        "🐙 Event parameters resulting in mismatch by GithubAction: {:?}, {:?}",
+                        msg.event(),
+                        msg.params()
+                    );
                     ActionResult::Indeterminate
                 },
             }

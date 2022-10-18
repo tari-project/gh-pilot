@@ -75,7 +75,7 @@ mod rules {
                 .execute(
                     Actions::closure()
                         .with(|name, event| {
-                            let title = (&event.unwrap().pull_request().unwrap().pull_request.title).clone();
+                            let title = event.unwrap().pull_request().unwrap().pull_request.title.clone();
                             println!("**** {name}. A pull request was opened: {title} ****");
                         })
                         .build(),
@@ -83,7 +83,15 @@ mod rules {
                 .then(
                     Actions::closure()
                         .with(|name, event| {
-                            let owner = (&event.unwrap().pull_request().unwrap().info.repository.owner.login).clone();
+                            let owner = event
+                                .unwrap()
+                                .pull_request()
+                                .unwrap()
+                                .info
+                                .repository
+                                .owner
+                                .login
+                                .clone();
                             println!("**** {name}. And then this happened: {owner} ****");
                         })
                         .build(),

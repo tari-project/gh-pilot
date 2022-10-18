@@ -98,9 +98,9 @@ impl MergeExecutor {
         debug!("⏫ PR {id} has {progress} required ACKs");
         let acks_done = progress.current >= params.min_acks_required();
         if acks_done {
-            Self::broadcast(bcast, BroadcastEvent::AcksThresholdReached, &github_event);
+            Self::broadcast(bcast, BroadcastEvent::AcksThresholdReached, github_event);
         } else {
-            Self::broadcast(bcast, BroadcastEvent::AcksNeeded(Box::new(progress)), &github_event);
+            Self::broadcast(bcast, BroadcastEvent::AcksNeeded(Box::new(progress)), github_event);
         }
         acks_done
     }
@@ -161,13 +161,13 @@ impl MergeExecutor {
         debug!("👀 PR {id} has {total} reviews, {approved}/{required} required, changes_requested: {change_req}");
         let reviews_achieved = !change_req && approved >= required;
         if change_req {
-            Self::broadcast(bcast.clone(), BroadcastEvent::ChangesRequested, &github_event);
+            Self::broadcast(bcast.clone(), BroadcastEvent::ChangesRequested, github_event);
         }
         if reviews_achieved {
-            Self::broadcast(bcast, BroadcastEvent::ReviewsThresholdReached, &github_event);
+            Self::broadcast(bcast, BroadcastEvent::ReviewsThresholdReached, github_event);
         } else {
             let progress = Progress::new(approved, required);
-            Self::broadcast(bcast, BroadcastEvent::ReviewsNeeded(Box::new(progress)), &github_event);
+            Self::broadcast(bcast, BroadcastEvent::ReviewsNeeded(Box::new(progress)), github_event);
         }
         reviews_achieved
     }
