@@ -27,6 +27,15 @@ query CheckRunStatusQL($owner: String!, $repo: String!, $pr_number: Int!) {
                                 }
                             }
                         }
+                        status {
+                            contexts {
+                                context
+                                createdAt
+                                isRequired(pullRequestNumber: $pr_number)
+                                state
+                                description
+                            }
+                        }
                     }
                 }
             }

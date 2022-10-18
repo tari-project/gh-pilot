@@ -5,10 +5,10 @@
           "nodes": [
             {
               "commit": {
-                "url": "https://github.com/tari-project/gh-pilot/commit/c13501c51f6a3f5183f5921aa89d68110a29f0f4",
-                "committedDate": "2022-09-20T15:30:05Z",
+                "url": "https://github.com/tari-project/tari/commit/eebba41dd22dbcc8ce94b86a0c25cf8d483dc3d7",
+                "committedDate": "2022-10-18T11:36:33Z",
                 "statusCheckRollup": {
-                  "state": "SUCCESS"
+                  "state": "FAILURE"
                 },
                 "checkSuites": {
                   "totalCount": 4,
@@ -21,27 +21,9 @@
                         "totalCount": 1,
                         "nodes": [
                           {
-                            "completedAt": "2022-09-20T15:35:54Z",
+                            "completedAt": "2022-10-18T11:39:59Z",
                             "conclusion": "SUCCESS",
-                            "isRequired": false,
-                            "name": "clippy_check",
-                            "status": "COMPLETED",
-                            "summary": null
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "app": {
-                        "name": "GitHub Actions"
-                      },
-                      "checkRuns": {
-                        "totalCount": 1,
-                        "nodes": [
-                          {
-                            "completedAt": "2022-09-20T15:32:28Z",
-                            "conclusion": "SUCCESS",
-                            "isRequired": false,
+                            "isRequired": true,
                             "name": "check-title",
                             "status": "COMPLETED",
                             "summary": null
@@ -54,21 +36,53 @@
                         "name": "GitHub Actions"
                       },
                       "checkRuns": {
-                        "totalCount": 2,
+                        "totalCount": 6,
                         "nodes": [
                           {
-                            "completedAt": "2022-09-20T15:42:12Z",
+                            "completedAt": "2022-10-18T11:45:31Z",
                             "conclusion": "SUCCESS",
                             "isRequired": false,
-                            "name": "cargo test (stable)",
+                            "name": "check nightly",
                             "status": "COMPLETED",
                             "summary": null
                           },
                           {
-                            "completedAt": "2022-09-20T15:40:49Z",
+                            "completedAt": "2022-10-18T11:39:55Z",
                             "conclusion": "SUCCESS",
                             "isRequired": false,
-                            "name": "cargo test (nightly-2022-09-13)",
+                            "name": "pr_2_artifact",
+                            "status": "COMPLETED",
+                            "summary": null
+                          },
+                          {
+                            "completedAt": "2022-10-18T11:43:54Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "check stable",
+                            "status": "COMPLETED",
+                            "summary": null
+                          },
+                          {
+                            "completedAt": "2022-10-18T11:52:49Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": true,
+                            "name": "clippy",
+                            "status": "COMPLETED",
+                            "summary": null
+                          },
+                          {
+                            "completedAt": "2022-10-18T11:39:57Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": false,
+                            "name": "file licenses",
+                            "status": "COMPLETED",
+                            "summary": null
+                          },
+                          {
+                            "completedAt": "2022-10-18T11:52:47Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": true,
+                            "name": "test",
                             "status": "COMPLETED",
                             "summary": null
                           }
@@ -83,15 +97,58 @@
                         "totalCount": 1,
                         "nodes": [
                           {
-                            "completedAt": "2022-09-20T15:36:07Z",
+                            "completedAt": "2022-10-18T11:41:40Z",
                             "conclusion": "SUCCESS",
-                            "isRequired": false,
+                            "isRequired": true,
                             "name": "check-title",
                             "status": "COMPLETED",
                             "summary": null
                           }
                         ]
                       }
+                    },
+                    {
+                      "app": {
+                        "name": "GitHub Actions"
+                      },
+                      "checkRuns": {
+                        "totalCount": 1,
+                        "nodes": [
+                          {
+                            "completedAt": "2022-10-18T15:22:48Z",
+                            "conclusion": "SUCCESS",
+                            "isRequired": true,
+                            "name": "check-title",
+                            "status": "COMPLETED",
+                            "summary": null
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "status": {
+                  "contexts": [
+                    {
+                      "context": "ci/circleci: run-ffi-integration-tests",
+                      "createdAt": "2022-10-18T12:08:03Z",
+                      "isRequired": false,
+                      "state": "FAILURE",
+                      "description": "Your tests failed on CircleCI"
+                    },
+                    {
+                      "context": "ci/circleci: run-integration-tests",
+                      "createdAt": "2022-10-18T12:20:13Z",
+                      "isRequired": false,
+                      "state": "FAILURE",
+                      "description": "Your tests failed on CircleCI"
+                    },
+                    {
+                      "context": "DeepSource: Rust",
+                      "createdAt": "2022-10-18T11:40:20Z",
+                      "isRequired": false,
+                      "state": "SUCCESS",
+                      "description": "Analysis Passed: No blocking issues detected"
                     }
                   ]
                 }
