@@ -6,7 +6,7 @@ use log::*;
 
 use crate::pub_sub::ActionResult;
 
-type ClosureActionFn = Arc<dyn Fn(String, GithubEvent) + Send + Sync>;
+type ClosureActionFn = Arc<dyn Fn(String, Option<GithubEvent>) + Send + Sync>;
 
 /// An action implementation that wraps a closure
 #[derive(Clone)]
@@ -15,7 +15,7 @@ pub struct ClosureActionParams {
 }
 
 impl ClosureActionParams {
-    pub fn with<F: Fn(String, GithubEvent) + Send + Sync + 'static>(f: F) -> Self {
+    pub fn with<F: Fn(String, Option<GithubEvent>) + Send + Sync + 'static>(f: F) -> Self {
         Self { function: Arc::new(f) }
     }
 }
@@ -24,12 +24,17 @@ impl ClosureActionParams {
 pub struct ClosureActionMessage {
     name: String,
     event_name: String,
-    event: GithubEvent,
+    event: Option<GithubEvent>,
     params: ClosureActionParams,
 }
 
 impl ClosureActionMessage {
-    pub fn new<S: Into<String>>(name: S, event_name: String, event: GithubEvent, params: ClosureActionParams) -> Self {
+    pub fn new<S: Into<String>>(
+        name: S,
+        event_name: String,
+        event: Option<GithubEvent>,
+        params: ClosureActionParams,
+    ) -> Self {
         Self {
             name: name.into(),
             event_name,
@@ -42,15 +47,15 @@ impl ClosureActionMessage {
         self.name.as_str()
     }
 
-    pub fn event(&self) -> &GithubEvent {
-        &self.event
+    pub fn event(&self) -> Option<&GithubEvent> {
+        self.event.as_ref()
     }
 
     pub fn event_name(&self) -> &str {
         self.event_name.as_str()
     }
 
-    pub fn to_parts(self) -> (String, String, GithubEvent, ClosureActionParams) {
+    pub fn to_parts(self) -> (String, String, Option<GithubEvent>, ClosureActionParams) {
         (self.name, self.event_name, self.event, self.params)
     }
 }

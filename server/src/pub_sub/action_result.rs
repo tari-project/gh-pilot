@@ -1,10 +1,21 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
 pub enum ActionResult {
     Success,
     ConditionsNotMet,
     Failed,
     Indeterminate,
+}
+
+impl Display for ActionResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ActionResult::Success => write!(f, "Success"),
+            ActionResult::ConditionsNotMet => write!(f, "ConditionsNotMet"),
+            ActionResult::Failed => write!(f, "Failed"),
+            ActionResult::Indeterminate => write!(f, "Indeterminate"),
+        }
+    }
 }
 
 impl ActionResult {

@@ -17,6 +17,9 @@ pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
     let num_rules = rules::load_rules(pubsub.clone()).await?;
     info!("📄 {} Rules loaded", num_rules);
 
+    let num_subs = rules::load_subscriptions(pubsub.clone()).await?;
+    info!("📄 {} Subscriptions loaded", num_subs);
+
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pubsub.clone()))
@@ -36,9 +39,10 @@ mod rules {
 
     use crate::{
         actions::Actions,
+        events::{Event, ProgressConstraint, SubscriptionBuilder},
         heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
         predicates::{PullRequest, PullRequestComment, StatusCheck},
-        pub_sub::{PubSubActor, ReplaceRulesMessage},
+        pub_sub::{PubSubActor, ReplaceRulesMessage, ReplaceSubscriptionsMessage},
         rules::RuleBuilder,
     };
 
@@ -71,20 +75,24 @@ mod rules {
                 .execute(
                     Actions::closure()
                         .with(|name, event| {
-                            println!(
-                                "**** {name}. A pull request was opened: {} ****",
-                                event.pull_request().unwrap().pull_request.title
-                            );
+                            let title = event.unwrap().pull_request().unwrap().pull_request.title.clone();
+                            println!("**** {name}. A pull request was opened: {title} ****");
                         })
                         .build(),
                 )
                 .then(
                     Actions::closure()
                         .with(|name, event| {
-                            println!(
-                                "**** {name}. And then this happened: {} ****",
-                                event.pull_request().unwrap().info.repository.owner.login
-                            );
+                            let owner = event
+                                .unwrap()
+                                .pull_request()
+                                .unwrap()
+                                .info
+                                .repository
+                                .owner
+                                .login
+                                .clone();
+                            println!("**** {name}. And then this happened: {owner} ****");
                         })
                         .build(),
                 )
@@ -100,6 +108,31 @@ mod rules {
         ];
 
         let msg = ReplaceRulesMessage { new_rules: rules };
+
+        pubsub.send(msg).await
+    }
+
+    pub async fn load_subscriptions(pubsub: Addr<PubSubActor>) -> Result<usize, MailboxError> {
+        let subscriptions = vec![
+            SubscriptionBuilder::on("Ask for ACKs", Event::AcksNeeded)
+                .and(ProgressConstraint::new().max_progress(99))
+                .then(Actions::github().add_label("P-acks_required").build())
+                .submit(),
+            SubscriptionBuilder::on("Ask for reviews", Event::ReviewsNeeded)
+                .and(ProgressConstraint::new().max_progress(99))
+                .then(Actions::github().add_label("P-reviews_required").build())
+                .submit(),
+            SubscriptionBuilder::on("Acks achieved", Event::AcksThresholdReached)
+                .then(Actions::github().remove_label("P-acks_required").build())
+                .submit(),
+            SubscriptionBuilder::on("Acks achieved", Event::ReviewsThresholdReached)
+                .then(Actions::github().remove_label("P-reviews_required").build())
+                .submit(),
+        ];
+
+        let msg = ReplaceSubscriptionsMessage {
+            new_subscriptions: subscriptions,
+        };
 
         pubsub.send(msg).await
     }

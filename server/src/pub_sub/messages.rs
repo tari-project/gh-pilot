@@ -1,7 +1,7 @@
 use actix::Message;
 use github_pilot_api::GithubEvent;
 
-use crate::rules::Rule;
+use crate::{events::Subscription, rules::Rule};
 
 #[derive(Debug, Clone)]
 pub struct GithubEventMessage {
@@ -47,5 +47,13 @@ pub struct AddRuleMessage {
 }
 
 impl Message for AddRuleMessage {
+    type Result = usize;
+}
+
+pub struct ReplaceSubscriptionsMessage {
+    pub new_subscriptions: Vec<Subscription>,
+}
+
+impl Message for ReplaceSubscriptionsMessage {
     type Result = usize;
 }
