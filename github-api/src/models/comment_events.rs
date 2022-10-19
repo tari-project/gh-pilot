@@ -77,6 +77,7 @@ pub struct IssueCommentEditedChanges {
 //----------------------------   Pull-Request-Review-Comment Event    --------------------------------------------------
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PullRequestReviewCommentEvent {
+    #[serde(flatten)]
     pub action: PullRequestReviewCommentAction,
     pub pull_request: PullRequest,
     pub comment: PullRequestReviewComment,
@@ -85,6 +86,7 @@ pub struct PullRequestReviewCommentEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "action", content = "changes")]
 pub enum PullRequestReviewCommentAction {
     #[serde(rename = "created")]
     Created,
