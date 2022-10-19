@@ -399,4 +399,23 @@ mod test {
             _ => panic!("Not an Issue Comment event"),
         }
     }
+
+    #[test]
+    fn pull_request_comment() {
+        let data = include_str!("test_data/pr_review_comment3.json");
+        let event = GithubEvent::try_from_webhook_info("pull_request_review_comment", data).unwrap();
+        match event {
+            GithubEvent::PullRequestReviewComment(ev) => {
+                if let PullRequestReviewCommentAction::Edited(p) = ev.action {
+                    let change = (p.body.as_ref()).unwrap();
+                    assert!(change.from.starts_with("Looks like upserts"));
+                } else {
+                    panic!("pull_request_review_comment event action was not 'edited'");
+                }
+                assert_eq!(ev.comment.id, 999041536);
+                assert_eq!(ev.pull_request.number, 104);
+            },
+            _ => panic!("Not an pull_request_review_comment event"),
+        }
+    }
 }
