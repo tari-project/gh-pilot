@@ -1,5 +1,6 @@
 use github_pilot_api::models::PullRequest;
 use log::trace;
+use serde::{Deserialize, Serialize};
 
 pub struct PullRequestHeuristics<'pr> {
     pr: &'pr PullRequest,
@@ -87,7 +88,8 @@ fn complexity_heuristic(
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PullRequestSize {
     Tiny,
     Small,
@@ -96,7 +98,8 @@ pub enum PullRequestSize {
     Huge,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PullRequestComplexity {
     Low,
     Medium,

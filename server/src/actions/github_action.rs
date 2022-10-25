@@ -28,26 +28,28 @@ use github_pilot_api::{
     GithubProvider,
 };
 use log::*;
+use serde::{Deserialize, Serialize};
 
 use crate::pub_sub::ActionResult;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum GithubActionParams {
     // Adds a label to the PR or Issue (context dependent)
-    AddLabel { label: String },
+    AddLabel(String),
     // Removes a label from the PR or Issue (context dependent)
-    RemoveLabel { label: String },
+    RemoveLabel(String),
     // Adds or removes the `merge-conflict` label depending on whether the PR has merge conflicts
     CheckConflicts,
 }
 
 impl GithubActionParams {
     pub fn add_label<S: Into<String>>(label: S) -> Self {
-        GithubActionParams::AddLabel { label: label.into() }
+        GithubActionParams::AddLabel(label.into())
     }
 
     pub fn remove_label<S: Into<String>>(label: S) -> Self {
-        GithubActionParams::RemoveLabel { label: label.into() }
+        GithubActionParams::RemoveLabel(label.into())
     }
 
     pub fn check_conflicts() -> Self {
@@ -142,20 +144,20 @@ impl Handler<GithubActionMessage> for GithubActionExecutor {
         let fut = async move {
             if let Some(id) = msg.event.related_pull_request() {
                 match msg.params {
-                    GithubActionParams::AddLabel { label } => {
-                        return Self::add_label_to_pr(&provider, &id, &label).await
+                    GithubActionParams::AddLabel(label) => {
+                        return Self::add_label_to_pr(&provider, &id, &label).await;
                     },
-                    GithubActionParams::RemoveLabel { label } => {
-                        return Self::remove_label_from_pr(&provider, &id, &label).await
+                    GithubActionParams::RemoveLabel(label) => {
+                        return Self::remove_label_from_pr(&provider, &id, &label).await;
                     },
                     _ => {}, // no-op
                 }
             }
             match (msg.event(), msg.params()) {
-                (GithubEvent::Issues(event), GithubActionParams::AddLabel { label }) => {
+                (GithubEvent::Issues(event), GithubActionParams::AddLabel(label)) => {
                     Self::add_label_to_issue(&provider, event, label).await
                 },
-                (GithubEvent::Issues(event), GithubActionParams::RemoveLabel { label }) => {
+                (GithubEvent::Issues(event), GithubActionParams::RemoveLabel(label)) => {
                     Self::remove_label_from_issue(&provider, event, label).await
                 },
                 (GithubEvent::PullRequest(event), GithubActionParams::CheckConflicts) => {

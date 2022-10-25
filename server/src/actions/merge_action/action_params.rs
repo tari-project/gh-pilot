@@ -1,15 +1,17 @@
 use log::warn;
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
 const DEFAULT_ACKS: usize = 3;
 const DEFAULT_REVIEWS: usize = 1;
 const DEFAULT_PATTERNS: [&str; 4] = ["^(ut|t)?ACK$", "^LGTM!?$", "^:?\\+1:?$", "^👍$"];
 const DEFAULT_LABEL: &str = "P-merge";
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
 pub struct MergeActionParams {
     acks_required: usize,
-    ack_patterns: Vec<Regex>,
+    ack_patterns: Vec<String>,
     reviews_required: usize,
     all_checks_must_pass: bool,
     merge_label: String,
@@ -33,6 +35,7 @@ impl MergeActionParams {
     pub fn is_ack(&self, comment: &str) -> bool {
         self.ack_patterns
             .iter()
+            .filter_map(|s| Regex::new(s).ok())
             .any(|pattern| comment.split('\n').any(|line| pattern.is_match(line)))
     }
 
@@ -60,7 +63,7 @@ impl MergeActionParams {
 #[derive(Default)]
 pub struct MergeActionParamsBuilder {
     acks_required: Option<usize>,
-    ack_patterns: Option<Vec<Regex>>,
+    ack_patterns: Option<Vec<String>>,
     reviews_required: Option<usize>,
     all_checks_must_pass: Option<bool>,
     merge_label: Option<String>,
@@ -92,8 +95,8 @@ impl MergeActionParamsBuilder {
     /// * `👍`
     pub fn ack_pattern(mut self, pattern: &str) -> Self {
         match (Regex::new(pattern), &mut self.ack_patterns) {
-            (Ok(regex), Some(ref mut ack_patterns)) => ack_patterns.push(regex),
-            (Ok(regex), None) => self.ack_patterns = Some(vec![regex]),
+            (Ok(_), Some(ref mut ack_patterns)) => ack_patterns.push(pattern.to_string()),
+            (Ok(_), None) => self.ack_patterns = Some(vec![pattern.to_string()]),
             (Err(e), _) => {
                 warn!("⏫ Invalid merge action ack pattern: \"{pattern}\": {e} . This pattern will be ignored.")
             },
@@ -146,11 +149,8 @@ impl MergeActionParamsBuilder {
     }
 }
 
-fn default_patterns() -> Vec<Regex> {
-    DEFAULT_PATTERNS
-        .iter()
-        .map(|&pattern| Regex::new(pattern).unwrap())
-        .collect()
+fn default_patterns() -> Vec<String> {
+    DEFAULT_PATTERNS.iter().map(|&s| String::from(s)).collect()
 }
 
 #[cfg(test)]

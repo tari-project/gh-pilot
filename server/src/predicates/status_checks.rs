@@ -2,30 +2,27 @@ use github_pilot_api::{
     models::{CheckSuiteConclusion, CheckSuiteStatus},
     GithubEvent,
 };
+use serde::{Deserialize, Serialize};
 
 use crate::{pub_sub::GithubEventMessage, rules::RulePredicate};
 
-pub struct StatusCheck {
-    trigger: StatusCheckPredicate,
-}
-
-enum StatusCheckPredicate {
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum StatusCheck {
     CheckSuiteSuccess,
 }
 
 impl StatusCheck {
     /// Triggers when a Status Check Suite completes successfully.
     pub fn suite_success() -> Self {
-        Self {
-            trigger: StatusCheckPredicate::CheckSuiteSuccess,
-        }
+        Self::CheckSuiteSuccess
     }
 }
 
 impl RulePredicate for StatusCheck {
     fn matches(&self, event: &GithubEventMessage) -> bool {
-        match (event.event(), &self.trigger) {
-            (GithubEvent::CheckSuiteEvent(ev), StatusCheckPredicate::CheckSuiteSuccess) => {
+        match (event.event(), &self) {
+            (GithubEvent::CheckSuiteEvent(ev), StatusCheck::CheckSuiteSuccess) => {
                 matches!(ev.check_suite.status, Some(CheckSuiteStatus::Completed)) &&
                     matches!(ev.check_suite.conclusion, Some(CheckSuiteConclusion::Success))
             },
