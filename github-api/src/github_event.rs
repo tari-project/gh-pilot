@@ -251,7 +251,7 @@ mod test {
                     PullRequestAction::Edited { changes } => {
                         assert!(changes.body.is_some());
                         assert_eq!(
-                            changes.title.clone().unwrap().from,
+                            changes.title.unwrap().from,
                             "[wip] feat!: apply hashing api to the mmr"
                         );
                     },

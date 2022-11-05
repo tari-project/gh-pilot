@@ -14,7 +14,7 @@ fn main() {
         std::process::exit(1);
     });
     let schema = serde_json::from_str::<schemars::schema::RootSchema>(&content).unwrap_or_else(|e| {
-        println!("Error deserializing schema.\n{}", e.to_string());
+        println!("Error deserializing schema.\n{}", e);
         std::process::exit(2);
     });
 
@@ -25,7 +25,7 @@ fn main() {
     );
     let mut type_space = TypeSpace::default();
     type_space.add_ref_types(schema.definitions).unwrap_or_else(|e| {
-        println!("Error adding reference types.\n{}", e.to_string());
+        println!("Error adding reference types.\n{}", e);
         std::process::exit(3);
     });
 
@@ -41,5 +41,5 @@ fn main() {
     println!("Converted to Rust. ({:.2} s)", elapsed());
     let mut out_file = Path::new("./github/swagger/").to_path_buf();
     out_file.push("webhooks_codegen.rs");
-    fs::write(out_file, &content).unwrap();
+    fs::write(out_file, content).unwrap();
 }

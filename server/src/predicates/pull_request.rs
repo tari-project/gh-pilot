@@ -315,7 +315,7 @@ mod test {
         let pred = PullRequest::review_request_removed_for(bob.clone());
         assert_eq!(
             pred.trigger,
-            PullRequestPredicate::ReviewRequestRemoved(Some(bob.clone()))
+            PullRequestPredicate::ReviewRequestRemoved(Some(bob))
         );
 
         let pred = PullRequest::review_requested();
