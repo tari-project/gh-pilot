@@ -3,7 +3,7 @@ mod cli_prompts;
 mod pilot_command;
 mod pretty_print;
 
-use clap::{arg, Arg, Parser};
+use clap::Parser;
 use cli_def::Cli;
 use dotenv::dotenv;
 use github_pilot_api::GithubProvider;
@@ -16,7 +16,7 @@ async fn main() -> Result<(), String> {
     let mut cli: Cli = Cli::parse();
     // Use the UI to fill in missing arguments if needed
     let provider = setup_github_api(&cli);
-    let cmd = cli.into_pilot_command(&provider).await?;
+    let cmd = cli.as_pilot_command(&provider).await?;
     cmd.execute(&provider).await
 }
 

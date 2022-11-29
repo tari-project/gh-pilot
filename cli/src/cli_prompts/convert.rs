@@ -13,7 +13,7 @@ use crate::{
 };
 
 impl Cli {
-    pub async fn into_pilot_command(&mut self, provider: &GithubProvider) -> Result<PilotCommand, String> {
+    pub async fn as_pilot_command(&mut self, provider: &GithubProvider) -> Result<PilotCommand, String> {
         let command = match self.command.clone() {
             Commands::User { profile } => extract_github_handle(self.non_interactive, profile.as_ref()).await?,
             Commands::PullRequest { number, sub_command } => self.to_pr_cmd(provider, number, &sub_command).await?,
@@ -242,16 +242,6 @@ impl Cli {
 }
 
 pub fn must_be_u64(val: &str) -> Result<(), String> {
-    match val.parse::<u64>() {
-        Ok(_) => Ok(()),
-        Err(_) => Err("Value is not an integer >= 0".to_string()),
-    }
-}
-
-pub fn must_be_u64_or_blank(val: &str) -> Result<(), String> {
-    if val.is_empty() {
-        return Ok(());
-    }
     match val.parse::<u64>() {
         Ok(_) => Ok(()),
         Err(_) => Err("Value is not an integer >= 0".to_string()),
