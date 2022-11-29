@@ -1,35 +1,9 @@
-
-
-use github_pilot_api::provider_traits::RepoProvider;
 use prompts::{text::TextPrompt, Prompt};
 
-use crate::{
-    cli_def::{LabelArg, LabelCommand},
-    cli_prompts::convert::must_be_u64,
-};
-
-impl LabelArg {
-    pub async fn prompt(&mut self) {
-        todo!()
-    }
-}
+use crate::{cli_def::LabelCommand, cli_prompts::convert::must_be_u64};
 
 impl LabelCommand {
-    pub async fn prompt(&mut self, _provider: &dyn RepoProvider) -> Result<(), String> {
-        match self {
-            LabelCommand::List { per_page, page, .. } => Self::prompt_pagination(page, per_page).await,
-            LabelCommand::Create {
-                name,
-                color,
-                description,
-            } => Self::prompt_new_label(name, color, description).await,
-            LabelCommand::Delete { .. } => Ok(()), // TODO
-            LabelCommand::Assign { .. } => Ok(()), // TODO
-            LabelCommand::Edit { .. } => Ok(()),   // TODO
-        }
-    }
-
-    async fn prompt_pagination(page: &mut Option<usize>, per_page: &mut Option<usize>) -> Result<(), String> {
+    pub async fn prompt_pagination(page: &mut Option<usize>, per_page: &mut Option<usize>) -> Result<(), String> {
         if per_page.is_none() {
             let v = TextPrompt::new("How many labels to fetch [100]?")
                 .with_validator(must_be_u64)
@@ -55,7 +29,7 @@ impl LabelCommand {
         Ok(())
     }
 
-    async fn prompt_new_label(
+    pub async fn prompt_new_label(
         name: &mut Option<String>,
         color: &mut Option<String>,
         description: &mut Option<String>,

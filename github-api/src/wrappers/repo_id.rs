@@ -75,7 +75,6 @@ impl From<IssueId> for RepoId {
 
 #[cfg(test)]
 mod test {
-    
 
     use super::*;
 
@@ -89,10 +88,7 @@ mod test {
     #[test]
     fn missing_repo() {
         let id = "owner".parse::<RepoId>();
-        assert!(
-            matches!(id, Err(RepoIdParseError::MissingRepoSeparator)),
-            "Got {id:?}",
-        );
+        assert!(matches!(id, Err(RepoIdParseError::MissingRepoSeparator)), "Got {id:?}",);
         let id = "owner/".parse::<RepoId>();
         assert!(
             matches!(id, Err(RepoIdParseError::FormatError(ref s))if s == "Repo cannot be empty"),

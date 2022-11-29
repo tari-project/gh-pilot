@@ -3,13 +3,11 @@ mod cli_prompts;
 mod pilot_command;
 mod pretty_print;
 
-use clap::Parser;
-use cli_def::{Cli};
+use clap::{arg, Arg, Parser};
+use cli_def::Cli;
 use dotenv::dotenv;
-use github_pilot_api::{GithubProvider};
+use github_pilot_api::GithubProvider;
 use log::*;
-
-
 
 #[tokio::main]
 async fn main() -> Result<(), String> {

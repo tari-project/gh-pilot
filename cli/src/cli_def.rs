@@ -1,27 +1,28 @@
 use std::fmt::Display;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use github_pilot_api::{
-    models_plus::{MergeMethod},
-};
-
-
+use github_pilot_api::models_plus::MergeMethod;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Commands,
-    /// The organisation or repository owner (default: tari-project).
+    /// The organisation or repository owner.
     #[clap(short, long, env = "GH_PILOT_OWNER")]
     pub owner: Option<String>,
-    /// The repository to query (default: tari).
+    /// The repository to query.
     #[clap(short, long, env = "GH_PILOT_REPO")]
     pub repo: Option<String>,
+    /// The user associated with the authentication token.
     #[clap(short = 'u', long = "user", env = "GH_PILOT_USERNAME")]
+    #[arg(hide_env_values = true)]
     pub user_name: Option<String>,
+    /// Your Github API authentication token.
     #[clap(short = 'a', long = "auth", env = "GH_PILOT_AUTH_TOKEN")]
+    #[arg(hide_env_values = true)]
     pub auth_token: Option<String>,
+    /// If set, you will not be prompted for any missing info. Useful in scripts
     #[clap(short = 'x', long = "non-interactive", env = "GH_PILOT_NON_INTERACTIVE")]
     pub non_interactive: bool,
 }
@@ -69,7 +70,7 @@ pub enum LabelCommand {
         #[clap(short = 'n', long)]
         per_page: Option<usize>,
         /// The format we should display the results in.
-        #[clap(short, long, arg_enum, value_parser)]
+        #[clap(short, long, value_parser, default_value = "txt")]
         format: OutputFormat,
     },
     /// Create a new label
@@ -87,11 +88,7 @@ pub enum LabelCommand {
     },
     /// Delete a label
     #[clap(name = "delete")]
-    Delete {
-        /// The name of the label
-        #[clap(short, long)]
-        label: String,
-    },
+    Delete(LabelArg),
     /// Assign labels to a repo
     #[clap(name = "assign")]
     Assign {
@@ -104,7 +101,7 @@ pub enum LabelCommand {
     Edit {
         /// The name of the label
         #[clap(short, long)]
-        label: String,
+        label: Option<String>,
         /// The new name of the label
         #[clap(short, long)]
         name: Option<String>,
@@ -129,6 +126,7 @@ pub enum IssueCommand {
 
 #[derive(Debug, Clone, Args)]
 pub struct LabelArg {
+    #[clap(short, long)]
     pub label: Option<String>,
 }
 

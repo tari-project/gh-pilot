@@ -1,10 +1,10 @@
 use github_pilot_api::{
     models::Label,
-    provider_traits::RepoProvider,
+    provider_traits::{IssueProvider, RepoProvider},
     wrappers::{IssueId, NewLabel, RepoId},
     GithubProvider,
 };
-use prompts::{select::SelectPrompt, text::TextPrompt, Prompt};
+use prompts::{autocomplete::AutocompletePrompt, text::TextPrompt, Prompt};
 
 use crate::{
     cli_def::{Cli, Commands, IssueCommand, LabelArg, LabelCommand, PullRequestCommand},
@@ -16,12 +16,8 @@ impl Cli {
     pub async fn into_pilot_command(&mut self, provider: &GithubProvider) -> Result<PilotCommand, String> {
         let command = match self.command.clone() {
             Commands::User { profile } => extract_github_handle(self.non_interactive, profile.as_ref()).await?,
-            Commands::PullRequest { number, sub_command } => {
-                self.to_pr_cmd(provider, number, &sub_command).await?
-            },
-            Commands::Issue { number, sub_command } => {
-                self.to_issue_cmd(provider, number, &sub_command).await?
-            },
+            Commands::PullRequest { number, sub_command } => self.to_pr_cmd(provider, number, &sub_command).await?,
+            Commands::Issue { number, sub_command } => self.to_issue_cmd(provider, number, &sub_command).await?,
             Commands::Labels {
                 sub_command: LabelCommand::Assign { labels_file },
             } => {
@@ -29,12 +25,7 @@ impl Cli {
                 assign_labels(provider, &id, labels_file.as_str()).await?;
                 NoOp
             },
-            Commands::Labels { mut sub_command } => {
-                if !self.non_interactive {
-                    sub_command.prompt(provider);
-                }
-                self.to_label_cmd(sub_command).await?
-            },
+            Commands::Labels { sub_command } => self.to_label_cmd(provider, sub_command).await?,
             Commands::Contributors => self.to_contributors(provider).await?,
         };
         Ok(command)
@@ -47,14 +38,15 @@ impl Cli {
         sub_command: &PullRequestCommand,
     ) -> Result<PilotCommand, String> {
         let id = self.prompt_issue_id(number, "PR").await?;
+        let repo = RepoId::new(id.owner(), id.repo());
         let cmd = match sub_command {
             PullRequestCommand::Fetch => PrCmd::Fetch(id),
             PullRequestCommand::AddLabel(label) => {
-                let label = self.get_or_prompt_for_label(provider, &id, label).await?;
+                let label = self.get_or_prompt_for_label(provider, &repo, label).await?;
                 PrCmd::AddLabel(id, label)
             },
             PullRequestCommand::RemoveLabel(label) => {
-                let label = self.get_or_prompt_for_label(provider, &id, label).await?;
+                let label = self.get_or_prompt_for_existing_label(provider, &id, label).await?;
                 PrCmd::RemoveLabel(id, label)
             },
             PullRequestCommand::Comments => PrCmd::Comments(id),
@@ -125,14 +117,15 @@ impl Cli {
         sub_command: &IssueCommand,
     ) -> Result<PilotCommand, String> {
         let id = self.prompt_issue_id(number, "issue").await?;
+        let repo = RepoId::new(id.owner(), id.repo());
         let cmd = match sub_command {
             IssueCommand::Fetch => IssueCmd::Fetch(id),
             IssueCommand::AddLabel(l) => {
-                let label = self.get_or_prompt_for_label(provider, &id, l).await?;
+                let label = self.get_or_prompt_for_label(provider, &repo, l).await?;
                 IssueCmd::AddLabel(id, label)
             },
             IssueCommand::RemoveLabel(l) => {
-                let label = self.get_or_prompt_for_label(provider, &id, l).await?;
+                let label = self.get_or_prompt_for_existing_label(provider, &id, l).await?;
                 IssueCmd::RemoveLabel(id, label)
             },
         };
@@ -142,7 +135,7 @@ impl Cli {
     async fn get_or_prompt_for_label(
         &self,
         provider: &GithubProvider,
-        id: &IssueId,
+        id: &RepoId,
         label: &LabelArg,
     ) -> Result<String, String> {
         let label = match (self.non_interactive, &label.label) {
@@ -151,7 +144,7 @@ impl Cli {
             (false, None) => {
                 let labels = fetch_labels(provider, id.owner(), id.repo()).await?;
                 let labels = labels.into_iter().map(|l| l.name).collect();
-                let mut prompt = SelectPrompt::new("🏷 Label: ", labels);
+                let mut prompt = AutocompletePrompt::new("🏷 Label: ", labels);
                 prompt
                     .run()
                     .await
@@ -162,27 +155,66 @@ impl Cli {
         Ok(label)
     }
 
-    async fn to_label_cmd(&self, sub_command: LabelCommand) -> Result<PilotCommand, String> {
+    async fn get_or_prompt_for_existing_label(
+        &self,
+        provider: &GithubProvider,
+        id: &IssueId,
+        label: &LabelArg,
+    ) -> Result<String, String> {
+        let label = match (self.non_interactive, &label.label) {
+            (true, None) => return Err("😥 Label is required for this command".to_string()),
+            (_, Some(l)) => l.clone(),
+            (false, None) => {
+                let labels = fetch_issue_labels(provider, id).await?;
+                let labels = labels.into_iter().map(|l| l.name).collect();
+                let mut prompt = AutocompletePrompt::new("🏷 Label: ", labels);
+                prompt
+                    .run()
+                    .await
+                    .map_err(|e| format!("Failed to get label: {}", e))?
+                    .ok_or_else(|| "😥 Label can't be blank for this command".to_string())?
+            },
+        };
+        Ok(label)
+    }
+
+    async fn to_label_cmd(&self, provider: &GithubProvider, sub_command: LabelCommand) -> Result<PilotCommand, String> {
         let id = self.prompt_repo_id().await?;
+        let can_prompt = !self.non_interactive;
         let cmd = match sub_command {
-            LabelCommand::List { page, per_page, format } => LabelCmd::List {
-                repo: id,
+            LabelCommand::List {
+                mut page,
+                mut per_page,
                 format,
-                page,
-                per_page,
+            } => {
+                if can_prompt {
+                    LabelCommand::prompt_pagination(&mut page, &mut per_page).await?;
+                }
+                LabelCmd::List {
+                    repo: id,
+                    format,
+                    page,
+                    per_page,
+                }
             },
             LabelCommand::Create {
-                name,
-                description,
-                color,
+                mut name,
+                mut description,
+                mut color,
             } => {
+                if can_prompt {
+                    LabelCommand::prompt_new_label(&mut name, &mut color, &mut description).await?;
+                }
                 if name.is_none() {
                     return Err("🏷 A label name is required.".to_string());
                 }
                 let new_label = NewLabel::new(name.unwrap(), color, description);
                 LabelCmd::Create(id, new_label)
             },
-            LabelCommand::Delete { label } => LabelCmd::Delete(id, label),
+            LabelCommand::Delete(label) => {
+                let label = self.get_or_prompt_for_label(provider, &id, &label).await?;
+                LabelCmd::Delete(id, label)
+            },
             LabelCommand::Assign { .. } => return Err("Labels::Assign should have been handled".to_string()),
             LabelCommand::Edit {
                 label,
@@ -190,6 +222,8 @@ impl Cli {
                 description,
                 color,
             } => {
+                let arg = LabelArg { label };
+                let label = self.get_or_prompt_for_label(provider, &id, &arg).await?;
                 let edits = NewLabel::new(name.unwrap_or_else(|| label.clone()), color, description);
                 LabelCmd::Edit {
                     repo: id,
@@ -214,10 +248,28 @@ pub fn must_be_u64(val: &str) -> Result<(), String> {
     }
 }
 
+pub fn must_be_u64_or_blank(val: &str) -> Result<(), String> {
+    if val.is_empty() {
+        return Ok(());
+    }
+    match val.parse::<u64>() {
+        Ok(_) => Ok(()),
+        Err(_) => Err("Value is not an integer >= 0".to_string()),
+    }
+}
+
 async fn fetch_labels(provider: &GithubProvider, owner: &str, repo: &str) -> Result<Vec<Label>, String> {
     let labels = provider
         .fetch_labels(owner, repo, None, None)
         .await
         .map_err(|e| format!("Failed to fetch labels: {}", e))?;
+    Ok(labels)
+}
+
+async fn fetch_issue_labels(provider: &GithubProvider, id: &IssueId) -> Result<Vec<Label>, String> {
+    let labels = provider
+        .fetch_issue_labels(id)
+        .await
+        .map_err(|e| format!("Failed to fetch labels for {id}: {e}"))?;
     Ok(labels)
 }

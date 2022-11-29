@@ -250,10 +250,7 @@ mod test {
                 match pr.action {
                     PullRequestAction::Edited { changes } => {
                         assert!(changes.body.is_some());
-                        assert_eq!(
-                            changes.title.unwrap().from,
-                            "[wip] feat!: apply hashing api to the mmr"
-                        );
+                        assert_eq!(changes.title.unwrap().from, "[wip] feat!: apply hashing api to the mmr");
                     },
                     _ => panic!("PR event action was not 'edited'"),
                 }
