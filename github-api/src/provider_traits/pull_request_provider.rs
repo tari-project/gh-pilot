@@ -10,12 +10,7 @@ use crate::{
 
 #[async_trait]
 pub trait PullRequestProvider {
-    async fn fetch_pull_request(
-        &self,
-        owner: &str,
-        repo: &str,
-        number: u64,
-    ) -> Result<PullRequest, GithubProviderError>;
+    async fn fetch_pull_request(&self, id: &IssueId) -> Result<PullRequest, GithubProviderError>;
 
     async fn merge_pull_request(
         &self,

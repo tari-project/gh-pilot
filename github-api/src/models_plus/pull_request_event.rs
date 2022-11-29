@@ -12,7 +12,7 @@ impl PullRequestEvent {
     }
 
     pub fn number(&self) -> u64 {
-        self.pull_request.number as u64
+        self.pull_request.number
     }
 
     pub fn repo(&self) -> &str {

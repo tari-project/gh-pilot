@@ -1,41 +1,44 @@
 use std::fmt::Display;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use github_pilot_api::models_plus::{MergeMethod, MergeParameters};
+use github_pilot_api::models_plus::MergeMethod;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
     #[clap(subcommand)]
     pub command: Commands,
-    /// The organisation or repository owner (default: tari-project). Overridden by --id.
-    #[clap(short, long, default_value = "tari-project")]
-    pub owner: String,
-    /// The repository to query (default: tari). Overridden by --id.
-    #[clap(short, long, default_value = "tari")]
-    pub repo: String,
+    /// The organisation or repository owner.
+    #[clap(short, long, env = "GH_PILOT_OWNER")]
+    pub owner: Option<String>,
+    /// The repository to query.
+    #[clap(short, long, env = "GH_PILOT_REPO")]
+    pub repo: Option<String>,
+    /// The user associated with the authentication token.
     #[clap(short = 'u', long = "user", env = "GH_PILOT_USERNAME")]
+    #[arg(hide_env_values = true)]
     pub user_name: Option<String>,
+    /// Your Github API authentication token.
     #[clap(short = 'a', long = "auth", env = "GH_PILOT_AUTH_TOKEN")]
+    #[arg(hide_env_values = true)]
     pub auth_token: Option<String>,
+    /// If set, you will not be prompted for any missing info. Useful in scripts
+    #[clap(short = 'x', long = "non-interactive", env = "GH_PILOT_NON_INTERACTIVE")]
+    pub non_interactive: bool,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum Commands {
     /// User command
     User {
         /// displays a user's profile
         #[clap(short, long, action)]
-        profile: String,
+        profile: Option<String>,
     },
     /// Fetches a pull request
     PullRequest {
         #[clap(short, long)]
         number: Option<u64>,
-        /// The PR or Issue id to query. Overrides --owner, --repo and --number.
-        /// Must be a string of the form {org}/{repo}#{number}.
-        #[clap(short, long)]
-        id: Option<String>,
         #[clap(subcommand)]
         sub_command: PullRequestCommand,
     },
@@ -43,10 +46,6 @@ pub enum Commands {
     Issue {
         #[clap(short, long)]
         number: Option<u64>,
-        /// The PR or Issue id to query. Overrides --owner, --repo and --number.
-        /// Must be a string of the form {org}/{repo}#{number}.
-        #[clap(short, long)]
-        id: Option<String>,
         #[clap(subcommand)]
         sub_command: IssueCommand,
     },
@@ -59,7 +58,7 @@ pub enum Commands {
     Contributors,
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum LabelCommand {
     /// List all labels on a repo
     #[clap(name = "list")]
@@ -71,7 +70,7 @@ pub enum LabelCommand {
         #[clap(short = 'n', long)]
         per_page: Option<usize>,
         /// The format we should display the results in.
-        #[clap(short, long, arg_enum, value_parser)]
+        #[clap(short, long, value_parser, default_value = "txt")]
         format: OutputFormat,
     },
     /// Create a new label
@@ -79,7 +78,7 @@ pub enum LabelCommand {
     Create {
         /// The name of the label
         #[clap(short, long)]
-        name: String,
+        name: Option<String>,
         /// The color of the label
         #[clap(short, long)]
         color: Option<String>,
@@ -89,11 +88,7 @@ pub enum LabelCommand {
     },
     /// Delete a label
     #[clap(name = "delete")]
-    Delete {
-        /// The name of the label
-        #[clap(short, long)]
-        label: String,
-    },
+    Delete(LabelArg),
     /// Assign labels to a repo
     #[clap(name = "assign")]
     Assign {
@@ -106,7 +101,7 @@ pub enum LabelCommand {
     Edit {
         /// The name of the label
         #[clap(short, long)]
-        label: String,
+        label: Option<String>,
         /// The new name of the label
         #[clap(short, long)]
         name: Option<String>,
@@ -119,7 +114,7 @@ pub enum LabelCommand {
     },
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum IssueCommand {
     /// Fetches an issue
     Fetch,
@@ -129,9 +124,10 @@ pub enum IssueCommand {
     RemoveLabel(LabelArg),
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct LabelArg {
-    pub label: String,
+    #[clap(short, long)]
+    pub label: Option<String>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -160,7 +156,7 @@ impl Display for OutputFormat {
     }
 }
 
-#[derive(Debug, Subcommand)]
+#[derive(Debug, Clone, Subcommand)]
 pub enum PullRequestCommand {
     /// Fetches a PR
     Fetch,
@@ -178,7 +174,7 @@ pub enum PullRequestCommand {
     Check,
 }
 
-#[derive(Debug, Args)]
+#[derive(Debug, Clone, Args)]
 pub struct MergeArgs {
     /// Override the title for the commit message
     #[clap(short = 't', long = "title")]
@@ -191,17 +187,6 @@ pub struct MergeArgs {
     /// Specify the merge method. Can be one of: merge, rebase, or squash. Default is merge.
     #[clap(short = 'm', long = "method")]
     pub merge_method: Option<MergeMethod>,
-}
-
-impl From<MergeArgs> for MergeParameters {
-    fn from(a: MergeArgs) -> Self {
-        MergeParameters {
-            commit_title: a.commit_title,
-            commit_message: a.commit_message,
-            sha: a.sha,
-            merge_method: a.merge_method.unwrap_or_default(),
-        }
-    }
 }
 
 #[cfg(test)]

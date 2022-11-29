@@ -76,13 +76,8 @@ impl GithubProvider {
 
 #[async_trait]
 impl PullRequestProvider for GithubProvider {
-    async fn fetch_pull_request(
-        &self,
-        owner: &str,
-        repo: &str,
-        number: u64,
-    ) -> Result<PullRequest, GithubProviderError> {
-        let pr = PullRequestRequest::new(owner, repo, number);
+    async fn fetch_pull_request(&self, id: &IssueId) -> Result<PullRequest, GithubProviderError> {
+        let pr = PullRequestRequest::new(id.owner(), id.repo(), id.number);
         let result = pr.fetch(&self.client).await?;
         Ok(result)
     }
@@ -130,6 +125,12 @@ impl IssueProvider for GithubProvider {
         let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
         let labels = issue.fetch_labels(&self.client).await?;
         Ok(labels.iter().any(|l| l.name == label))
+    }
+
+    async fn fetch_issue_labels(&self, id: &IssueId) -> Result<Vec<Label>, GithubProviderError> {
+        let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
+        let labels = issue.fetch_labels(&self.client).await?;
+        Ok(labels)
     }
 }
 

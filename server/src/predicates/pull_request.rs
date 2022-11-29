@@ -313,10 +313,7 @@ mod test {
         let pred = PullRequest::review_request_removed();
         assert_eq!(pred.trigger, PullRequestPredicate::ReviewRequestRemoved(None));
         let pred = PullRequest::review_request_removed_for(bob.clone());
-        assert_eq!(
-            pred.trigger,
-            PullRequestPredicate::ReviewRequestRemoved(Some(bob.clone()))
-        );
+        assert_eq!(pred.trigger, PullRequestPredicate::ReviewRequestRemoved(Some(bob)));
 
         let pred = PullRequest::review_requested();
         assert_eq!(pred.trigger, PullRequestPredicate::ReviewRequested(None));

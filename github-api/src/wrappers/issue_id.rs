@@ -17,6 +17,14 @@ impl IssueId {
             number,
         }
     }
+
+    pub fn owner(&self) -> &str {
+        self.owner.as_str()
+    }
+
+    pub fn repo(&self) -> &str {
+        self.repo.as_str()
+    }
 }
 
 impl Display for IssueId {

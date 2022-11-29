@@ -15,4 +15,6 @@ pub trait IssueProvider {
     async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<bool, GithubProviderError>;
 
     async fn label_exists(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError>;
+
+    async fn fetch_issue_labels(&self, id: &IssueId) -> Result<Vec<Label>, GithubProviderError>;
 }
