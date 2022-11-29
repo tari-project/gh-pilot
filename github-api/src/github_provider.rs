@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use log::*;
 
 use crate::{
-    api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest},
+    api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest, UserRequest},
     error::GithubProviderError,
     graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
     models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
@@ -136,9 +136,10 @@ impl IssueProvider for GithubProvider {
 
 #[async_trait]
 impl UserProvider for GithubProvider {
-    async fn fetch_details(&self, _handle: &GithubHandle) -> Result<Option<SimpleUser>, GithubProviderError> {
-        // TODO: implement
-        Ok(None)
+    async fn fetch_details(&self, handle: &GithubHandle) -> Result<Option<SimpleUser>, GithubProviderError> {
+        let req = UserRequest::new(handle.as_ref());
+        let user = req.fetch(&self.client).await?;
+        Ok(user)
     }
 }
 
