@@ -44,7 +44,7 @@ pub enum RepoIdParseError {
 impl FromStr for RepoId {
     type Err = RepoIdParseError;
 
-    /// Parses a string of the format `{owner}/{repo}` into a `RepoId`.
+    /// Parses a string of the format `{owner}/{repo}(.git)` into a `RepoId`.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split('/');
         let owner = split
@@ -57,6 +57,11 @@ impl FromStr for RepoId {
         if repo.is_empty() {
             return Err(RepoIdParseError::FormatError("Repo cannot be empty".to_string()));
         }
+        let repo = if repo.contains('.') {
+            repo.split('.').next().unwrap()
+        } else {
+            repo
+        };
         Ok(Self {
             owner: owner.to_string(),
             repo: repo.to_string(),

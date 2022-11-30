@@ -36,8 +36,8 @@ pub enum Commands {
         profile: Option<String>,
     },
     /// Fetches a pull request
+    #[clap(alias = "pr")]
     PullRequest {
-        #[clap(short, long)]
         number: Option<u64>,
         #[clap(subcommand)]
         sub_command: PullRequestCommand,
