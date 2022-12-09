@@ -11,6 +11,7 @@ github-pilot-api = { version = "0.1", path = "../github-api" }
 actix = { version = "0.13.0" }
 actix-web = "4.1.0"
 async-trait = "0.1.57"
+dotenv = "0.15.0"
 env_logger = "0.10.0"
 erased-serde = "0.3.23"
 futures = "0.3.21"

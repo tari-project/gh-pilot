@@ -1,8 +1,10 @@
 use ghp_server::{config::ServerConfig, server::run_server};
 use log::info;
+use dotenv::dotenv;
 
 #[actix_web::main]
 async fn main() {
+    dotenv().ok();
     env_logger::init();
     let config = ServerConfig::new("127.0.0.1", 8330);
     info!("🚀 Starting server on {}:{}", config.host, config.port);
