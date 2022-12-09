@@ -14,7 +14,7 @@ use crate::{
 pub async fn run_server(config: ServerConfig) -> Result<(), ServerError> {
     let pubsub = PubSubActor::new().start();
 
-    let num_rules = rules::load_rules(pubsub.clone()).await?;
+    let num_rules = rules::load_rules(pubsub.clone(), config.rule_set_path.as_str()).await?;
     info!("📄 {} Rules loaded", num_rules);
 
     let num_subs = rules::load_subscriptions(pubsub.clone()).await?;
@@ -39,77 +39,21 @@ mod rules {
 
     use crate::{
         actions::Actions,
+        error::ServerError,
         events::{Event, ProgressConstraint, SubscriptionBuilder},
-        heuristics::pull_requests::{PullRequestComplexity, PullRequestSize},
-        predicates::{PullRequest, PullRequestComment, StatusCheck},
         pub_sub::{PubSubActor, ReplaceRulesMessage, ReplaceSubscriptionsMessage},
-        rules::RuleBuilder,
+        rule_set::RuleSet,
     };
 
-    pub async fn load_rules(pubsub: Addr<PubSubActor>) -> Result<usize, MailboxError> {
-        // This can eventually be replaced with
-        // RuleSet::from_json("./config/rules.json")
-        // or whatever
-        let rules = vec![
-            RuleBuilder::new("(AutoLabel) Pull request size")
-                .when(PullRequest::larger_than(PullRequestSize::Medium))
-                .execute(Actions::github().add_label("CR-too_long").build())
-                .submit(),
-            RuleBuilder::new("(AutoLabel) Pull request complexity")
-                .when(PullRequest::more_complex_than(PullRequestComplexity::High))
-                .execute(Actions::github().add_label("CR-one_job").build())
-                .submit(),
-            RuleBuilder::new("(AutoLabel) Pull request justification")
-                .when(PullRequest::poor_justification())
-                .execute(Actions::github().add_label("CR-insufficient_context").build())
-                .submit(),
-            RuleBuilder::new("Merge conflict check")
-                .when(PullRequest::opened())
-                .when(PullRequest::reopened())
-                .when(PullRequest::synchronize())
-                .when(PullRequest::edited())
-                .execute(Actions::github().label_conflicts().build())
-                .submit(),
-            RuleBuilder::new("Then action example")
-                .when(PullRequest::opened())
-                .execute(
-                    Actions::closure()
-                        .with(|name, event| {
-                            let title = event.unwrap().pull_request().unwrap().pull_request.title.clone();
-                            println!("**** {name}. A pull request was opened: {title} ****");
-                        })
-                        .build(),
-                )
-                .then(
-                    Actions::closure()
-                        .with(|name, event| {
-                            let owner = event
-                                .unwrap()
-                                .pull_request()
-                                .unwrap()
-                                .info
-                                .repository
-                                .owner
-                                .login
-                                .clone();
-                            println!("**** {name}. And then this happened: {owner} ****");
-                        })
-                        .build(),
-                )
-                .submit(),
-            RuleBuilder::new("AutoMerge™")
-                .when(PullRequest::labeled_with("P-merge"))
-                .when(PullRequest::edited())
-                .when(PullRequest::approved())
-                .when(PullRequestComment::added())
-                .when(StatusCheck::suite_success())
-                .execute(Actions::auto_merge().with_min_acks(1).auto_merge().build())
-                .submit(),
-        ];
+    pub async fn load_rules(pubsub: Addr<PubSubActor>, rules_path: &str) -> Result<usize, ServerError> {
+        let rules = RuleSet::from_yaml(rules_path).map_err(|e| ServerError::RuleConfigurationError(e.to_string()))?;
 
-        let msg = ReplaceRulesMessage { new_rules: rules };
+        let msg = ReplaceRulesMessage {
+            new_rules: rules.to_rules(),
+        };
 
-        pubsub.send(msg).await
+        let result = pubsub.send(msg).await?;
+        Ok(result)
     }
 
     pub async fn load_subscriptions(pubsub: Addr<PubSubActor>) -> Result<usize, MailboxError> {

@@ -11,18 +11,24 @@ github-pilot-api = { version = "0.1", path = "../github-api" }
 actix = { version = "0.13.0" }
 actix-web = "4.1.0"
 async-trait = "0.1.57"
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 erased-serde = "0.3.23"
 futures = "0.3.21"
 hmac = "0.12.1"
 log = "0.4.17"
 regex = "1.6.0"
-serde = {version = "1.0.142", features = ["derive", "rc"] }
-serde_json = "1.0.83"
-serde_yaml = "0.8"
+serde = { version = "1.0.142", features = ["derive", "rc"] }
+serde_json = { version = "1.0.83", optional = true }
+# Do not upgrade to 0.9+ unless the nested enum issue has been fixed
+serde_yaml = { version = "0.8", optional = true }
 sha2 = "0.10.5"
 subtle = "2.4.1"
 thiserror = "1.0.32"
 tari_utilities = "0.3.0"
 tokio = { version = "1.20.1", features = ["full"] }
 zeroize = "1.5.7"
+
+[features]
+json = ["serde_json"]
+yaml = ["serde_yaml"]
+default = ["json", "yaml"]
