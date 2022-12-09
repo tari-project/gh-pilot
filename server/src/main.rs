@@ -1,6 +1,6 @@
+use dotenv::dotenv;
 use ghp_server::{config::ServerConfig, server::run_server};
 use log::info;
-use dotenv::dotenv;
 
 #[actix_web::main]
 async fn main() {
