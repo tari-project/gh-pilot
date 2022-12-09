@@ -21,9 +21,11 @@
 //!
 //! This module also defines the [`RulePredicate`] trait, which defines behaviour for structs that want to act as rule
 //! predicates.
-use std::{slice::Iter, sync::Arc};
+use std::{fmt::Debug, slice::Iter, sync::Arc};
 
-use crate::{actions::Actions, pub_sub::GithubEventMessage, utilities::timestamp};
+use serde::{Deserialize, Serialize};
+
+use crate::{actions::Actions, predicates::Predicate, pub_sub::GithubEventMessage, utilities::timestamp};
 
 pub type ActionVec<'a> = Iter<'a, Arc<Actions>>;
 
@@ -31,7 +33,9 @@ pub type ActionVec<'a> = Iter<'a, Arc<Actions>>;
 /// When the Github Pilot receives an event from the webhook, it will scan all its registered rules. For each rule
 /// that is triggered (because one/more of the predicates match the event), all notifications get sent out, and all
 /// actions get executed.
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Rule {
+    #[serde(flatten)]
     inner_rule: RuleInner,
 }
 
@@ -48,8 +52,12 @@ impl Rule {
 
     /// Determine whether this rule's predicate match against the given github event, returning the first predicate
     /// that matches, or None.
-    pub(crate) fn matches(&self, event: &GithubEventMessage) -> Option<Arc<dyn RulePredicate>> {
-        self.inner_rule.predicates.iter().find(|&p| p.matches(event)).cloned()
+    pub(crate) fn matches(&self, event: &GithubEventMessage) -> Option<Arc<Predicate>> {
+        self.inner_rule
+            .predicates
+            .iter()
+            .find(|&p| p.as_rule_predicate().matches(event))
+            .cloned()
     }
 
     pub fn name(&self) -> &str {
@@ -58,10 +66,14 @@ impl Rule {
 }
 
 /// Common fields that get passed between the builder and the rule itself.
-struct RuleInner {
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub(crate) struct RuleInner {
     name: String,
-    predicates: Vec<Arc<dyn RulePredicate>>,
+    #[serde(rename = "when", default)]
+    predicates: Vec<Arc<Predicate>>,
+    #[serde(rename = "execute", default)]
     actions: Vec<Arc<Actions>>,
+    #[serde(rename = "then", default)]
     then_actions: Vec<Arc<Actions>>,
 }
 
@@ -93,7 +105,7 @@ impl RuleInner {
 /// A rule predicate defines a single method, [`matches`], that takes a Github event message and decides whether the
 /// predicate is satisfied or not. If so, it returns `true`, otherwise it must return false. This method must not panic
 /// or fail.
-pub trait RulePredicate: Send + Sync {
+pub trait RulePredicate: Send + Sync + Debug {
     fn matches(&self, event: &GithubEventMessage) -> bool;
 }
 
@@ -113,7 +125,7 @@ impl RuleBuilder {
     /// Add an event predicate. You can add any number of event predicates. The rule will trigger if _any_ of the
     /// predicates match the event.
     pub fn when(mut self, pred: impl RulePredicate + 'static) -> Self {
-        self.inner_rule.predicates.push(Arc::new(pred));
+        self.inner_rule.predicates.push(Arc::new(Predicate::from(pred)));
         self
     }
 

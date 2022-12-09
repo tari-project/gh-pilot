@@ -9,5 +9,6 @@ pub mod pub_sub;
 pub mod routes;
 pub mod rule_set;
 pub mod rules;
+pub mod serde;
 pub mod server;
 pub mod utilities;

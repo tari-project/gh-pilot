@@ -3,9 +3,11 @@
 //!
 //! We maintain a vector of rules because order is important. Rules are run in the order that they are defined.
 
+use serde::{Deserialize, Serialize};
+
 use crate::rules::Rule;
 
-#[derive(Default)]
+#[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 pub struct RuleSet {
     rules: Vec<Rule>,
 }

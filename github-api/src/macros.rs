@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! newtype {
     ($name:ident, $wrap:ty) => {
-        #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+        #[derive(Clone, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
         pub struct $name($wrap);
 
         impl<T> From<T> for $name

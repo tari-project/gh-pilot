@@ -1,16 +1,22 @@
-use std::sync::Arc;
+use std::{
+    any::Any,
+    fmt::{Debug, Formatter},
+    sync::Arc,
+};
 
 use actix::{Actor, Context, Handler, Message, ResponseFuture, Running, Supervised, SystemService};
 use github_pilot_api::GithubEvent;
 use log::*;
+use serde::{Deserialize, Serialize};
 
 use crate::pub_sub::ActionResult;
 
 type ClosureActionFn = Arc<dyn Fn(String, Option<GithubEvent>) + Send + Sync>;
 
 /// An action implementation that wraps a closure
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ClosureActionParams {
+    #[serde(skip, default = "default_closure")]
     function: ClosureActionFn,
 }
 
@@ -18,6 +24,24 @@ impl ClosureActionParams {
     pub fn with<F: Fn(String, Option<GithubEvent>) + Send + Sync + 'static>(f: F) -> Self {
         Self { function: Arc::new(f) }
     }
+}
+
+impl PartialEq for ClosureActionParams {
+    fn eq(&self, other: &Self) -> bool {
+        self.function.type_id() == other.function.type_id()
+    }
+}
+
+impl Eq for ClosureActionParams {}
+
+impl Debug for ClosureActionParams {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("function: <closure>")
+    }
+}
+
+fn default_closure() -> ClosureActionFn {
+    Arc::new(|_, _| {})
 }
 
 #[derive(Clone)]

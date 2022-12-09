@@ -1,5 +1,6 @@
 use github_pilot_api::GithubEvent;
 use log::warn;
+use serde::{Deserialize, Serialize};
 
 use crate::actions::{
     closure_action::ClosureActionParams,
@@ -8,14 +9,18 @@ use crate::actions::{
     MergeActionParams,
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Actions {
+    #[serde(rename = "merge")]
     AutoMerge(Box<MergeActionParams>),
     // An action that executes an arbitrary closure when the rule is triggered. Use with care. With great power comes
     // great responsibility.
+    #[serde(rename = "closure")]
     Closure(Box<ClosureActionParams>),
+    #[serde(rename = "github")]
     Github(Box<GithubActionParams>),
     // An action that does nothing. Generally constructed when a Rule is not well defined
+    #[serde(rename = "none")]
     NullAction,
 }
 
