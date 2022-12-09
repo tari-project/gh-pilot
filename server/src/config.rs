@@ -1,6 +1,7 @@
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
+    pub rule_set_path: String,
 }
 
 impl Default for ServerConfig {
@@ -8,6 +9,7 @@ impl Default for ServerConfig {
         Self {
             host: "127.0.0.1".to_string(),
             port: 8330,
+            rule_set_path: "rules.yaml".into(),
         }
     }
 }
@@ -17,6 +19,7 @@ impl ServerConfig {
         Self {
             host: host.to_string(),
             port,
+            ..Default::default()
         }
     }
 }
