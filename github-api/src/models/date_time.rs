@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use chrono::{SecondsFormat, TimeZone, Utc};
+use chrono::{LocalResult, SecondsFormat, TimeZone, Utc};
 use serde::{
     de::{Error, Visitor},
     Deserialize,
@@ -25,7 +25,10 @@ impl DateTime {
 
 impl Default for DateTime {
     fn default() -> Self {
-        Self(Timestamp::from_utc(chrono::NaiveDateTime::from_timestamp(0, 0), Utc))
+        Self(Timestamp::from_utc(
+            chrono::NaiveDateTime::from_timestamp_opt(0, 0).expect("valid parameters were hardcoded"),
+            Utc,
+        ))
     }
 }
 
@@ -55,7 +58,11 @@ impl<'de> Deserialize<'de> for DateTime {
 
             fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
             where E: Error {
-                let ts = Utc.timestamp(v as i64, 0);
+                let ts = match Utc.timestamp_opt(v as i64, 0) {
+                    LocalResult::None => return Err(E::custom("a valid unix epoch")),
+                    LocalResult::Single(t) => t,
+                    LocalResult::Ambiguous(t1, _t2) => t1,
+                };
                 Ok(DateTime(ts))
             }
 
@@ -79,12 +86,18 @@ mod test {
     #[test]
     fn deserialize_integers() {
         let ts: DateTime = serde_json::from_str("1659721107").unwrap();
-        assert_eq!(ts.into_datetime(), Utc.ymd(2022, 08, 05).and_hms(17, 38, 27));
+        assert_eq!(
+            ts.into_datetime(),
+            Utc.with_ymd_and_hms(2022, 8, 5, 17, 38, 27).unwrap()
+        );
     }
 
     #[test]
     fn deserialize_string() {
         let ts: DateTime = serde_json::from_str("\"2022-08-09T17:22:53Z\"").unwrap();
-        assert_eq!(ts.into_datetime(), Utc.ymd(2022, 08, 09).and_hms(17, 22, 53));
+        assert_eq!(
+            ts.into_datetime(),
+            Utc.with_ymd_and_hms(2022, 8, 9, 17, 22, 53).unwrap()
+        );
     }
 }
