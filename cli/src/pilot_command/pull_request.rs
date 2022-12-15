@@ -1,5 +1,5 @@
 use github_pilot_api::{
-    graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
+    graphql::{review_counts::ReviewCounts, CheckRunStatus, Comment, PullRequestComments},
     models::PullRequest,
     models_plus::MergeParameters,
     provider_traits::{
@@ -32,6 +32,8 @@ pub enum PrCmd {
     Reviews(IssueId),
     /// Fetch last check run status (The result of the checks that are configured to run after each PR change).
     Check(IssueId),
+    /// Add a comment to the PR
+    AddComment(IssueId, String),
 }
 
 impl PrCmd {
@@ -44,6 +46,7 @@ impl PrCmd {
             PrCmd::Merge(ref id, params) => merge_pull_request(provider, id, params).await,
             PrCmd::Reviews(ref id) => fetch_review_summary(provider, id).await,
             PrCmd::Check(ref id) => fetch_last_check_run(provider, id).await,
+            PrCmd::AddComment(ref id, c) => add_comment(provider, id, c.as_str()).await,
         }
     }
 
@@ -80,10 +83,20 @@ async fn fetch_pr(provider: &dyn PullRequestProvider, id: &IssueId) -> Result<()
 async fn fetch_comments(provider: &dyn PullRequestCommentsProvider, id: &IssueId) -> Result<(), String> {
     match provider.fetch_pull_request_comments(id).await {
         Ok(comments) => {
-            print_comments(comments);
+            print_pr_comments(comments);
             Ok(())
         },
         Err(e) => Err(format!("⏩ Error fetching PR {id} comments: {e}")),
+    }
+}
+
+async fn add_comment(provider: &GithubProvider, id: &IssueId, comment: &str) -> Result<(), String> {
+    match provider.add_comment(id, comment).await {
+        Ok(c) => {
+            info!("⏩📝 Comment added to {id}: {}", c.url);
+            Ok(())
+        },
+        Err(e) => Err(format!("Error adding {comment} to {id}: {e}")),
     }
 }
 
@@ -139,15 +152,19 @@ fn pretty_print(pr: PullRequest) {
     println!("{}", pr.body.unwrap_or_else(|| "No body provided".into()));
 }
 
-fn print_comments(comments: PullRequestComments) {
-    if comments.comments.is_empty() {
+fn print_comments(comments: &[Comment]) {
+    if comments.is_empty() {
         println!("No comments.");
     } else {
-        println!("{} Comments:", comments.comments.len());
-        for c in comments.comments {
+        println!("{} Comments:", comments.len());
+        for c in comments {
             println!("{} ({}) - {}", c.author, c.created_at, c.body);
         }
     }
+}
+
+fn print_pr_comments(comments: PullRequestComments) {
+    print_comments(&comments.comments);
     if comments.threads.is_empty() {
         println!("No code review threads.");
     } else {

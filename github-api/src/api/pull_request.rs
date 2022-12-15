@@ -10,7 +10,7 @@ use crate::{
         CheckRunStatus,
         PullRequestComments,
     },
-    models::{Label, PullRequest},
+    models::{IssueComment, Label, PullRequest},
     models_plus::{MergeParameters, MergeResult, MergeValidationError},
     wrappers::IssueId,
 };
@@ -95,6 +95,16 @@ impl PullRequestRequest {
                 )),
             }
         }
+    }
+
+    pub async fn add_comment<S: Into<String>>(
+        &self,
+        comment: S,
+        proxy: &ClientProxy,
+    ) -> Result<IssueComment, GithubApiError> {
+        // prs are also issues
+        let issue = IssueRequest::new(&self.owner, &self.repo, self.pull);
+        issue.add_comment(comment, proxy).await
     }
 
     pub async fn fetch_review_counts(&self, proxy: &ClientProxy) -> Result<ReviewCounts, GithubApiError> {

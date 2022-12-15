@@ -25,6 +25,10 @@ impl IssueId {
     pub fn repo(&self) -> &str {
         self.repo.as_str()
     }
+
+    pub fn number(&self) -> u64 {
+        self.number
+    }
 }
 
 impl Display for IssueId {
