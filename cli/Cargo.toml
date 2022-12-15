@@ -1,5 +1,5 @@
 [package]
-name = "ghp-cli"
+name = "ghp"
 version = "0.1.0"
 edition = "2021"
 description = "A command line interface for GitHub Pages; intended as a client partner tool to the Github Pilot server"
