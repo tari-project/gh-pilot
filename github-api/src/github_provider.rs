@@ -134,6 +134,7 @@ impl IssueProvider for GithubProvider {
     }
 
     async fn fetch_issue_comments(&self, id: &IssueId) -> Result<Vec<IssueComment>, GithubProviderError> {
+        trace!("Fetching issue comments for {id}");
         let issue = IssueRequest::from(id);
         let comments = issue.fetch_comments(&self.client, Page::default()).await?;
         Ok(comments)

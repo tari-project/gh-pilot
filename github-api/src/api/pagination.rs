@@ -30,17 +30,17 @@ impl Page {
         }
     }
 
-    pub fn to_query(self) -> String {
+    pub fn to_query(self) -> Vec<(String, String)> {
         let mut qs = Vec::with_capacity(3);
         if let Some(since) = self.since {
-            qs.push(format!("since={since}"));
+            qs.push(("since".into(), since));
         }
         if let Some(page) = self.page {
-            qs.push(format!("page={page}"));
+            qs.push(("page".into(), page.to_string()));
         }
         if let Some(pp) = self.per_page {
-            qs.push(format!("per_page={pp}"));
+            qs.push(("per_page".into(), pp.to_string()));
         }
-        qs.join("&")
+        qs
     }
 }

@@ -86,9 +86,8 @@ impl IssueRequest {
     }
 
     pub async fn fetch_comments(&self, proxy: &ClientProxy, page: Page) -> Result<Vec<IssueComment>, GithubApiError> {
-        let req = proxy
-            .get(self.comment_path().as_str(), false)
-            .query(page.to_query().as_str());
+        let q = page.to_query();
+        let req = proxy.get(self.comment_path().as_str(), false).query(&q);
         proxy.send(req).await
     }
 
