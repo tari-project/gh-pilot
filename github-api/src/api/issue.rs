@@ -1,8 +1,9 @@
 use serde::Serialize;
 
 use crate::{
-    api::{ClientProxy, GithubApiError},
-    models::{Issue, Label},
+    api::{pagination::Page, ClientProxy, GithubApiError},
+    models::{Issue, IssueComment, Label},
+    wrappers::IssueId,
 };
 
 pub struct IssueRequest {
@@ -23,6 +24,17 @@ impl From<&[&str]> for LabelBody {
     }
 }
 
+#[derive(Serialize)]
+struct NewCommentBody {
+    body: String,
+}
+
+impl<S: Into<String>> From<S> for NewCommentBody {
+    fn from(src: S) -> Self {
+        Self { body: src.into() }
+    }
+}
+
 impl IssueRequest {
     pub fn new<S: Into<String>>(owner: S, repo: S, number: u64) -> Self {
         Self {
@@ -36,14 +48,18 @@ impl IssueRequest {
         format!("/repos/{}/{}/issues/{}", self.owner, self.repo, self.number)
     }
 
-    fn add_label_path(&self) -> String {
+    fn labels_path(&self) -> String {
         format!("/repos/{}/{}/issues/{}/labels", self.owner, self.repo, self.number)
+    }
+
+    fn comment_path(&self) -> String {
+        format!("/repos/{}/{}/issues/{}/comments", self.owner, self.repo, self.number)
     }
 
     fn remove_label_path(&self, label: &str) -> String {
         format!(
-            "/repos/{}/{}/issues/{}/labels/{}",
-            self.owner, self.repo, self.number, label
+            "/repos/{}/{}/issues/{}/labels/{label}",
+            self.owner, self.repo, self.number
         )
     }
 
@@ -55,7 +71,7 @@ impl IssueRequest {
     pub async fn add_labels(&self, labels: &[&str], proxy: &ClientProxy) -> Result<Vec<Label>, GithubApiError> {
         let body = LabelBody::from(labels);
         let body = serde_json::to_string(&body).map_err(|e| GithubApiError::SerializationError(e.to_string()))?;
-        let req = proxy.post(self.add_label_path().as_str()).body(body);
+        let req = proxy.post(self.labels_path().as_str()).body(body);
         proxy.send(req).await
     }
 
@@ -65,7 +81,30 @@ impl IssueRequest {
     }
 
     pub async fn fetch_labels(&self, proxy: &ClientProxy) -> Result<Vec<Label>, GithubApiError> {
-        let req = proxy.get(self.add_label_path().as_str(), false);
+        let req = proxy.get(self.labels_path().as_str(), false);
         proxy.send(req).await
+    }
+
+    pub async fn fetch_comments(&self, proxy: &ClientProxy, page: Page) -> Result<Vec<IssueComment>, GithubApiError> {
+        let q = page.to_query();
+        let req = proxy.get(self.comment_path().as_str(), false).query(&q);
+        proxy.send(req).await
+    }
+
+    pub async fn add_comment<S: Into<String>>(
+        &self,
+        comment: S,
+        proxy: &ClientProxy,
+    ) -> Result<IssueComment, GithubApiError> {
+        let body = NewCommentBody::from(comment);
+        let body = serde_json::to_string(&body).map_err(|e| GithubApiError::SerializationError(e.to_string()))?;
+        let req = proxy.post(self.comment_path().as_str()).body(body);
+        proxy.send(req).await
+    }
+}
+
+impl From<&IssueId> for IssueRequest {
+    fn from(id: &IssueId) -> Self {
+        Self::new(id.owner(), id.repo(), id.number())
     }
 }

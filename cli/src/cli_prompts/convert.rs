@@ -53,6 +53,10 @@ impl Cli {
             PullRequestCommand::Merge(m) => PrCmd::Merge(id, m.into()),
             PullRequestCommand::Reviews => PrCmd::Reviews(id),
             PullRequestCommand::Check => PrCmd::Check(id),
+            PullRequestCommand::AddComment(arg) => {
+                let comment = self.get_or_prompt_for_comment(&arg.comment).await?;
+                PrCmd::AddComment(id, comment)
+            },
         };
         Ok(PilotCommand::PullRequest(cmd))
     }
@@ -128,6 +132,11 @@ impl Cli {
                 let label = self.get_or_prompt_for_existing_label(provider, &id, l).await?;
                 IssueCmd::RemoveLabel(id, label)
             },
+            IssueCommand::Comments => IssueCmd::Comments(id),
+            IssueCommand::AddComment(arg) => {
+                let comment = self.get_or_prompt_for_comment(&arg.comment).await?;
+                IssueCmd::AddComment(id, comment)
+            },
         };
         Ok(PilotCommand::Issue(cmd))
     }
@@ -153,6 +162,38 @@ impl Cli {
             },
         };
         Ok(label)
+    }
+
+    /// Returns a *required* string by extracting it from the given value, failing that, prompting the user, failing
+    /// that, returning an error.
+    async fn get_or_prompt_for_string(
+        &self,
+        val: &Option<String>,
+        prompt: &str,
+        err_msg: &str,
+    ) -> Result<String, String> {
+        match (self.non_interactive, val) {
+            (true, None) => Err(err_msg.to_string()),
+            (_, Some(s)) => Ok(s.clone()),
+            (false, None) => {
+                let mut prompt = TextPrompt::new(prompt);
+                let val = prompt
+                    .run()
+                    .await
+                    .map_err(|e| format!("Failed to get label: {}", e))?
+                    .ok_or_else(|| err_msg.to_string())?;
+                Ok(val)
+            },
+        }
+    }
+
+    async fn get_or_prompt_for_comment(&self, comment: &Option<String>) -> Result<String, String> {
+        self.get_or_prompt_for_string(
+            comment,
+            "📝 Provide the comment body:",
+            "😥 A comment body is required for this command",
+        )
+        .await
     }
 
     async fn get_or_prompt_for_existing_label(

@@ -1,4 +1,8 @@
-use github_pilot_api::{models::Issue, provider_traits::IssueProvider, wrappers::IssueId};
+use github_pilot_api::{
+    models::{Issue, IssueComment},
+    provider_traits::IssueProvider,
+    wrappers::IssueId,
+};
 use log::*;
 
 use crate::pretty_print::{add_labels, pretty_table};
@@ -11,6 +15,10 @@ pub enum IssueCmd {
     AddLabel(IssueId, String),
     /// Removes a label from an issue
     RemoveLabel(IssueId, String),
+    /// Fetches comments for the issue
+    Comments(IssueId),
+    /// Add a comment to the issue
+    AddComment(IssueId, String),
 }
 
 impl IssueCmd {
@@ -32,6 +40,17 @@ impl IssueCmd {
                 Ok(false) => Ok(info!("🏷 '{l}' was not present on issue {id}")),
                 Err(e) => Err(format!("🏷 Error removing label from issue {id}: {e}")),
             },
+            IssueCmd::Comments(id) => match provider.fetch_issue_comments(&id).await {
+                Ok(comments) => {
+                    print_comments(&comments);
+                    Ok(())
+                },
+                Err(e) => Err(format!("📒 Error fetching issue {id}: {e}")),
+            },
+            IssueCmd::AddComment(id, c) => match provider.add_comment(&id, c.as_str()).await {
+                Ok(c) => Ok(info!("📝 Comment added to issue {id}: {}", c.url)),
+                Err(e) => Err(format!("📝 Error adding comment to issue {id}: {e}")),
+            },
         }
     }
 }
@@ -45,4 +64,24 @@ fn pretty_print(issue: Issue) {
     add_labels(&mut table, &issue.labels);
     println!("{table}");
     println!("{}", issue.body.unwrap_or_default());
+}
+
+pub fn print_comments(comments: &[IssueComment]) {
+    if comments.is_empty() {
+        println!("No comments.");
+    } else {
+        println!("{} Comments:", comments.len());
+        for c in comments {
+            let body = c.body.clone().unwrap_or_else(|| "nothing.".into());
+            let user = c
+                .user
+                .clone()
+                .map(|u| match u.name {
+                    Some(n) => format!("{} ({})", u.login, n),
+                    None => u.login,
+                })
+                .unwrap_or_else(|| "Anonymous".into());
+            println!("At {}, {} said, \"{}\"", c.created_at, user, body);
+        }
+    }
 }

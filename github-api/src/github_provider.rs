@@ -4,10 +4,10 @@ use async_trait::async_trait;
 use log::*;
 
 use crate::{
-    api::{AuthToken, ClientProxy, IssueRequest, PullRequestRequest, RepoRequest, UserRequest},
+    api::{AuthToken, ClientProxy, IssueRequest, Page, PullRequestRequest, RepoRequest, UserRequest},
     error::GithubProviderError,
     graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
-    models::{Contributor, Issue, Label, PullRequest, Repository, SimpleUser},
+    models::{Contributor, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
         CheckRunStatusProvider,
@@ -112,7 +112,7 @@ impl IssueProvider for GithubProvider {
     /// The boolean result indicates whether a call to the API to remove the label was actually made.
     /// e.g., if the label was not present on the issue, then no call was made, and the result is `false`.
     async fn remove_label(&self, id: &IssueId, label: &str, only_if_exists: bool) -> Result<bool, GithubProviderError> {
-        let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
+        let issue = IssueRequest::from(id);
         if !only_if_exists || self.label_exists(label, id).await? {
             let _labels = issue.remove_label(label, &self.client).await?;
             Ok(true)
@@ -122,15 +122,28 @@ impl IssueProvider for GithubProvider {
     }
 
     async fn label_exists(&self, label: &str, id: &IssueId) -> Result<bool, GithubProviderError> {
-        let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
+        let issue = IssueRequest::from(id);
         let labels = issue.fetch_labels(&self.client).await?;
         Ok(labels.iter().any(|l| l.name == label))
     }
 
     async fn fetch_issue_labels(&self, id: &IssueId) -> Result<Vec<Label>, GithubProviderError> {
-        let issue = IssueRequest::new(&id.owner, &id.repo, id.number);
+        let issue = IssueRequest::from(id);
         let labels = issue.fetch_labels(&self.client).await?;
         Ok(labels)
+    }
+
+    async fn fetch_issue_comments(&self, id: &IssueId) -> Result<Vec<IssueComment>, GithubProviderError> {
+        trace!("Fetching issue comments for {id}");
+        let issue = IssueRequest::from(id);
+        let comments = issue.fetch_comments(&self.client, Page::default()).await?;
+        Ok(comments)
+    }
+
+    async fn add_comment(&self, id: &IssueId, comment: &str) -> Result<IssueComment, GithubProviderError> {
+        let issue = IssueRequest::from(id);
+        let comment = issue.add_comment(comment, &self.client).await?;
+        Ok(comment)
     }
 }
 

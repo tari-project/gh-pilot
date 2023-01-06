@@ -1,3 +1,15 @@
+//! The CLI arguments definition.
+//!
+//! Note: Almost EVERYTHING here is WRAPPED IN AN OPTION.
+//!
+//! Even if an argument is always required in a query, put it in an Option. Why?
+//!
+//! This is so that the user prompts module can ask the user for required info they didn't feel like putting in on
+//! the command line.
+//!
+//! The precedence order is
+//!
+//! `ENV? -> cli arg? -> User prompt? -> None or Panic`
 use std::fmt::Display;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
@@ -122,6 +134,16 @@ pub enum IssueCommand {
     AddLabel(LabelArg),
     /// Removes a label from an issue
     RemoveLabel(LabelArg),
+    /// Fetch comments for this issue
+    Comments,
+    /// Add a comment to this issue
+    #[clap(alias = "ac")]
+    AddComment(CommentArg),
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct CommentArg {
+    pub comment: Option<String>,
 }
 
 #[derive(Debug, Clone, Args)]
@@ -172,6 +194,9 @@ pub enum PullRequestCommand {
     Reviews,
     /// Fetch last check run status (The result of the checks that are configured to run after each PR change).
     Check,
+    /// Add a comment to this PR
+    #[clap(alias = "ac")]
+    AddComment(CommentArg),
 }
 
 #[derive(Debug, Clone, Args)]
