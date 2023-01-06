@@ -48,6 +48,7 @@ pub enum Commands {
         profile: Option<String>,
     },
     /// Fetches a pull request
+    #[clap(alias = "pr")]
     PullRequest {
         #[clap(short, long)]
         number: Option<u64>,
@@ -55,6 +56,7 @@ pub enum Commands {
         sub_command: PullRequestCommand,
     },
     /// Query or manipulate an issue
+    #[clap(alias = "iss")]
     Issue {
         #[clap(short, long)]
         number: Option<u64>,
@@ -62,11 +64,13 @@ pub enum Commands {
         sub_command: IssueCommand,
     },
     /// Manipulate labels on a repo
+    #[clap(alias = "lab")]
     Labels {
         #[clap(subcommand)]
         sub_command: LabelCommand,
     },
     /// List contributors to the repo
+    #[clap(alias = "users")]
     Contributors,
 }
 
