@@ -6,7 +6,7 @@ use log::info;
 async fn main() {
     dotenv().ok();
     env_logger::init();
-    let config = ServerConfig::new("127.0.0.1", 8330);
+    let config = ServerConfig::from_env_or_default();
     info!("🚀 Starting server on {}:{}", config.host, config.port);
     match run_server(config).await {
         Ok(_) => println!("Bye!"),
