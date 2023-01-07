@@ -12,7 +12,6 @@ jobs:
     strategy:
       matrix:
         rust:
-#          - stable
           - nightly-2022-09-13
     steps:
       - name: checkout
@@ -23,10 +22,18 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.rust }}
           override: true
-#      - name: test/debug
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: test
+      - name: Cache packages
+        id: cache-cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
       - name: test/release
         uses: actions-rs/cargo@v1
         with:
