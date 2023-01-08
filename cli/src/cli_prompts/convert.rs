@@ -1,13 +1,18 @@
+use std::{
+    fs::File,
+    io::{BufRead, BufReader},
+};
+
 use github_pilot_api::{
     models::Label,
     provider_traits::{IssueProvider, RepoProvider},
-    wrappers::{IssueId, NewLabel, RepoId},
+    wrappers::{GithubHandle, IssueId, NewLabel, RepoId},
     GithubProvider,
 };
 use prompts::{autocomplete::AutocompletePrompt, text::TextPrompt, Prompt};
 
 use crate::{
-    cli_def::{Cli, Commands, IssueCommand, LabelArg, LabelCommand, PullRequestCommand},
+    cli_def::{ActivityReportOptions, Cli, Commands, IssueCommand, LabelArg, LabelCommand, PullRequestCommand},
     cli_prompts::user_command::extract_github_handle,
     pilot_command::{assign_labels, IssueCmd, LabelCmd, PilotCommand, PilotCommand::NoOp, PrCmd},
 };
@@ -27,6 +32,7 @@ impl Cli {
             },
             Commands::Labels { sub_command } => self.to_label_cmd(provider, sub_command).await?,
             Commands::Contributors => self.to_contributors(provider).await?,
+            Commands::ActivityReport(opts) => Self::to_activity_cmd(opts)?,
         };
         Ok(command)
     }
@@ -279,6 +285,37 @@ impl Cli {
     async fn to_contributors(&self, _provider: &dyn RepoProvider) -> Result<PilotCommand, String> {
         let id = self.prompt_repo_id().await?;
         Ok(PilotCommand::Contributors(id))
+    }
+
+    fn to_activity_cmd(opts: ActivityReportOptions) -> Result<PilotCommand, String> {
+        match (opts.id, opts.user_file_path) {
+            (None, None) => Err("Either ids or userfile must be specified".into()),
+            (Some(_), Some(_)) => Err("You cannot specify both ids and userfile".into()),
+            (Some(ids), None) => Ok(PilotCommand::ActivityReport(
+                ids.into_iter().map(GithubHandle::from).collect(),
+            )),
+            (None, Some(f)) => {
+                let ids = Self::load_ids(f)?;
+                Ok(PilotCommand::ActivityReport(ids))
+            },
+        }
+    }
+
+    fn load_ids(id_file: String) -> Result<Vec<GithubHandle>, String> {
+        let f = File::open(id_file).map_err(|e| format!("Invalid user id file. {e}"))?;
+        let ids = BufReader::new(f)
+            .lines()
+            .filter_map(|l| {
+                l.ok().and_then(|s| {
+                    if s.starts_with('#') {
+                        None
+                    } else {
+                        Some(GithubHandle::from(s))
+                    }
+                })
+            })
+            .collect();
+        Ok(ids)
     }
 }
 

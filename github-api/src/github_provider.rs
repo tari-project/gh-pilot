@@ -1,4 +1,7 @@
-use std::env;
+use std::{
+    env,
+    fmt::{Debug, Formatter},
+};
 
 use async_trait::async_trait;
 use log::*;
@@ -28,6 +31,12 @@ pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GH_PILOT_AUTH_TOKEN";
 #[derive(Clone)]
 pub struct GithubProvider {
     client: ClientProxy,
+}
+
+impl Debug for GithubProvider {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("GithubProvider")
+    }
 }
 
 impl Default for GithubProvider {

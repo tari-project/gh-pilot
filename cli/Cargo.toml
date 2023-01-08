@@ -10,11 +10,14 @@ github-pilot-api = { version = "0.1", path = "../github-api" }
 
 clap = {version = "4.0.29", features = ["derive", "env"] }
 comfy-table = "6.0.0"
+console-subscriber = "0.1.8"
 dotenv = "0.15.0"
 env_logger = "0.10.0"
+futures = "0.3.25"
 hex = "0.4.3"
 log = "0.4.17"
 prompts = { version = "0.4", git = "https://github.com/CjS77/prompts-rs.git", branch = "main"}
 serde_json = "1.0.70"
 serde_yaml = "0.9.13"
-tokio = {version = "1.20.1", features = ["full"] }
+tokio = {version = "1.20.1", features = ["full", "tracing"] }
+tracing = "0.1.37"

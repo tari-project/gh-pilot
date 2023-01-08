@@ -72,6 +72,8 @@ pub enum Commands {
     /// List contributors to the repo
     #[clap(alias = "users")]
     Contributors,
+    /// Generate an activity report for the given user(s)
+    ActivityReport(ActivityReportOptions),
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -148,6 +150,16 @@ pub enum IssueCommand {
 #[derive(Debug, Clone, Args)]
 pub struct CommentArg {
     pub comment: Option<String>,
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct ActivityReportOptions {
+    /// The Github User id to generate a report for. Can be specified multiple times.
+    #[clap(conflicts_with = "user_file_path")]
+    pub id: Option<Vec<String>>,
+    /// A path to a file containing Github user ids, one id per line.
+    #[clap(long = "userfile", short = 'f')]
+    pub user_file_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Args)]
