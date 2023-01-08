@@ -4,7 +4,8 @@ on:
     branches: [main]
 
 name: Run test suite
-
+env:
+  RUST_VERSION: nightly-2022-09-13
 jobs:
   test:
     name: cargo test
@@ -12,7 +13,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - nightly-2022-09-13
+          - ${{ env.RUST_VERSION }}
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -32,8 +33,10 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
+          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}
+            ${{ runner.os }}-cargo-
       - name: test/release
         uses: actions-rs/cargo@v1
         with:

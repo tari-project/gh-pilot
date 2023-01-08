@@ -1,5 +1,7 @@
 on: [pull_request]
 name: Clippy
+env:
+  RUST_VERSION: nightly-2022-09-13
 jobs:
   clippy_check:
     runs-on: ubuntu-latest
@@ -8,12 +10,26 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           components: clippy, rustfmt
-          toolchain: nightly-2022-09-13
+          toolchain: ${{ env.RUST_VERSION }}
           override: true
+      - name: Cache packages
+        id: cache-cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: | 
+            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}
+            ${{ runner.os }}-cargo-
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          toolchain: nightly-2022-09-13
+          toolchain: ${{ env.RUST_VERSION }}
           args: --all -- --check
       - name: Install cargo-lints
         uses: actions-rs/cargo@v1
