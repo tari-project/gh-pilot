@@ -1,6 +1,6 @@
 use crate::{
     api::{ClientProxy, GithubApiError},
-    models::SimpleUser,
+    models::{DateTime, Event, SimpleUser},
 };
 
 pub struct UserRequest {
@@ -25,5 +25,9 @@ impl UserRequest {
             Err(GithubApiError::NotFound(_)) => Ok(None),
             Err(e) => Err(e),
         }
+    }
+
+    pub async fn fetch_events(&self, proxy: &ClientProxy, since: DateTime) -> Result<Vec<Event>, GithubApiError> {
+        todo!()
     }
 }

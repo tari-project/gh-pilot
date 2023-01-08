@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::models::Url;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Commit {
     /// An array of files added in the commit.
@@ -30,6 +32,15 @@ pub struct CommitSimple {
     pub message: String,
     pub timestamp: String,
     pub tree_id: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ShortCommit {
+    pub author: Committer,
+    pub sha: String,
+    pub message: String,
+    pub distinct: bool,
+    pub url: Url,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
