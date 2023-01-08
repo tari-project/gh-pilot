@@ -4,16 +4,12 @@ on:
     branches: [main]
 
 name: Run test suite
-
+env:
+  RUST_VERSION: nightly-2022-09-13
 jobs:
   test:
     name: cargo test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        rust:
-#          - stable
-          - nightly-2022-09-13
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -21,12 +17,22 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ env.RUST_VERSION }}
           override: true
-#      - name: test/debug
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: test
+      - name: Cache packages
+        id: cache-cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}-test
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-
       - name: test/release
         uses: actions-rs/cargo@v1
         with:
