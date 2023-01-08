@@ -29,11 +29,10 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-test-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}-test
           restore-keys: |
             ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
-            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-
       - name: test/release
         uses: actions-rs/cargo@v1
         with:
