@@ -3,8 +3,6 @@
 
 .DS_Store
 
-Cargo.lock
-
 github-api/swagger/rust
 github-api/swagger/rust
 github/swagger/*.jar
