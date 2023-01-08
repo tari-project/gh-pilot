@@ -22,11 +22,10 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-clippy-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}-clippy
           restore-keys: |
             ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
             ${{ runner.os }}-cargo-${{ env.RUST_VERSION }}
-            ${{ runner.os }}-cargo-
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
