@@ -39,6 +39,13 @@ pub struct OrgActivity {
     pub pull_requests: Vec<PullRequestActivity>,
 }
 
+impl OrgActivity {
+    pub fn merge(&mut self, other: OrgActivity) {
+        self.issues.extend(other.issues);
+        self.pull_requests.extend(other.pull_requests);
+    }
+}
+
 /// A user field. To [Self::display_name] to return the user's name, or if that is missing, their login
 #[derive(Clone, Debug, Default)]
 pub struct User {

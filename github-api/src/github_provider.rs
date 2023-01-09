@@ -7,15 +7,30 @@ use async_trait::async_trait;
 use log::*;
 
 use crate::{
-    api::{AuthToken, ClientProxy, IssueRequest, Page, PullRequestRequest, RepoRequest, UserRequest},
+    api::{
+        AuthToken,
+        ClientProxy,
+        IssueRequest,
+        OrganizationRequest,
+        Page,
+        PullRequestRequest,
+        RepoRequest,
+        UserRequest,
+    },
     error::GithubProviderError,
-    graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
+    graphql::{
+        org_activity::{org_activity_ql::pageInfoFields, OrgActivitySearch},
+        review_counts::ReviewCounts,
+        CheckRunStatus,
+        PullRequestComments,
+    },
     models::{Contributor, DateTime, Event, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
         CheckRunStatusProvider,
         Contributors,
         IssueProvider,
+        OrganizationProvider,
         PullRequestCommentsProvider,
         PullRequestProvider,
         PullRequestReviewSummary,
@@ -264,6 +279,22 @@ impl CheckRunStatusProvider for GithubProvider {
         trace!("✅ Fetching check run status for PR");
         let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
         let result = pr.fetch_last_check_run(&self.client).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl OrganizationProvider for GithubProvider {
+    async fn fetch_activity(
+        &self,
+        owner: &str,
+        from: &str,
+        to: &str,
+        n: usize,
+        next_from: Option<pageInfoFields>,
+    ) -> Result<OrgActivitySearch, GithubProviderError> {
+        let org_request = OrganizationRequest::new(owner);
+        let result = org_request.fetch_activity(&self.client, from, to, n, next_from).await?;
         Ok(result)
     }
 }
