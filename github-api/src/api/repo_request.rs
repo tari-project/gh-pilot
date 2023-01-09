@@ -3,10 +3,9 @@ use reqwest::StatusCode;
 
 use crate::{
     api::{error::ErrorItem, ClientProxy, GithubApiError},
-    models::{Contributor, Label, Repository, UserType},
+    models::{Contributor, DateTime, Event, Label, Repository, UserType},
     wrappers::NewLabel,
 };
-use crate::models::{DateTime, Event};
 
 pub struct RepoRequest {
     owner: String,
@@ -114,7 +113,7 @@ impl RepoRequest {
             }
         };
         let url = format!("/repos/{}/{}/events", self.owner, self.repo);
-        let req = proxy.get(self.get_events_path().as_str(), auth);
+        let req = proxy.get(url.as_str(), false);
         proxy.fetch_pages(req, filter, 100).await
     }
 }
