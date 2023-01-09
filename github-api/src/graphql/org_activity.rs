@@ -35,15 +35,15 @@ use crate::graphql::org_activity::org_activity_ql::{
 
 #[derive(Clone, Debug, Default)]
 pub struct OrgActivity {
-    issues: Vec<IssueActivity>,
-    pull_requests: Vec<PullRequestActivity>,
+    pub issues: Vec<IssueActivity>,
+    pub pull_requests: Vec<PullRequestActivity>,
 }
 
 /// A user field. To [Self::display_name] to return the user's name, or if that is missing, their login
 #[derive(Clone, Debug, Default)]
 pub struct User {
-    name: Option<String>,
-    login: String,
+    pub name: Option<String>,
+    pub login: String,
 }
 
 impl User {
@@ -94,44 +94,44 @@ pub struct IssueActivity {
 
 #[derive(Clone, Debug)]
 pub struct CommentSummary {
-    total_comments: u64,
-    comments: Vec<Comment>,
+    pub total_comments: u64,
+    pub comments: Vec<Comment>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Comment {
-    author: User,
-    text: String,
+    pub author: User,
+    pub text: String,
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct FilesChangedSummary {
-    files_changed: Vec<FileChange>,
+    pub files_changed: Vec<FileChange>,
 }
 
 #[derive(Clone, Debug)]
 pub struct FileChange {
-    path: PathBuf,
-    additions: u64,
-    deletions: u64,
+    pub path: PathBuf,
+    pub additions: u64,
+    pub deletions: u64,
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct ReviewsSummary {
-    reviews: Vec<Review>,
+    pub reviews: Vec<Review>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Review {
-    total_comments: u64,
-    author: User,
+    pub total_comments: u64,
+    pub author: User,
 }
 
 #[derive(Clone, Debug)]
 pub struct OrgActivitySearch {
-    page_info: pageInfoFields,
-    total_count: u64,
-    search_result: OrgActivity,
+    pub page_info: pageInfoFields,
+    pub total_count: u64,
+    pub search_result: OrgActivity,
 }
 
 impl From<ResponseData> for OrgActivitySearch {
