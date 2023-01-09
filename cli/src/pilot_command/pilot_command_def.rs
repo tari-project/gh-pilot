@@ -1,15 +1,14 @@
 use github_pilot_api::{
-    models::DateTime,
     wrappers::{GithubHandle, RepoId},
     GithubProvider,
 };
 
 use crate::pilot_command::{
-    generate_activity_reports,
     issue::IssueCmd,
     labels::LabelCmd,
     pull_request::PrCmd,
     user::{run_contributor_cmd, run_user_cmd},
+    OrganizationCmd,
 };
 
 /// This is the final specification of the command to pass through to the API. All modifications to the request have
@@ -18,8 +17,6 @@ use crate::pilot_command::{
 /// The sub-commands get run in delegated functions in this module
 #[derive(Debug)]
 pub enum PilotCommand {
-    /// ActivityReport
-    ActivityReport(Vec<GithubHandle>, DateTime),
     /// User command
     User(GithubHandle),
     /// Fetches a pull request
@@ -30,6 +27,8 @@ pub enum PilotCommand {
     Labels(LabelCmd),
     /// List contributors to the repo
     Contributors(RepoId),
+    /// Query organisations
+    Organization(OrganizationCmd),
     /// Do Nothing
     NoOp,
 }
@@ -43,7 +42,7 @@ impl PilotCommand {
             PilotCommand::Labels(cmd) => cmd.execute(provider).await,
             PilotCommand::Contributors(ref id) => run_contributor_cmd(provider, id).await,
             PilotCommand::NoOp => Ok(()),
-            PilotCommand::ActivityReport(ids, since) => generate_activity_reports(provider, ids, since).await,
+            PilotCommand::Organization(cmd) => cmd.execute(provider).await,
         }
     }
 }

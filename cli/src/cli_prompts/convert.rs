@@ -1,21 +1,24 @@
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-};
-
-use chrono::{Datelike, TimeZone, Utc};
 use github_pilot_api::{
-    models::{DateTime, Label},
+    models::Label,
     provider_traits::{IssueProvider, RepoProvider},
-    wrappers::{GithubHandle, IssueId, NewLabel, RepoId},
+    wrappers::{IssueId, NewLabel, RepoId},
     GithubProvider,
 };
 use prompts::{autocomplete::AutocompletePrompt, text::TextPrompt, Prompt};
 
 use crate::{
-    cli_def::{ActivityReportOptions, Cli, Commands, IssueCommand, LabelArg, LabelCommand, PullRequestCommand},
+    cli_def::{Cli, Commands, IssueCommand, LabelArg, LabelCommand, OrganizationCommand, PullRequestCommand},
     cli_prompts::user_command::extract_github_handle,
-    pilot_command::{assign_labels, IssueCmd, LabelCmd, PilotCommand, PilotCommand::NoOp, PrCmd},
+    pilot_command::{
+        assign_labels,
+        DateRange,
+        IssueCmd,
+        LabelCmd,
+        OrganizationCmd,
+        PilotCommand,
+        PilotCommand::{NoOp, Organization},
+        PrCmd,
+    },
 };
 
 impl Cli {
@@ -33,7 +36,10 @@ impl Cli {
             },
             Commands::Labels { sub_command } => self.to_label_cmd(provider, sub_command).await?,
             Commands::Contributors => self.to_contributors(provider).await?,
-            Commands::ActivityReport(opts) => Self::to_activity_cmd(opts)?,
+            Commands::Organization { sub_command } => {
+                let owner = self.owner.clone();
+                self.to_org_cmd(owner, &sub_command).await?
+            },
         };
         Ok(command)
     }
@@ -146,6 +152,29 @@ impl Cli {
             },
         };
         Ok(PilotCommand::Issue(cmd))
+    }
+
+    async fn to_org_cmd(
+        &self,
+        owner: Option<String>,
+        sub_command: &OrganizationCommand,
+    ) -> Result<PilotCommand, String> {
+        let owner = self
+            .get_or_prompt_for_string(&owner, "🏢 Owner / Organisation: ", "😥 Organisation/Owner is required")
+            .await?;
+        let cmd = match sub_command {
+            OrganizationCommand::Activity(args) => {
+                let from = self
+                    .get_or_prompt_for_string(&args.from, "📆 Start date (yyyy-mm-dd):", "😥 Start is required")
+                    .await?;
+                let to = self
+                    .get_or_prompt_for_string(&args.to, "📆 End date (yyyy-mm-dd):", "😥 Start is required")
+                    .await?;
+                let dates = DateRange::new(from.as_str(), to.as_str());
+                OrganizationCmd::Activity(owner, dates)
+            },
+        };
+        Ok(Organization(cmd))
     }
 
     async fn get_or_prompt_for_label(
@@ -286,52 +315,6 @@ impl Cli {
     async fn to_contributors(&self, _provider: &dyn RepoProvider) -> Result<PilotCommand, String> {
         let id = self.prompt_repo_id().await?;
         Ok(PilotCommand::Contributors(id))
-    }
-
-    fn to_activity_cmd(opts: ActivityReportOptions) -> Result<PilotCommand, String> {
-        let since = match opts.since {
-            None => {
-                let today = Utc::now();
-                let start_of_month = Utc
-                    .with_ymd_and_hms(today.year(), today.month(), 1, 0, 0, 0)
-                    .earliest()
-                    .unwrap_or(today);
-                DateTime::new(start_of_month)
-            },
-            Some(since) => {
-                let d = format!("\"{since}T0:0:0Z\"");
-                serde_json::from_str(d.as_str()).map_err(|e| format!("Invalid value for 'since': {since}. {e}"))?
-            },
-        };
-        match (opts.id, opts.user_file_path) {
-            (None, None) => Err("Either ids or userfile must be specified".into()),
-            (Some(_), Some(_)) => Err("You cannot specify both ids and userfile".into()),
-            (Some(ids), None) => Ok(PilotCommand::ActivityReport(
-                ids.into_iter().map(GithubHandle::from).collect(),
-                since,
-            )),
-            (None, Some(f)) => {
-                let ids = Self::load_ids(f)?;
-                Ok(PilotCommand::ActivityReport(ids, since))
-            },
-        }
-    }
-
-    fn load_ids(id_file: String) -> Result<Vec<GithubHandle>, String> {
-        let f = File::open(id_file).map_err(|e| format!("Invalid user id file. {e}"))?;
-        let ids = BufReader::new(f)
-            .lines()
-            .filter_map(|l| {
-                l.ok().and_then(|s| {
-                    if s.starts_with('#') {
-                        None
-                    } else {
-                        Some(GithubHandle::from(s))
-                    }
-                })
-            })
-            .collect();
-        Ok(ids)
     }
 }
 

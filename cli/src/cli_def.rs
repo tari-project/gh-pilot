@@ -72,8 +72,11 @@ pub enum Commands {
     /// List contributors to the repo
     #[clap(alias = "users")]
     Contributors,
-    /// Generate an activity report for the given user(s)
-    ActivityReport(ActivityReportOptions),
+    /// Query an organisation
+    Organization {
+        #[clap(subcommand)]
+        sub_command: OrganizationCommand,
+    },
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -153,19 +156,6 @@ pub struct CommentArg {
 }
 
 #[derive(Debug, Clone, Args)]
-pub struct ActivityReportOptions {
-    /// The date from which to calculate activity
-    #[clap(long, short = 's')]
-    pub since: Option<String>,
-    /// The Github User id to generate a report for. Can be specified multiple times.
-    #[clap(conflicts_with = "user_file_path", long)]
-    pub id: Option<Vec<String>>,
-    /// A path to a file containing Github user ids, one id per line.
-    #[clap(long = "userfile", short = 'f')]
-    pub user_file_path: Option<String>,
-}
-
-#[derive(Debug, Clone, Args)]
 pub struct LabelArg {
     #[clap(short, long)]
     pub label: Option<String>,
@@ -231,6 +221,23 @@ pub struct MergeArgs {
     /// Specify the merge method. Can be one of: merge, rebase, or squash. Default is merge.
     #[clap(short = 'm', long = "method")]
     pub merge_method: Option<MergeMethod>,
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum OrganizationCommand {
+    /// Compile a report on the activity for this organisation between the given dates. Pull requests and comments
+    /// are analysed by user to generate a set of engagement metrics
+    Activity(OrgActivityArgs),
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct OrgActivityArgs {
+    /// The start date for the analysis
+    #[clap(long, short = 'f')]
+    pub from: Option<String>,
+    /// The end date for the analysis
+    #[clap(long, short = 't')]
+    pub to: Option<String>,
 }
 
 #[cfg(test)]

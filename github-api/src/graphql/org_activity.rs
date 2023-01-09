@@ -47,10 +47,19 @@ impl OrgActivity {
 }
 
 /// A user field. To [Self::display_name] to return the user's name, or if that is missing, their login
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct User {
     pub name: Option<String>,
     pub login: String,
+}
+
+impl Default for User {
+    fn default() -> Self {
+        Self {
+            name: Some("Anonymous".to_string()),
+            login: "anon".to_string(),
+        }
+    }
 }
 
 impl User {
@@ -74,7 +83,7 @@ pub struct PullRequestActivity {
     pub number: u64,
     pub title: String,
     pub base_repository: Option<String>,
-    pub author: Option<User>,
+    pub author: User,
     pub created_at: DateTime,
     pub changed_file_count: u64,
     pub total_deletions: u64,
@@ -88,7 +97,7 @@ pub struct PullRequestActivity {
 
 #[derive(Clone, Debug)]
 pub struct IssueActivity {
-    pub author: Option<User>,
+    pub author: User,
     pub title: String,
     pub number: u64,
     pub url: Url,
@@ -193,7 +202,7 @@ impl FromIterator<OrgActivityQlSearchEdgesNode> for OrgActivity {
 impl From<issueFields> for IssueActivity {
     fn from(value: issueFields) -> Self {
         Self {
-            author: value.author.map(User::from),
+            author: value.author.map(User::from).unwrap_or_default(),
             title: value.title,
             number: value.number as u64,
             url: value.url,
@@ -212,7 +221,7 @@ impl From<prFields> for PullRequestActivity {
             number: value.number as u64,
             title: value.title,
             base_repository: value.base_repository.map(|b| b.name),
-            author: value.author.map(User::from),
+            author: value.author.map(User::from).unwrap_or_default(),
             created_at: value.created_at,
             changed_file_count: value.changed_files as u64,
             total_deletions: value.deletions as u64,
@@ -338,7 +347,7 @@ mod test {
         assert_eq!(results.issues.len(), 6);
         assert_eq!(results.pull_requests.len(), 19);
         let issue = &results.issues[2];
-        assert_eq!(issue.author.as_ref().unwrap().display_name(), "SW van Heerden");
+        assert_eq!(issue.author.display_name(), "SW van Heerden");
         assert!(issue.closed);
         assert_eq!(issue.comments.total_comments, 0);
         assert_eq!(
@@ -359,7 +368,7 @@ mod test {
         assert!(pr.closed);
         assert!(pr.merged);
         assert_eq!(pr.title, "feat: stabilise rfc-0173");
-        assert_eq!(pr.author.as_ref().unwrap().login, "CjS77");
+        assert_eq!(pr.author.login, "CjS77");
         assert_eq!(pr.reviews.reviews.len(), 4);
         assert_eq!(pr.base_repository.as_ref().unwrap(), "rfcs");
         assert_eq!(pr.changed_file_count, 1);
