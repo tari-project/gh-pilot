@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use reqwest::{Client, Method, RequestBuilder, StatusCode};
 use serde::de::DeserializeOwned;
+use log::*;
 
-use crate::api::{AuthToken, GithubApiError, GithubQuery, GithubQueryExec};
+use crate::api::{AuthToken, GithubApiError, GithubQuery, GithubQueryExec, Page};
 
 pub const USER_AGENT: &str = "GithubPilot_v1.0";
 pub const BASE_URL: &str = "https://api.github.com";
@@ -90,6 +91,62 @@ impl ClientProxy {
             )),
             code => Err(GithubApiError::HttpResponse(code)),
         }
+    }
+
+    pub async fn fetch_pages<F, T>(&self, req: RequestBuilder, filter: F, page_len: usize) -> Result<Vec<T>, GithubApiError>
+        where
+            F: Fn(&T) -> bool,
+            T: DeserializeOwned,
+    {
+        let mut page = 1;
+        let mut done = false;
+        let mut result = vec![];
+        while !done {
+            // the events endpoint does not respect the "since" parameter
+            let q = Page::nth(page, page_len).to_query();
+            let request = req.try_clone()
+                .ok_or_else(|| GithubApiError::HttpClientError("Could not clone request".into()))?
+                .query(&q);
+            let response = match request.send().await {
+                Ok(res) => res,
+                Err(e) => {
+                    let url = e.url().map(|u| u.as_str()).unwrap_or_default();
+                    warn!("Error fetching paged result. {e}. The request was {url}");
+                    // If we already have results, return what we have
+                    return if result.is_empty() {
+                        Err(GithubApiError::HttpClientError(e.to_string()))
+                    } else {
+                        Ok(result)
+                    }
+                }
+            };
+            match response.json::<Vec<T>>().await {
+                Ok(records) => {
+                    done = records.len() < page_len;
+                    let new_records = records.into_iter().filter(|rec| {
+                        let must_stop = filter(rec);
+                        if must_stop {
+                            done = true;
+                        }
+                        !must_stop
+                    });
+                    result.extend(new_records);
+                }
+                Err(e) => {
+                    let url = e.url().map(|u| u.as_str()).unwrap_or_default();
+                    warn!(
+                        "Error converting results. {e}. The request was {url}",
+                    );
+                    done = true;
+                    // If we have results, we can return an error
+                    if result.is_empty() {
+                        return Err(GithubApiError::HttpClientError(e.to_string()))
+                    }
+                }
+            }
+            page += 1;
+        }
+        Ok(result)
     }
 }
 
