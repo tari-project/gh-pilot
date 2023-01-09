@@ -1,4 +1,5 @@
 use github_pilot_api::{
+    models::DateTime,
     wrappers::{GithubHandle, RepoId},
     GithubProvider,
 };
@@ -18,7 +19,7 @@ use crate::pilot_command::{
 #[derive(Debug)]
 pub enum PilotCommand {
     /// ActivityReport
-    ActivityReport(Vec<GithubHandle>),
+    ActivityReport(Vec<GithubHandle>, DateTime),
     /// User command
     User(GithubHandle),
     /// Fetches a pull request
@@ -42,7 +43,7 @@ impl PilotCommand {
             PilotCommand::Labels(cmd) => cmd.execute(provider).await,
             PilotCommand::Contributors(ref id) => run_contributor_cmd(provider, id).await,
             PilotCommand::NoOp => Ok(()),
-            PilotCommand::ActivityReport(ids) => generate_activity_reports(provider, ids).await,
+            PilotCommand::ActivityReport(ids, since) => generate_activity_reports(provider, ids, since).await,
         }
     }
 }

@@ -9,6 +9,7 @@ description = "A command line interface for GitHub Pages; intended as a client p
 github-pilot-api = { version = "0.1", path = "../github-api" }
 
 clap = {version = "4.0.29", features = ["derive", "env"] }
+chrono = "0.4.23"
 comfy-table = "6.0.0"
 console-subscriber = "0.1.8"
 dotenv = "0.15.0"

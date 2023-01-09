@@ -10,7 +10,7 @@ use crate::{
     api::{AuthToken, ClientProxy, IssueRequest, Page, PullRequestRequest, RepoRequest, UserRequest},
     error::GithubProviderError,
     graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
-    models::{Contributor, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
+    models::{Contributor, DateTime, Event, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
         CheckRunStatusProvider,
@@ -162,6 +162,17 @@ impl UserProvider for GithubProvider {
         let req = UserRequest::new(handle.as_ref());
         let user = req.fetch(&self.client).await?;
         Ok(user)
+    }
+
+    async fn fetch_events(
+        &self,
+        handle: &GithubHandle,
+        since: DateTime,
+        auth: bool,
+    ) -> Result<Vec<Event>, GithubProviderError> {
+        let req = UserRequest::new(handle.as_ref());
+        let events = req.fetch_events(&self.client, since, auth).await;
+        Ok(events)
     }
 }
 

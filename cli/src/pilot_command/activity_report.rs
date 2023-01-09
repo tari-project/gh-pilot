@@ -1,30 +1,37 @@
 use std::time::Instant;
 
-use futures::{future::join_all, StreamExt, TryFutureExt};
+use futures::{future::join_all, TryFutureExt};
 use github_pilot_api::{
-    models::SimpleUser,
-    provider_traits::{RepoProvider, UserProvider},
+    models::{DateTime, Event, SimpleUser},
+    provider_traits::UserProvider,
     wrappers::GithubHandle,
     GithubProvider,
 };
-use log::Level::Debug;
 use tokio::spawn;
 use tracing::{info, instrument};
 
 #[derive(Debug)]
 pub struct Report {
-    id: GithubHandle,
-    name: String,
+    pub id: GithubHandle,
+    pub name: String,
+    pub since: DateTime,
+    pub total_events: usize,
 }
 
 #[instrument]
-pub async fn generate_activity_reports(provider: &GithubProvider, ids: Vec<GithubHandle>) -> Result<(), String> {
+pub async fn generate_activity_reports(
+    provider: &GithubProvider,
+    ids: Vec<GithubHandle>,
+    since: DateTime,
+) -> Result<(), String> {
     let futures = ids
         .into_iter()
         .map(|id| {
             let client = provider.clone();
+            let ts = since.clone();
             info!("Spawning task for {id}");
-            spawn(generate_activity_report(client, id)).map_err(|e| format!("Error spawning activity_report task. {e}"))
+            spawn(generate_activity_report(client, id, ts))
+                .map_err(|e| format!("Error spawning activity_report task. {e}"))
         })
         .collect::<Vec<_>>();
     let reports = join_all(futures)
@@ -32,21 +39,29 @@ pub async fn generate_activity_reports(provider: &GithubProvider, ids: Vec<Githu
         .into_iter()
         .flatten()
         .collect::<Result<Vec<_>, String>>()?;
-    reports.iter().for_each(|r| println!("{r:?}"));
+    reports
+        .iter()
+        .for_each(|r| println!("{}({}): {} since {}", r.name, r.id, r.total_events, r.since));
     Ok(())
 }
 
 #[instrument]
-pub async fn generate_activity_report(provider: GithubProvider, id: GithubHandle) -> Result<Report, String> {
+pub async fn generate_activity_report(
+    provider: GithubProvider,
+    id: GithubHandle,
+    since: DateTime,
+) -> Result<Report, String> {
     let start = Instant::now();
     info!("Start: Generating report for {id}");
     let user = fetch_user(&provider, &id).await?;
-    let commits = fetch_events_for_user(&provider, &id).await?;
+    let events = fetch_events_for_user(&provider, &id, since.clone()).await?;
     let dt = start.elapsed().as_secs_f64();
     info!("Finished: Generating report for {id} in {dt:.3} secs");
     Ok(Report {
         id,
         name: user.name.unwrap_or("Not provided".into()),
+        since,
+        total_events: events.len(),
     })
 }
 
@@ -58,6 +73,14 @@ async fn fetch_user(provider: &GithubProvider, id: &GithubHandle) -> Result<Simp
     user.ok_or_else(|| format!("User {id} does not exist"))
 }
 
-async fn fetch_events_for_user(provider: &GithubProvider, id: &GithubHandle) -> Result<Vec<()>, String> {
-    Ok(vec![])
+async fn fetch_events_for_user(
+    provider: &GithubProvider,
+    id: &GithubHandle,
+    since: DateTime,
+) -> Result<Vec<Event>, String> {
+    let events = provider
+        .fetch_events(id, since, true)
+        .await
+        .map_err(|e| format!("Error fetching events for {id}. {e}"))?;
+    Ok(events)
 }

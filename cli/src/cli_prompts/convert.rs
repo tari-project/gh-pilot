@@ -3,8 +3,9 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+use chrono::{Datelike, TimeZone, Utc};
 use github_pilot_api::{
-    models::Label,
+    models::{DateTime, Label},
     provider_traits::{IssueProvider, RepoProvider},
     wrappers::{GithubHandle, IssueId, NewLabel, RepoId},
     GithubProvider,
@@ -288,15 +289,30 @@ impl Cli {
     }
 
     fn to_activity_cmd(opts: ActivityReportOptions) -> Result<PilotCommand, String> {
+        let since = match opts.since {
+            None => {
+                let today = Utc::now();
+                let start_of_month = Utc
+                    .with_ymd_and_hms(today.year(), today.month(), 1, 0, 0, 0)
+                    .earliest()
+                    .unwrap_or(today);
+                DateTime::new(start_of_month)
+            },
+            Some(since) => {
+                let d = format!("\"{since}T0:0:0Z\"");
+                serde_json::from_str(d.as_str()).map_err(|e| format!("Invalid value for 'since': {since}. {e}"))?
+            },
+        };
         match (opts.id, opts.user_file_path) {
             (None, None) => Err("Either ids or userfile must be specified".into()),
             (Some(_), Some(_)) => Err("You cannot specify both ids and userfile".into()),
             (Some(ids), None) => Ok(PilotCommand::ActivityReport(
                 ids.into_iter().map(GithubHandle::from).collect(),
+                since,
             )),
             (None, Some(f)) => {
                 let ids = Self::load_ids(f)?;
-                Ok(PilotCommand::ActivityReport(ids))
+                Ok(PilotCommand::ActivityReport(ids, since))
             },
         }
     }

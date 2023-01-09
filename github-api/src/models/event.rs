@@ -1,13 +1,25 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::{DateTime, Issue, IssueComment, Organization, PullRequest, RepositoryReference, ShortCommit, Url};
+use crate::models::{
+    DateTime,
+    Issue,
+    IssueComment,
+    Organization,
+    PullRequest,
+    PullRequestReview,
+    PullRequestReviewComment,
+    Repository,
+    RepositoryReference,
+    ShortCommit,
+    Url,
+};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Event {
     #[serde(flatten)]
-    info: CommonEventInfo,
+    pub info: CommonEventInfo,
     #[serde(flatten)]
-    event: EventPayload,
+    pub event: EventPayload,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -15,9 +27,12 @@ pub struct Event {
 pub enum EventPayload {
     CreateEvent(CreateEventPayload),
     DeleteEvent(DeleteEventPayload),
+    ForkEvent(ForkEventPayload),
     IssueCommentEvent(IssueCommentEventPayload),
     IssuesEvent(IssuesEventPayload),
     PullRequestEvent(PullRequestEventPayload),
+    PullRequestReviewEvent(PullRequestReviewPayload),
+    PullRequestReviewCommentEvent(PullRequestReviewCommentPayload),
     PushEvent(PushEventPayload),
 }
 
@@ -58,7 +73,7 @@ pub struct CreateEventPayload {
     pub reference: String,
     pub ref_type: String,
     pub master_branch: String,
-    pub description: String,
+    pub description: Option<String>,
     pub pusher_type: String,
 }
 
@@ -83,6 +98,25 @@ pub struct IssuesEventPayload {
     pub issue: Issue,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PullRequestReviewPayload {
+    pub action: String,
+    pub review: PullRequestReview,
+    pub pull_request: PullRequest,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PullRequestReviewCommentPayload {
+    pub action: String,
+    pub comment: PullRequestReviewComment,
+    pub pull_request: PullRequest,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ForkEventPayload {
+    pub forkee: Repository,
+}
+
 #[cfg(test)]
 mod test {
     use crate::models::{Event, EventPayload};
@@ -91,7 +125,7 @@ mod test {
     fn events() {
         let data = include_str!("../test_data/events.json");
         let events: Vec<Event> = serde_json::from_str(data).unwrap();
-        assert_eq!(events.len(), 15);
+        assert_eq!(events.len(), 16);
         let ev = &events[0];
         assert_eq!(ev.info.actor.login, "CjS77");
         assert_eq!(ev.info.repo.name, "tari-project/gh-pilot");
@@ -130,6 +164,16 @@ mod test {
             assert_eq!(ie.issue.number, 45);
         } else {
             panic!("event 6 was not an issues event");
+        }
+
+        let ev = &events[15];
+        assert_eq!(ev.info.id, "25566389588");
+        if let EventPayload::ForkEvent(fe) = &ev.event {
+            assert_eq!(fe.forkee.id, 572559750);
+            assert_eq!(fe.forkee.full_name, "stringhandler/gh-pilot");
+            assert!(fe.forkee.fork);
+        } else {
+            panic!("event 15 was not a fork event");
         }
     }
 }

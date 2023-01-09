@@ -27,7 +27,7 @@ impl<S: Into<String>> From<S> for Url {
 pub struct License {
     pub key: String,
     pub name: String,
-    pub url: Url,
+    pub url: Option<Url>,
     pub spdx_id: String,
     pub node_id: String,
 }

@@ -1042,6 +1042,7 @@ dependencies = [
 name = "ghp"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "clap",
  "comfy-table",
  "console-subscriber",

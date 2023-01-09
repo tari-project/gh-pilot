@@ -154,8 +154,11 @@ pub struct CommentArg {
 
 #[derive(Debug, Clone, Args)]
 pub struct ActivityReportOptions {
+    /// The date from which to calculate activity
+    #[clap(long, short = 's')]
+    pub since: Option<String>,
     /// The Github User id to generate a report for. Can be specified multiple times.
-    #[clap(conflicts_with = "user_file_path")]
+    #[clap(conflicts_with = "user_file_path", long)]
     pub id: Option<Vec<String>>,
     /// A path to a file containing Github user ids, one id per line.
     #[clap(long = "userfile", short = 'f')]
