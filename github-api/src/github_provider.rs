@@ -221,6 +221,12 @@ impl RepoProvider for GithubProvider {
         let result = repo.edit_label(&self.client, label, new).await?;
         Ok(result)
     }
+
+    async fn fetch_events(&self, owner: &str, repo: &str, since: DateTime) -> Result<Vec<Event>, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.fetch_events(&self.client, since).await?;
+        Ok(result)
+    }
 }
 
 #[async_trait]

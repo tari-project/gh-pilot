@@ -1,3 +1,4 @@
+use log::debug;
 use reqwest::StatusCode;
 
 use crate::{
@@ -5,6 +6,7 @@ use crate::{
     models::{Contributor, Label, Repository, UserType},
     wrappers::NewLabel,
 };
+use crate::models::{DateTime, Event};
 
 pub struct RepoRequest {
     owner: String,
@@ -101,4 +103,21 @@ impl RepoRequest {
             .collect::<Vec<Contributor>>();
         Ok(contributors)
     }
+
+    pub async fn fetch_events(&self, proxy: &ClientProxy, since: DateTime) -> Result<Vec<Event>, GithubApiError> {
+        let filter = |ev: &Event| {
+            if let Some(ts) = &ev.info.created_at {
+                *ts >= since
+            } else {
+                debug!("Repo event did not have a created_at timestamp. Skipping. {ev:?}");
+                false
+            }
+        };
+        let url = format!("/repos/{}/{}/events", self.owner, self.repo);
+        let req = proxy.get(self.get_events_path().as_str(), auth);
+        proxy.fetch_pages(req, filter, 100).await
+    }
 }
+
+// <https://api.github.com/repositories/136459099/events?per_page=50&page=5>; rel="prev",
+// <https://api.github.com/repositories/136459099/events?per_page=50&page=1>; rel="first"
