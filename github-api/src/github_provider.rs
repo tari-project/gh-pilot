@@ -171,7 +171,7 @@ impl UserProvider for GithubProvider {
         auth: bool,
     ) -> Result<Vec<Event>, GithubProviderError> {
         let req = UserRequest::new(handle.as_ref());
-        let events = req.fetch_events(&self.client, since, auth).await;
+        let events = req.fetch_events(&self.client, since, auth).await?;
         Ok(events)
     }
 }
