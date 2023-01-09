@@ -18,6 +18,7 @@ use crate::{
     wrappers::IssueId,
 };
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum GithubEvent {
     CheckSuiteEvent(CheckSuiteEvent),

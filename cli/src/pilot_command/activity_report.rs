@@ -59,7 +59,7 @@ pub async fn generate_activity_report(
     info!("Finished: Generating report for {id} in {dt:.3} secs");
     Ok(Report {
         id,
-        name: user.name.unwrap_or("Not provided".into()),
+        name: user.name.unwrap_or_else(|| "Not provided".into()),
         since,
         total_events: events.len(),
     })
@@ -67,7 +67,7 @@ pub async fn generate_activity_report(
 
 async fn fetch_user(provider: &GithubProvider, id: &GithubHandle) -> Result<SimpleUser, String> {
     let user = provider
-        .fetch_details(&id)
+        .fetch_details(id)
         .await
         .map_err(|e| format!("Error fetching {id}. {e}"))?;
     user.ok_or_else(|| format!("User {id} does not exist"))

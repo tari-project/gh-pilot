@@ -22,6 +22,7 @@ pub struct Event {
     pub event: EventPayload,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "type", content = "payload")]
 pub enum EventPayload {
