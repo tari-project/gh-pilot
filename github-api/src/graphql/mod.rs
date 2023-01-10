@@ -1,3 +1,4 @@
+pub mod org_activity;
 pub mod pr_comments;
 pub mod review_counts;
 pub mod run_status;

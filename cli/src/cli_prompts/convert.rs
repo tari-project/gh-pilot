@@ -7,9 +7,18 @@ use github_pilot_api::{
 use prompts::{autocomplete::AutocompletePrompt, text::TextPrompt, Prompt};
 
 use crate::{
-    cli_def::{Cli, Commands, IssueCommand, LabelArg, LabelCommand, PullRequestCommand},
+    cli_def::{Cli, Commands, IssueCommand, LabelArg, LabelCommand, OrganizationCommand, PullRequestCommand},
     cli_prompts::user_command::extract_github_handle,
-    pilot_command::{assign_labels, IssueCmd, LabelCmd, PilotCommand, PilotCommand::NoOp, PrCmd},
+    pilot_command::{
+        assign_labels,
+        DateRange,
+        IssueCmd,
+        LabelCmd,
+        OrganizationCmd,
+        PilotCommand,
+        PilotCommand::{NoOp, Organization},
+        PrCmd,
+    },
 };
 
 impl Cli {
@@ -27,6 +36,10 @@ impl Cli {
             },
             Commands::Labels { sub_command } => self.to_label_cmd(provider, sub_command).await?,
             Commands::Contributors => self.to_contributors(provider).await?,
+            Commands::Organization { sub_command } => {
+                let owner = self.owner.clone();
+                self.to_org_cmd(owner, &sub_command).await?
+            },
         };
         Ok(command)
     }
@@ -139,6 +152,29 @@ impl Cli {
             },
         };
         Ok(PilotCommand::Issue(cmd))
+    }
+
+    async fn to_org_cmd(
+        &self,
+        owner: Option<String>,
+        sub_command: &OrganizationCommand,
+    ) -> Result<PilotCommand, String> {
+        let owner = self
+            .get_or_prompt_for_string(&owner, "🏢 Owner / Organisation: ", "😥 Organisation/Owner is required")
+            .await?;
+        let cmd = match sub_command {
+            OrganizationCommand::Activity(args) => {
+                let from = self
+                    .get_or_prompt_for_string(&args.from, "📆 Start date (yyyy-mm-dd):", "😥 Start is required")
+                    .await?;
+                let to = self
+                    .get_or_prompt_for_string(&args.to, "📆 End date (yyyy-mm-dd):", "😥 Start is required")
+                    .await?;
+                let dates = DateRange::new(from.as_str(), to.as_str());
+                OrganizationCmd::Activity(owner, dates)
+            },
+        };
+        Ok(Organization(cmd))
     }
 
     async fn get_or_prompt_for_label(

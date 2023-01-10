@@ -13,6 +13,7 @@ use log::*;
 async fn main() -> Result<(), String> {
     dotenv().ok();
     env_logger::init();
+    console_subscriber::init();
     let mut cli: Cli = Cli::parse();
     // Use the UI to fill in missing arguments if needed
     let provider = setup_github_api(&cli);

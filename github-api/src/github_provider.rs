@@ -1,18 +1,36 @@
-use std::env;
+use std::{
+    env,
+    fmt::{Debug, Formatter},
+};
 
 use async_trait::async_trait;
 use log::*;
 
 use crate::{
-    api::{AuthToken, ClientProxy, IssueRequest, Page, PullRequestRequest, RepoRequest, UserRequest},
+    api::{
+        AuthToken,
+        ClientProxy,
+        IssueRequest,
+        OrganizationRequest,
+        Page,
+        PullRequestRequest,
+        RepoRequest,
+        UserRequest,
+    },
     error::GithubProviderError,
-    graphql::{review_counts::ReviewCounts, CheckRunStatus, PullRequestComments},
-    models::{Contributor, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
+    graphql::{
+        org_activity::{org_activity_ql::pageInfoFields, OrgActivitySearch},
+        review_counts::ReviewCounts,
+        CheckRunStatus,
+        PullRequestComments,
+    },
+    models::{Contributor, DateTime, Event, Issue, IssueComment, Label, PullRequest, Repository, SimpleUser},
     models_plus::{MergeParameters, MergeResult},
     provider_traits::{
         CheckRunStatusProvider,
         Contributors,
         IssueProvider,
+        OrganizationProvider,
         PullRequestCommentsProvider,
         PullRequestProvider,
         PullRequestReviewSummary,
@@ -28,6 +46,12 @@ pub const GITHUB_AUTH_TOKEN_ENVAR_NAME: &str = "GH_PILOT_AUTH_TOKEN";
 #[derive(Clone)]
 pub struct GithubProvider {
     client: ClientProxy,
+}
+
+impl Debug for GithubProvider {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("GithubProvider")
+    }
 }
 
 impl Default for GithubProvider {
@@ -154,6 +178,17 @@ impl UserProvider for GithubProvider {
         let user = req.fetch(&self.client).await?;
         Ok(user)
     }
+
+    async fn fetch_events(
+        &self,
+        handle: &GithubHandle,
+        since: DateTime,
+        auth: bool,
+    ) -> Result<Vec<Event>, GithubProviderError> {
+        let req = UserRequest::new(handle.as_ref());
+        let events = req.fetch_events(&self.client, since, auth).await?;
+        Ok(events)
+    }
 }
 
 #[async_trait]
@@ -201,6 +236,12 @@ impl RepoProvider for GithubProvider {
         let result = repo.edit_label(&self.client, label, new).await?;
         Ok(result)
     }
+
+    async fn fetch_events(&self, owner: &str, repo: &str, since: DateTime) -> Result<Vec<Event>, GithubProviderError> {
+        let repo = RepoRequest::new(owner, repo);
+        let result = repo.fetch_events(&self.client, since).await?;
+        Ok(result)
+    }
 }
 
 #[async_trait]
@@ -238,6 +279,22 @@ impl CheckRunStatusProvider for GithubProvider {
         trace!("✅ Fetching check run status for PR");
         let pr = PullRequestRequest::new(&pr_id.owner, &pr_id.repo, pr_id.number);
         let result = pr.fetch_last_check_run(&self.client).await?;
+        Ok(result)
+    }
+}
+
+#[async_trait]
+impl OrganizationProvider for GithubProvider {
+    async fn fetch_activity(
+        &self,
+        owner: &str,
+        from: &str,
+        to: &str,
+        n: usize,
+        next_from: Option<pageInfoFields>,
+    ) -> Result<OrgActivitySearch, GithubProviderError> {
+        let org_request = OrganizationRequest::new(owner);
+        let result = org_request.fetch_activity(&self.client, from, to, n, next_from).await?;
         Ok(result)
     }
 }

@@ -1,0 +1,4077 @@
+{
+  "issues": [
+    {
+      "author": {
+        "name": "Aaron Feickert",
+        "login": "AaronFeickert"
+      },
+      "title": "Hardcode a more recent zero point for wallet birthday",
+      "number": 4176,
+      "url": "https://github.com/tari-project/tari/issues/4176",
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "body": "A wallet's birthday is encoded as the number of days since the Unix epoch, with a 2-byte capacity. This will hit its maximum value around the year 2060; however, this is wasteful, since no mainnet blocks have been mined between the epoch and now.\nThe following are recommended:\n\nSet a more recent zero point for the wallet birthday (the date of the eventual genesis block has been suggested)\nHardcode this zero point as part of the version definition\nIf (when?) the birthday field reaches its maximum value, you can define a new seed version and hardcode a new zero point",
+      "closed": true,
+      "created_at": "2022-06-08T16:26:28Z",
+      "repository": "tari"
+    },
+    {
+      "author": {
+        "name": "Aaron Feickert",
+        "login": "AaronFeickert"
+      },
+      "title": "Wallet private key derivation is brittle",
+      "number": 4170,
+      "url": "https://github.com/tari-project/tari/issues/4170",
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": null,
+              "login": "jorgeantonio21"
+            },
+            "text": "A possible approach to this issue can be found here. We make use of the current hashing API, for proper domain separation. Moreover, current key index fixed length encoding is obtained by use of little endian representation of an u64."
+          }
+        ]
+      },
+      "body": "Wallet key derivation relies on concatenation of seed entropy, a variable-length branch string, and an index. These values are hashed after concatenation using SHA-256, and parsed as a private key.\nThis approach is brittle:\n\nThe concatenation can collide on distinct inputs, since arbitrary-length branch strings are allowed and the key index is not subject to a fixed-length (or even platform-independent) encoding\nThe hash instantiation is not domain separated, which is unsafe if the inputs (or parts of them) are used elsewhere; it is therefore unsuitable as a key derivation function\n\nThe following are recommended:\n\nUse a modern key derivation function like Blake2b or Blake3\nPrepend the branch string length (where this length is itself in a fixed-length encoding) when encoding it as hash input\nUse a fixed-length and platform-independent encoding for the key index\n\nAny future hashing API should be considered when addressing this issue.",
+      "closed": true,
+      "created_at": "2022-06-07T21:51:36Z",
+      "repository": "tari"
+    }
+  ],
+  "pull_requests": [
+    {
+      "number": 4177,
+      "title": "feat: contract auto acceptance",
+      "base_repository": "tari",
+      "author": {
+        "name": "Brian Pearce",
+        "login": "brianp"
+      },
+      "created_at": "2022-06-08T21:46:17Z",
+      "changed_file_count": 15,
+      "total_deletions": 257,
+      "total_additions": 118,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_app_grpc/proto/validator_node.proto",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_validator_node/src/asset.rs",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_validator_node/src/config.rs",
+            "additions": 6,
+            "deletions": 4
+          },
+          {
+            "path": "applications/tari_validator_node/src/dan_node.rs",
+            "additions": 65,
+            "deletions": 204
+          },
+          {
+            "path": "applications/tari_validator_node/src/grpc/services/base_node_client.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "applications/tari_validator_node/src/grpc/validator_node_grpc_server.rs",
+            "additions": 4,
+            "deletions": 4
+          },
+          {
+            "path": "applications/tari_validator_node/src/main.rs",
+            "additions": 10,
+            "deletions": 34
+          },
+          {
+            "path": "applications/tari_validator_node/src/monitoring.rs",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_validator_node/src/p2p/services/inbound_connection_service.rs",
+            "additions": 3,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_validator_node/src/p2p/services/outbound_connection_service.rs",
+            "additions": 1,
+            "deletions": 0
+          },
+          {
+            "path": "common/config/presets/validator_node.toml",
+            "additions": 3,
+            "deletions": 2
+          },
+          {
+            "path": "dan_layer/core/src/services/base_node_client.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "dan_layer/core/src/services/mocks/mod.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "integration_tests/features/ValidatorNode.feature",
+            "additions": 13,
+            "deletions": 2
+          },
+          {
+            "path": "integration_tests/features/support/validator_node_steps.js",
+            "additions": 4,
+            "deletions": 2
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 119,
+      "title": "add update 79",
+      "base_repository": "tari-dot-com",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-08T20:48:15Z",
+      "changed_file_count": 1,
+      "total_deletions": 0,
+      "total_additions": 56,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "_updates/2022-06-09-update-79.md",
+            "additions": 56,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4175,
+      "title": "fix(test): unifying dan layer integration tests",
+      "base_repository": "tari",
+      "author": {
+        "name": "Miguel Naveira",
+        "login": "mrnaveira"
+      },
+      "created_at": "2022-06-08T15:48:38Z",
+      "changed_file_count": 6,
+      "total_deletions": 16,
+      "total_additions": 42,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "integration_tests/features/NFT.feature",
+            "additions": 3,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/features/ValidatorNode.feature",
+            "additions": 3,
+            "deletions": 1
+          },
+          {
+            "path": "integration_tests/features/WalletCli.feature",
+            "additions": 7,
+            "deletions": 7
+          },
+          {
+            "path": "integration_tests/features/support/wallet_cli_steps.js",
+            "additions": 18,
+            "deletions": 3
+          },
+          {
+            "path": "integration_tests/fixtures/contract_constitution.json",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/helpers/walletProcess.js",
+            "additions": 11,
+            "deletions": 5
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Denis Kolodin",
+              "login": "DenisKolodin"
+            }
+          },
+          {
+            "total_comments": 2,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4174,
+      "title": "refactor(core)!: replace OutputFlags with OutputType",
+      "base_repository": "tari",
+      "author": {
+        "name": "Stan Bondi",
+        "login": "sdbondi"
+      },
+      "created_at": "2022-06-08T14:26:56Z",
+      "changed_file_count": 48,
+      "total_deletions": 20276,
+      "total_additions": 20321,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Byron Hambly",
+              "login": "delta1"
+            },
+            "text": "Nice those output flags had definitely gotten unwieldy\nconcept ack"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.lock",
+            "additions": 3,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_app_grpc/proto/types.proto",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_app_grpc/src/conversions/output_features.rs",
+            "additions": 7,
+            "deletions": 4
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/commands.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/Cargo.toml",
+            "additions": 1,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/blocks/block.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/blocks/faucets/alphanet_faucet.json",
+            "additions": 4000,
+            "deletions": 4000
+          },
+          {
+            "path": "base_layer/core/src/blocks/faucets/dibbler_faucet.json",
+            "additions": 4000,
+            "deletions": 4000
+          },
+          {
+            "path": "base_layer/core/src/blocks/faucets/ridcully_faucet.json",
+            "additions": 4000,
+            "deletions": 4000
+          },
+          {
+            "path": "base_layer/core/src/blocks/faucets/stibbons_faucet.json",
+            "additions": 4000,
+            "deletions": 4000
+          },
+          {
+            "path": "base_layer/core/src/blocks/faucets/weatherwax_faucet.json",
+            "additions": 4000,
+            "deletions": 4000
+          },
+          {
+            "path": "base_layer/core/src/blocks/genesis_block.rs",
+            "additions": 4,
+            "deletions": 4
+          },
+          {
+            "path": "base_layer/core/src/chain_storage/tests/blockchain_database.rs",
+            "additions": 5,
+            "deletions": 6
+          },
+          {
+            "path": "base_layer/core/src/covenants/fields.rs",
+            "additions": 7,
+            "deletions": 7
+          },
+          {
+            "path": "base_layer/core/src/covenants/filters/fields_preserved.rs",
+            "additions": 5,
+            "deletions": 5
+          },
+          {
+            "path": "base_layer/core/src/proto/transaction.rs",
+            "additions": 7,
+            "deletions": 4
+          },
+          {
+            "path": "base_layer/core/src/transactions/aggregated_body.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/coinbase_builder.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/test_helpers.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/mod.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_features.rs",
+            "additions": 31,
+            "deletions": 35
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_flags.rs",
+            "additions": 0,
+            "deletions": 87
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_type.rs",
+            "additions": 128,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/test.rs",
+            "additions": 14,
+            "deletions": 25
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/transaction_output.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_protocol/recipient.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_protocol/single_receiver.rs",
+            "additions": 6,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/validation/block_validators/async_validator.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/validation/block_validators/test.rs",
+            "additions": 7,
+            "deletions": 8
+          },
+          {
+            "path": "base_layer/core/src/validation/helpers.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/tests/chain_storage_tests/chain_storage.rs",
+            "additions": 4,
+            "deletions": 4
+          },
+          {
+            "path": "base_layer/core/tests/mempool.rs",
+            "additions": 6,
+            "deletions": 6
+          },
+          {
+            "path": "base_layer/tari_mining_helper_ffi/src/lib.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/assets/asset_manager.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/database/backend.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/database/mod.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/sqlite_db/mod.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/sqlite_db/new_output_sql.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/sqlite_db/output_sql.rs",
+            "additions": 8,
+            "deletions": 7
+          },
+          {
+            "path": "base_layer/wallet/src/tokens/token_manager.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/tests/output_manager_service_tests/service.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet_ffi/src/lib.rs",
+            "additions": 21,
+            "deletions": 19
+          },
+          {
+            "path": "base_layer/wallet_ffi/wallet.h",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "dan_layer/core/src/models/base_layer_output.rs",
+            "additions": 7,
+            "deletions": 7
+          },
+          {
+            "path": "integration_tests/helpers/transactionBuilder.js",
+            "additions": 4,
+            "deletions": 3
+          },
+          {
+            "path": "integration_tests/helpers/types.js",
+            "additions": 5,
+            "deletions": 1
+          },
+          {
+            "path": "integration_tests/helpers/util.js",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "integration_tests/helpers/walletProcess.js",
+            "additions": 3,
+            "deletions": 2
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4173,
+      "title": "chore(deps): patched liblmdb-sys to 0.2.3 - improve cross-compile",
+      "base_repository": "tari",
+      "author": {
+        "name": "C.Lee Taylor",
+        "login": "leet4tari"
+      },
+      "created_at": "2022-06-08T10:04:29Z",
+      "changed_file_count": 2,
+      "total_deletions": 957,
+      "total_additions": 634,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "Rebased into #4193"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.lock",
+            "additions": 633,
+            "deletions": 957
+          },
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "C.Lee Taylor",
+              "login": "leet4tari"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4172,
+      "title": "chore(deps): bump croaring to 0.5.2 - improve cross-compile",
+      "base_repository": "tari",
+      "author": {
+        "name": "C.Lee Taylor",
+        "login": "leet4tari"
+      },
+      "created_at": "2022-06-08T09:56:03Z",
+      "changed_file_count": 3,
+      "total_deletions": 987,
+      "total_additions": 644,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "Manually merged into c1d5f1e"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.lock",
+            "additions": 642,
+            "deletions": 985
+          },
+          {
+            "path": "base_layer/core/Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/mmr/Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4171,
+      "title": "chore(deps): bump randomx-rs to v1.1.12 - improve cross-compile in docker",
+      "base_repository": "tari",
+      "author": {
+        "name": "C.Lee Taylor",
+        "login": "leet4tari"
+      },
+      "created_at": "2022-06-08T09:37:41Z",
+      "changed_file_count": 3,
+      "total_deletions": 969,
+      "total_additions": 639,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 2,
+        "comments": [
+          {
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            },
+            "text": "I think you need to check in the cargo.lock file as well"
+          },
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "Handled in #4196"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.lock",
+            "additions": 633,
+            "deletions": 951
+          },
+          {
+            "path": "base_layer/core/Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/proof_of_work/randomx_factory.rs",
+            "additions": 5,
+            "deletions": 17
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 756,
+      "title": "UTXOs Wallet - Text List",
+      "base_repository": "wallet-ios",
+      "author": {
+        "name": "Adrian Truszczyński",
+        "login": "TruszczynskiA"
+      },
+      "created_at": "2022-06-08T07:50:51Z",
+      "changed_file_count": 9,
+      "total_deletions": 78,
+      "total_additions": 441,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "MobileWallet.xcodeproj/project.pbxproj",
+            "additions": 13,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-ascending.imageset/ico-ascending.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-descending.imageset/ico-descending.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletModel.swift",
+            "additions": 23,
+            "deletions": 11
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletView.swift",
+            "additions": 32,
+            "deletions": 63
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletViewController.swift",
+            "additions": 12,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/Views/UTXOsWalletTextListView.swift",
+            "additions": 112,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/Views/UTXOsWalletTextListViewCell.swift",
+            "additions": 108,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/Views/UTXOsWalletTileView.swift",
+            "additions": 141,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4169,
+      "title": "feat(core): new output features for changes in contracts",
+      "base_repository": "tari",
+      "author": {
+        "name": "Miguel Naveira",
+        "login": "mrnaveira"
+      },
+      "created_at": "2022-06-07T19:22:43Z",
+      "changed_file_count": 12,
+      "total_deletions": 58,
+      "total_additions": 977,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            },
+            "text": "@sdbondi I implemented the improvements on conversions that you suggested"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_app_grpc/proto/types.proto",
+            "additions": 27,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_app_grpc/src/conversions/sidechain_features.rs",
+            "additions": 171,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/proto/transaction.proto",
+            "additions": 27,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/proto/transaction.rs",
+            "additions": 168,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_features.rs",
+            "additions": 54,
+            "deletions": 26
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/committee_signatures.rs",
+            "additions": 111,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/contract_amendment.rs",
+            "additions": 131,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/contract_update_proposal.rs",
+            "additions": 123,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/contract_update_proposal_acceptance.rs",
+            "additions": 82,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/mod.rs",
+            "additions": 12,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/sidechain_features.rs",
+            "additions": 70,
+            "deletions": 27
+          },
+          {
+            "path": "integration_tests/fixtures/contract_constitution.json",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 7,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 5,
+      "title": "docs: update version to v0.3.0",
+      "base_repository": "pubsub",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T11:33:03Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4168,
+      "title": "fix(block-sync): check coinbase maturity",
+      "base_repository": "tari",
+      "author": {
+        "name": "Stan Bondi",
+        "login": "sdbondi"
+      },
+      "created_at": "2022-06-07T11:15:17Z",
+      "changed_file_count": 6,
+      "total_deletions": 8,
+      "total_additions": 137,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 2,
+        "comments": [
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "It's a bit odd that we're asking the miners to add the maturity themselves.\nI thought our code was such that if a coinbase output is being spent, we chack if it was mined > maturity blocks ago."
+          },
+          {
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            },
+            "text": "There are currently no special rules for spending a coinbase. We check that the maturity is correctly set at creation time as per consensus, however this check was missing from the block sync validation.\nWe could add a separate spend rule for coinbases, however, this would require tracking* and fetching the mined height for each coinbase** vs statelessly comparing the maturity to the current height.\nIt feels simpler to enforce the correct maturity for the miner at coinbase creation but open to changing the approach esp if there are downsides/oddness.\n* UTXO mined_height is currently tracked but is informational and does not form part of the protocol/consensus rules\n** Alternatively we could use the mmr pos of the coinbase input <= output_mmr_size in the header@{height-coinbase_maturity} to check maturity without tracking mined height."
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "base_layer/core/src/transactions/aggregated_body.rs",
+            "additions": 0,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/transactions/test_helpers.rs",
+            "additions": 25,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/core/src/validation/block_validators/async_validator.rs",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/validation/helpers.rs",
+            "additions": 108,
+            "deletions": 4
+          },
+          {
+            "path": "base_layer/core/tests/block_validation.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/tests/helpers/block_builders.rs",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4,
+      "title": "chore: update cicleci rust image",
+      "base_repository": "pubsub",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T11:07:59Z",
+      "changed_file_count": 5,
+      "total_deletions": 13,
+      "total_additions": 16,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": ".circleci/config.yml",
+            "additions": 5,
+            "deletions": 5
+          },
+          {
+            "path": "rust-toolchain",
+            "additions": 0,
+            "deletions": 1
+          },
+          {
+            "path": "rust-toolchain.toml",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "rustfmt.toml",
+            "additions": 4,
+            "deletions": 3
+          },
+          {
+            "path": "src/lib.rs",
+            "additions": 5,
+            "deletions": 4
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 3,
+      "title": "chore: update broadcast_channel",
+      "base_repository": "pubsub",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T11:04:08Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 10,
+      "title": "docs: update to version 0.3.0",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T10:54:01Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 9,
+      "title": "chore: fixup clippy hints",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T10:38:19Z",
+      "changed_file_count": 1,
+      "total_deletions": 2,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "src/async_channel.rs",
+            "additions": 1,
+            "deletions": 2
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 8,
+      "title": "bug: update tokio",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T10:32:53Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 7,
+      "title": "chore: use stable rust",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T09:48:13Z",
+      "changed_file_count": 3,
+      "total_deletions": 5,
+      "total_additions": 7,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": ".circleci/config.yml",
+            "additions": 5,
+            "deletions": 4
+          },
+          {
+            "path": "rust-toolchain",
+            "additions": 0,
+            "deletions": 1
+          },
+          {
+            "path": "rust-toolchain.toml",
+            "additions": 2,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 755,
+      "title": "UTXOs Wallet - Tile List",
+      "base_repository": "wallet-ios",
+      "author": {
+        "name": "Adrian Truszczyński",
+        "login": "TruszczynskiA"
+      },
+      "created_at": "2022-06-07T09:37:34Z",
+      "changed_file_count": 41,
+      "total_deletions": 98,
+      "total_additions": 1204,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "MobileWallet.xcodeproj/project.pbxproj",
+            "additions": 52,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Greys/Contents.json",
+            "additions": 6,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Greys/MediumLightGrey.colorset/Contents.json",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-ascending.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-ascending.imageset/ico-ascending.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-blockview.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-blockview.imageset/ico-blockview.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-descending.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-descending.imageset/ico-descending.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-listview.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-listview.imageset/ico-listview.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-mined.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-mined.imageset/ico-mined.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-select.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-select.imageset/ico-select.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-wallet.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-wallet.imageset/ico-wallet.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Common/Extensions/UIColor+Utils.swift",
+            "additions": 80,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Common/Theme.swift",
+            "additions": 18,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Screens/Home/HomeView.swift",
+            "additions": 15,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/Screens/Home/HomeViewController.swift",
+            "additions": 11,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletConstructor.swift",
+            "additions": 47,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletModel.swift",
+            "additions": 144,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletView.swift",
+            "additions": 249,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/UTXOsWalletViewController.swift",
+            "additions": 98,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/Views/UTXOTileView.swift",
+            "additions": 132,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Home/UTXOs Wallet/Views/UTXOsWalletStateButton.swift",
+            "additions": 83,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/AddAmountViewController.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/AddAmountSpinnerView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/CurrencyLabelView.swift",
+            "additions": 37,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/NetworkTrafficView.swift",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/PopUpModifyFeeContentView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/TariSegmentedControl.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/BackUpSettings/Seed Words List/SeedWordsListView.swift",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/BackUpSettings/VerifySeedWords/VerifySeedWordsView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewCell.swift",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewHeader.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/SettingsParentViewController.swift",
+            "additions": 0,
+            "deletions": 67
+          },
+          {
+            "path": "MobileWallet/UIElements/BaseNavigationContentView.swift",
+            "additions": 107,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/en.lproj/Localizable.strings",
+            "additions": 7,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 6,
+      "title": "chore: run cargo fmt --all",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T09:34:45Z",
+      "changed_file_count": 4,
+      "total_deletions": 11,
+      "total_additions": 17,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "Blocked by #7"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "benches/channel.rs",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "rustfmt.toml",
+            "additions": 4,
+            "deletions": 3
+          },
+          {
+            "path": "src/async_channel.rs",
+            "additions": 6,
+            "deletions": 3
+          },
+          {
+            "path": "src/channel.rs",
+            "additions": 5,
+            "deletions": 4
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4167,
+      "title": "chore(deps): bump crossbeam-channel from 0.3.9 to 0.5.4",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-07T09:32:09Z",
+      "changed_file_count": 2,
+      "total_deletions": 33,
+      "total_additions": 14,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.lock",
+            "additions": 13,
+            "deletions": 32
+          },
+          {
+            "path": "base_layer/wallet/Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 754,
+      "title": "Release/0.14.0 (#753)",
+      "base_repository": "wallet-ios",
+      "author": {
+        "name": "Adrian Truszczyński",
+        "login": "TruszczynskiA"
+      },
+      "created_at": "2022-06-07T09:28:01Z",
+      "changed_file_count": 57,
+      "total_deletions": 288,
+      "total_additions": 2323,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "MobileWallet.xcodeproj/project.pbxproj",
+            "additions": 78,
+            "deletions": 6
+          },
+          {
+            "path": "MobileWallet/AppDelegate.swift",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Black.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Contents.json",
+            "additions": 6,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/DarkGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/MediumDarkGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/MediumLightGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Purple.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/White.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-about.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-about.imageset/ico-about.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-high.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-high.imageset/ico-speedometer-3.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-low.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-low.imageset/ico-speedometer-1.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-mid.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-mid.imageset/ico-speedometer-2.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Common/Deep Links/DeeplinkHandler.swift",
+            "additions": 8,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/Common/Extensions/UIView+Content.swift",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/Common/Managers/WalletTransactionsManager.swift",
+            "additions": 20,
+            "deletions": 38
+          },
+          {
+            "path": "MobileWallet/Common/Theme.swift",
+            "additions": 24,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/AppEntry/Splash/SplashViewController.swift",
+            "additions": 2,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Screens/Home/HomeViewController.swift",
+            "additions": 6,
+            "deletions": 19
+          },
+          {
+            "path": "MobileWallet/Screens/RestoreWallet/RestoreWalletViewController.swift",
+            "additions": 2,
+            "deletions": 5
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/AddAmountViewController.swift",
+            "additions": 248,
+            "deletions": 73
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/TransactionFeesManager.swift",
+            "additions": 213,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/AddAmountSpinnerView.swift",
+            "additions": 98,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/CurrencyLabelView.swift",
+            "additions": 137,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/NetworkTrafficView.swift",
+            "additions": 117,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/PopUpModifyFeeContentView.swift",
+            "additions": 104,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/TariSegmentedControl.swift",
+            "additions": 170,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddNote/AddNoteViewController.swift",
+            "additions": 12,
+            "deletions": 26
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddRecipient/AddRecipientViewController.swift",
+            "additions": 5,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddRecipient/ScanViewController.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/New/RequestTari/QrCode/QRCodePresentationView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/SendingTari/SendingTariModel.swift",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/SendingTari/SendingTariViewController.swift",
+            "additions": 0,
+            "deletions": 9
+          },
+          {
+            "path": "MobileWallet/Screens/Send/YatTransaction/YatTransactionModel.swift",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutModel.swift",
+            "additions": 87,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutView.swift",
+            "additions": 145,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutViewController.swift",
+            "additions": 83,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewCell.swift",
+            "additions": 105,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewHeader.swift",
+            "additions": 114,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/SettingsViewController.swift",
+            "additions": 13,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/TariLib/TariLib.swift",
+            "additions": 4,
+            "deletions": 5
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/CommsConfig.swift",
+            "additions": 12,
+            "deletions": 15
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/TariFeePerGramStats.swift",
+            "additions": 128,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/TransportConfig.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/Utils/TariEventBus.swift",
+            "additions": 1,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/Wallet.swift",
+            "additions": 69,
+            "deletions": 36
+          },
+          {
+            "path": "MobileWallet/TariLib/wallet.h",
+            "additions": 85,
+            "deletions": 15
+          },
+          {
+            "path": "MobileWallet/UIElements/Buttons/TextButton.swift",
+            "additions": 5,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/UIElements/NavigationBarWithSubtitle.swift",
+            "additions": 9,
+            "deletions": 17
+          },
+          {
+            "path": "MobileWallet/UIElements/Transaction/TransactionProgressPresenter.swift",
+            "additions": 3,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/en.lproj/Localizable.strings",
+            "additions": 14,
+            "deletions": 0
+          },
+          {
+            "path": "UnitTests/WalletLib/TariLibWrapperTests.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "dependencies.env",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 753,
+      "title": "Release/0.14.0",
+      "base_repository": "wallet-ios",
+      "author": {
+        "name": "Adrian Truszczyński",
+        "login": "TruszczynskiA"
+      },
+      "created_at": "2022-06-07T09:26:34Z",
+      "changed_file_count": 57,
+      "total_deletions": 288,
+      "total_additions": 2323,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "MobileWallet.xcodeproj/project.pbxproj",
+            "additions": 78,
+            "deletions": 6
+          },
+          {
+            "path": "MobileWallet/AppDelegate.swift",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Black.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Contents.json",
+            "additions": 6,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/DarkGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/MediumDarkGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/MediumLightGrey.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/Purple.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Color Palette/White.colorset/Contents.json",
+            "additions": 20,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-about.imageset/Contents.json",
+            "additions": 15,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Icons/icon-about.imageset/ico-about.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-high.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-high.imageset/ico-speedometer-3.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-low.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-low.imageset/ico-speedometer-1.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-mid.imageset/Contents.json",
+            "additions": 16,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Assets.xcassets/Images/speedometer-mid.imageset/ico-speedometer-2.pdf",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Common/Deep Links/DeeplinkHandler.swift",
+            "additions": 8,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/Common/Extensions/UIView+Content.swift",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/Common/Managers/WalletTransactionsManager.swift",
+            "additions": 20,
+            "deletions": 38
+          },
+          {
+            "path": "MobileWallet/Common/Theme.swift",
+            "additions": 24,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/AppEntry/Splash/SplashViewController.swift",
+            "additions": 2,
+            "deletions": 4
+          },
+          {
+            "path": "MobileWallet/Screens/Home/HomeViewController.swift",
+            "additions": 6,
+            "deletions": 19
+          },
+          {
+            "path": "MobileWallet/Screens/RestoreWallet/RestoreWalletViewController.swift",
+            "additions": 2,
+            "deletions": 5
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/AddAmountViewController.swift",
+            "additions": 248,
+            "deletions": 73
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/TransactionFeesManager.swift",
+            "additions": 213,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/AddAmountSpinnerView.swift",
+            "additions": 98,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/CurrencyLabelView.swift",
+            "additions": 137,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/NetworkTrafficView.swift",
+            "additions": 117,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/PopUpModifyFeeContentView.swift",
+            "additions": 104,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddAmount/Views/TariSegmentedControl.swift",
+            "additions": 170,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddNote/AddNoteViewController.swift",
+            "additions": 12,
+            "deletions": 26
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddRecipient/AddRecipientViewController.swift",
+            "additions": 5,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/AddRecipient/ScanViewController.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/New/RequestTari/QrCode/QRCodePresentationView.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/SendingTari/SendingTariModel.swift",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Send/SendingTari/SendingTariViewController.swift",
+            "additions": 0,
+            "deletions": 9
+          },
+          {
+            "path": "MobileWallet/Screens/Send/YatTransaction/YatTransactionModel.swift",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutModel.swift",
+            "additions": 87,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutView.swift",
+            "additions": 145,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/AboutViewController.swift",
+            "additions": 83,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewCell.swift",
+            "additions": 105,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/MoreSettings/Views/AboutViewHeader.swift",
+            "additions": 114,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/Screens/Settings/SettingsViewController.swift",
+            "additions": 13,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/TariLib/TariLib.swift",
+            "additions": 4,
+            "deletions": 5
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/CommsConfig.swift",
+            "additions": 12,
+            "deletions": 15
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/TariFeePerGramStats.swift",
+            "additions": 128,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/TransportConfig.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/Utils/TariEventBus.swift",
+            "additions": 1,
+            "deletions": 2
+          },
+          {
+            "path": "MobileWallet/TariLib/Wrappers/Wallet.swift",
+            "additions": 69,
+            "deletions": 36
+          },
+          {
+            "path": "MobileWallet/TariLib/wallet.h",
+            "additions": 85,
+            "deletions": 15
+          },
+          {
+            "path": "MobileWallet/UIElements/Buttons/TextButton.swift",
+            "additions": 5,
+            "deletions": 0
+          },
+          {
+            "path": "MobileWallet/UIElements/NavigationBarWithSubtitle.swift",
+            "additions": 9,
+            "deletions": 17
+          },
+          {
+            "path": "MobileWallet/UIElements/Transaction/TransactionProgressPresenter.swift",
+            "additions": 3,
+            "deletions": 3
+          },
+          {
+            "path": "MobileWallet/en.lproj/Localizable.strings",
+            "additions": 14,
+            "deletions": 0
+          },
+          {
+            "path": "UnitTests/WalletLib/TariLibWrapperTests.swift",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "dependencies.env",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 5,
+      "title": "chore: switch to stable rust",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T09:19:54Z",
+      "changed_file_count": 6,
+      "total_deletions": 12,
+      "total_additions": 19,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "benches/channel.rs",
+            "additions": 2,
+            "deletions": 1
+          },
+          {
+            "path": "rust-toolchain",
+            "additions": 0,
+            "deletions": 1
+          },
+          {
+            "path": "rust-toolchain.toml",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "rustfmt.toml",
+            "additions": 4,
+            "deletions": 3
+          },
+          {
+            "path": "src/async_channel.rs",
+            "additions": 6,
+            "deletions": 3
+          },
+          {
+            "path": "src/channel.rs",
+            "additions": 5,
+            "deletions": 4
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4,
+      "title": "bug: update crossbeam-channel",
+      "base_repository": "broadcast_channel",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-07T09:14:10Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4166,
+      "title": "chore: remove json package lock files from clients",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-07T08:15:37Z",
+      "changed_file_count": 5,
+      "total_deletions": 6768,
+      "total_additions": 8291,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": ".gitignore",
+            "additions": 5,
+            "deletions": 1
+          },
+          {
+            "path": "applications/tari_explorer/package-lock.json",
+            "additions": 8286,
+            "deletions": 141
+          },
+          {
+            "path": "clients/base_node_grpc_client/package-lock.json",
+            "additions": 0,
+            "deletions": 3333
+          },
+          {
+            "path": "clients/validator_node_grpc_client/package-lock.json",
+            "additions": 0,
+            "deletions": 3169
+          },
+          {
+            "path": "clients/wallet_grpc_client/package-lock.json",
+            "additions": 0,
+            "deletions": 124
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4165,
+      "title": "ci: add all features flag to clippy check",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-06T17:03:47Z",
+      "changed_file_count": 1,
+      "total_deletions": 1,
+      "total_additions": 1,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            },
+            "text": "We will be updating #4163 to reflect this"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4164,
+      "title": "feat(console-wallet): add contract-definition init command",
+      "base_repository": "tari",
+      "author": {
+        "name": "Stan Bondi",
+        "login": "sdbondi"
+      },
+      "created_at": "2022-06-06T11:00:23Z",
+      "changed_file_count": 6,
+      "total_deletions": 36,
+      "total_additions": 252,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_console_wallet/src/automation/commands.rs",
+            "additions": 98,
+            "deletions": 31
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/error.rs",
+            "additions": 9,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/mod.rs",
+            "additions": 1,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/prompt.rs",
+            "additions": 111,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_console_wallet/src/cli.rs",
+            "additions": 32,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/assets/mod.rs",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 102,
+      "title": "feat: add extended range proofs",
+      "base_repository": "tari-crypto",
+      "author": {
+        "name": "Hansie Odendaal",
+        "login": "hansieodendaal"
+      },
+      "created_at": "2022-06-05T22:49:02Z",
+      "changed_file_count": 11,
+      "total_deletions": 64,
+      "total_additions": 1108,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "Cargo.toml",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "src/commitment.rs",
+            "additions": 45,
+            "deletions": 0
+          },
+          {
+            "path": "src/errors.rs",
+            "additions": 3,
+            "deletions": 1
+          },
+          {
+            "path": "src/extended_range_proof.rs",
+            "additions": 212,
+            "deletions": 0
+          },
+          {
+            "path": "src/lib.rs",
+            "additions": 8,
+            "deletions": 0
+          },
+          {
+            "path": "src/ristretto/bulletproofs_plus.rs",
+            "additions": 787,
+            "deletions": 0
+          },
+          {
+            "path": "src/ristretto/dalek_range_proof.rs",
+            "additions": 16,
+            "deletions": 6
+          },
+          {
+            "path": "src/ristretto/mod.rs",
+            "additions": 1,
+            "deletions": 0
+          },
+          {
+            "path": "src/ristretto/pedersen/extended_commitment_factory.rs",
+            "additions": 27,
+            "deletions": 55
+          },
+          {
+            "path": "src/ristretto/pedersen/mod.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "src/ristretto/ristretto_keys.rs",
+            "additions": 5,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 23,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 14,
+      "title": "feat: add methods to retrieve extension degree",
+      "base_repository": "bulletproofs-plus",
+      "author": {
+        "name": "Hansie Odendaal",
+        "login": "hansieodendaal"
+      },
+      "created_at": "2022-06-05T05:24:31Z",
+      "changed_file_count": 2,
+      "total_deletions": 12,
+      "total_additions": 37,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "src/range_proof.rs",
+            "additions": 35,
+            "deletions": 10
+          },
+          {
+            "path": "src/utils/generic.rs",
+            "additions": 2,
+            "deletions": 2
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4163,
+      "title": "docs: new contribution guidelines",
+      "base_repository": "tari",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-03T16:56:32Z",
+      "changed_file_count": 10,
+      "total_deletions": 16,
+      "total_additions": 554,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": ".github/workflows/pr_title.yml",
+            "additions": 2,
+            "deletions": 0
+          },
+          {
+            "path": "Contributing.md",
+            "additions": 472,
+            "deletions": 16
+          },
+          {
+            "path": "RFC/src/theme/images/status-active.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "RFC/src/theme/images/status-wip.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-deprecated.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-draft.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-outofdate.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-raw.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-retired.svg",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "meta/img/status-stable.svg",
+            "additions": 10,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 4,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 3,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Willy Romão",
+              "login": "willyrgf"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 2,
+            "author": {
+              "name": "Willy Romão",
+              "login": "willyrgf"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 11,
+            "author": {
+              "name": "Brian Pearce",
+              "login": "brianp"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Brian Pearce",
+              "login": "brianp"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Hansie Odendaal",
+              "login": "hansieodendaal"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4162,
+      "title": "feat(wallet): add help for wallet cli commands",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-03T16:29:56Z",
+      "changed_file_count": 8,
+      "total_deletions": 1048,
+      "total_additions": 329,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_app_utilities/src/utilities.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/command_parser.rs",
+            "additions": 0,
+            "deletions": 651
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/commands.rs",
+            "additions": 147,
+            "deletions": 341
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/mod.rs",
+            "additions": 0,
+            "deletions": 1
+          },
+          {
+            "path": "applications/tari_console_wallet/src/cli.rs",
+            "additions": 123,
+            "deletions": 3
+          },
+          {
+            "path": "applications/tari_console_wallet/src/init/mod.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_console_wallet/src/main.rs",
+            "additions": 9,
+            "deletions": 3
+          },
+          {
+            "path": "applications/tari_console_wallet/src/wallet_modes.rs",
+            "additions": 47,
+            "deletions": 46
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4161,
+      "title": "chore: add igor seeds",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-03T12:30:17Z",
+      "changed_file_count": 6,
+      "total_deletions": 14,
+      "total_additions": 19,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_base_node/src/cli.rs",
+            "additions": 9,
+            "deletions": 9
+          },
+          {
+            "path": "applications/tari_base_node/src/main.rs",
+            "additions": 3,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/consensus/consensus_constants.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "common/config/presets/base_node.toml",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "common/config/presets/console_wallet.toml",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "common/config/presets/peer_seeds.toml",
+            "additions": 3,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4160,
+      "title": "fix(hotstuff): fix bug where decide state was listening for wrong message",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-03T10:25:52Z",
+      "changed_file_count": 4,
+      "total_deletions": 2,
+      "total_additions": 5,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            },
+            "text": "LGTM. As far as I can understand, I think the changes are consistent with what it's specified in the HotStuff original paper (the need for a Decide message type and replicas waiting for Commit message)"
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/launchpad/gui-react/build/.gitkeep",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "dan_layer/core/src/models/hot_stuff_message.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "dan_layer/core/src/models/mod.rs",
+            "additions": 3,
+            "deletions": 0
+          },
+          {
+            "path": "dan_layer/core/src/workers/states/decide_state.rs",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4159,
+      "title": "chore(deps): bump protobufjs from 6.11.2 to 6.11.3 in /clients/validator_node_grpc_client",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-03T01:40:30Z",
+      "changed_file_count": 1,
+      "total_deletions": 3,
+      "total_additions": 3,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 2,
+        "comments": [
+          {
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            },
+            "text": "This file has now been deleted"
+          },
+          {
+            "author": {
+              "name": null,
+              "login": "Bot"
+            },
+            "text": "OK, I won't notify you again about this release, but will get in touch when a new version is available. If you'd rather skip all updates until the next major or minor version, let me know by commenting @dependabot ignore this major version or @dependabot ignore this minor version.\nIf you change your mind, just re-open this PR and I'll resolve any conflicts on it."
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "clients/validator_node_grpc_client/package-lock.json",
+            "additions": 3,
+            "deletions": 3
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4158,
+      "title": "chore(deps): bump protobufjs from 6.11.2 to 6.11.3 in /applications/tari_collectibles/web-app",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-03T00:09:09Z",
+      "changed_file_count": 2,
+      "total_deletions": 15,
+      "total_additions": 15,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_collectibles/web-app/package-lock.json",
+            "additions": 14,
+            "deletions": 14
+          },
+          {
+            "path": "applications/tari_collectibles/web-app/package.json",
+            "additions": 1,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4157,
+      "title": "chore(deps): bump protobufjs from 6.10.2 to 6.11.3 in /clients/base_node_grpc_client",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-02T23:22:02Z",
+      "changed_file_count": 1,
+      "total_deletions": 11,
+      "total_additions": 4,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "clients/base_node_grpc_client/package-lock.json",
+            "additions": 4,
+            "deletions": 11
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4156,
+      "title": "chore(deps): bump protobufjs from 6.11.2 to 6.11.3 in /clients/wallet_grpc_client",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-02T23:08:58Z",
+      "changed_file_count": 1,
+      "total_deletions": 3,
+      "total_additions": 3,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "clients/wallet_grpc_client/package-lock.json",
+            "additions": 3,
+            "deletions": 3
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4155,
+      "title": "chore(deps): bump protobufjs from 6.11.2 to 6.11.3 in /integration_tests",
+      "base_repository": "tari",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-02T22:10:47Z",
+      "changed_file_count": 1,
+      "total_deletions": 10,
+      "total_additions": 12,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "integration_tests/package-lock.json",
+            "additions": 12,
+            "deletions": 10
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 70,
+      "title": "Bump protobufjs from 6.9.0 to 6.11.3",
+      "base_repository": "blockchain-explorer-api",
+      "author": {
+        "name": null,
+        "login": "Bot"
+      },
+      "created_at": "2022-06-02T21:43:12Z",
+      "changed_file_count": 1,
+      "total_deletions": 4,
+      "total_additions": 4,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": null,
+              "login": "Bot"
+            },
+            "text": "Looks like protobufjs is up-to-date now, so this is no longer needed."
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "package-lock.json",
+            "additions": 4,
+            "deletions": 4
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": []
+      }
+    },
+    {
+      "number": 4154,
+      "title": "feat(wallet_ffi): add get utxos method",
+      "base_repository": "tari",
+      "author": {
+        "name": "stringhandler",
+        "login": "stringhandler"
+      },
+      "created_at": "2022-06-02T16:24:25Z",
+      "changed_file_count": 7,
+      "total_deletions": 37,
+      "total_additions": 94,
+      "merged": false,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_console_wallet/src/automation/commands.rs",
+            "additions": 2,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_console_wallet/src/grpc/wallet_grpc_server.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/handle.rs",
+            "additions": 10,
+            "deletions": 6
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/service.rs",
+            "additions": 6,
+            "deletions": 6
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/database/mod.rs",
+            "additions": 15,
+            "deletions": 9
+          },
+          {
+            "path": "base_layer/wallet/src/output_manager_service/storage/sqlite_db/mod.rs",
+            "additions": 3,
+            "deletions": 13
+          },
+          {
+            "path": "base_layer/wallet_ffi/src/lib.rs",
+            "additions": 57,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 2,
+            "author": {
+              "name": "SW van Heerden",
+              "login": "SWvheerden"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4153,
+      "title": "ci: docker improvements",
+      "base_repository": "tari",
+      "author": {
+        "name": "C.Lee Taylor",
+        "login": "leet4tari"
+      },
+      "created_at": "2022-06-02T14:25:20Z",
+      "changed_file_count": 5,
+      "total_deletions": 24,
+      "total_additions": 257,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/launchpad/docker_rig/frontail.Dockerfile",
+            "additions": 12,
+            "deletions": 2
+          },
+          {
+            "path": "applications/launchpad/docker_rig/monerod.Dockerfile",
+            "additions": 61,
+            "deletions": 12
+          },
+          {
+            "path": "applications/launchpad/docker_rig/tarilabs.Dockerfile",
+            "additions": 154,
+            "deletions": 0
+          },
+          {
+            "path": "applications/launchpad/docker_rig/tor.Dockerfile",
+            "additions": 11,
+            "deletions": 3
+          },
+          {
+            "path": "applications/launchpad/docker_rig/xmrig.Dockerfile",
+            "additions": 19,
+            "deletions": 7
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4152,
+      "title": "refactor(core): remove contract id from the contract definition output features",
+      "base_repository": "tari",
+      "author": {
+        "name": "Miguel Naveira",
+        "login": "mrnaveira"
+      },
+      "created_at": "2022-06-02T13:45:29Z",
+      "changed_file_count": 8,
+      "total_deletions": 37,
+      "total_additions": 19,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_app_grpc/proto/types.proto",
+            "additions": 3,
+            "deletions": 4
+          },
+          {
+            "path": "applications/tari_app_grpc/src/conversions/sidechain_features.rs",
+            "additions": 0,
+            "deletions": 5
+          },
+          {
+            "path": "applications/tari_console_wallet/src/automation/commands.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/core/src/proto/transaction.proto",
+            "additions": 3,
+            "deletions": 4
+          },
+          {
+            "path": "base_layer/core/src/proto/transaction.rs",
+            "additions": 0,
+            "deletions": 5
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_features.rs",
+            "additions": 3,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/contract_definition.rs",
+            "additions": 9,
+            "deletions": 15
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/side_chain/sidechain_features.rs",
+            "additions": 0,
+            "deletions": 1
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 13,
+      "title": "chore: reword extension degree enums",
+      "base_repository": "bulletproofs-plus",
+      "author": {
+        "name": "Hansie Odendaal",
+        "login": "hansieodendaal"
+      },
+      "created_at": "2022-06-02T12:39:35Z",
+      "changed_file_count": 8,
+      "total_deletions": 60,
+      "total_additions": 67,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "benches/generators.rs",
+            "additions": 1,
+            "deletions": 1
+          },
+          {
+            "path": "benches/range_proof.rs",
+            "additions": 3,
+            "deletions": 3
+          },
+          {
+            "path": "src/extended_mask.rs",
+            "additions": 15,
+            "deletions": 4
+          },
+          {
+            "path": "src/generators/pedersen_gens.rs",
+            "additions": 12,
+            "deletions": 12
+          },
+          {
+            "path": "src/range_proof.rs",
+            "additions": 4,
+            "deletions": 4
+          },
+          {
+            "path": "src/range_statement.rs",
+            "additions": 3,
+            "deletions": 3
+          },
+          {
+            "path": "src/ristretto.rs",
+            "additions": 13,
+            "deletions": 13
+          },
+          {
+            "path": "tests/ristretto.rs",
+            "additions": 16,
+            "deletions": 20
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 4151,
+      "title": "feat: contract acceptance publication",
+      "base_repository": "tari",
+      "author": {
+        "name": "Miguel Naveira",
+        "login": "mrnaveira"
+      },
+      "created_at": "2022-06-02T10:08:14Z",
+      "changed_file_count": 20,
+      "total_deletions": 37,
+      "total_additions": 368,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 1,
+        "comments": [
+          {
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            },
+            "text": "This looks good. The only thing missing here, ut this could be a follow up PR, is validation on these transactions. All the stuff the base node needs to check\n\nCorrect. The work on layer 2 so far was intended to have a way to store all the features into the blockchain. We left the consensus rules/validation for future PRs, but it's something we will need to address soon."
+          }
+        ]
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "applications/tari_app_grpc/proto/validator_node.proto",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_app_grpc/proto/wallet.proto",
+            "additions": 12,
+            "deletions": 0
+          },
+          {
+            "path": "applications/tari_console_wallet/src/grpc/wallet_grpc_server.rs",
+            "additions": 42,
+            "deletions": 1
+          },
+          {
+            "path": "applications/tari_validator_node/src/grpc/services/wallet_client.rs",
+            "additions": 27,
+            "deletions": 2
+          },
+          {
+            "path": "applications/tari_validator_node/src/grpc/validator_node_grpc_server.rs",
+            "additions": 34,
+            "deletions": 3
+          },
+          {
+            "path": "applications/tari_validator_node/src/main.rs",
+            "additions": 6,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/core/src/transactions/transaction_components/output_features.rs",
+            "additions": 21,
+            "deletions": 2
+          },
+          {
+            "path": "base_layer/wallet/src/assets/asset_manager.rs",
+            "additions": 23,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/wallet/src/assets/asset_manager_handle.rs",
+            "additions": 24,
+            "deletions": 1
+          },
+          {
+            "path": "base_layer/wallet/src/assets/infrastructure/asset_manager_service.rs",
+            "additions": 14,
+            "deletions": 0
+          },
+          {
+            "path": "base_layer/wallet/src/assets/infrastructure/mod.rs",
+            "additions": 7,
+            "deletions": 1
+          },
+          {
+            "path": "dan_layer/core/src/services/wallet_client.rs",
+            "additions": 9,
+            "deletions": 2
+          },
+          {
+            "path": "integration_tests/features/ValidatorNode.feature",
+            "additions": 10,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/features/support/validator_node_steps.js",
+            "additions": 40,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/features/support/world.js",
+            "additions": 10,
+            "deletions": 4
+          },
+          {
+            "path": "integration_tests/helpers/baseNodeProcess.js",
+            "additions": 4,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/helpers/config.js",
+            "additions": 6,
+            "deletions": 0
+          },
+          {
+            "path": "integration_tests/helpers/validatorNodeClient.js",
+            "additions": 11,
+            "deletions": 2
+          },
+          {
+            "path": "integration_tests/helpers/validatorNodeProcess.js",
+            "additions": 54,
+            "deletions": 16
+          },
+          {
+            "path": "integration_tests/helpers/walletProcess.js",
+            "additions": 4,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "SW van Heerden",
+              "login": "SWvheerden"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Miguel Naveira",
+              "login": "mrnaveira"
+            }
+          },
+          {
+            "total_comments": 2,
+            "author": {
+              "name": "Stan Bondi",
+              "login": "sdbondi"
+            }
+          },
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "number": 118,
+      "title": "Blog post - git farming",
+      "base_repository": "tari-dot-com",
+      "author": {
+        "name": "Cayle Sharrock",
+        "login": "CjS77"
+      },
+      "created_at": "2022-06-01T17:37:16Z",
+      "changed_file_count": 4,
+      "total_deletions": 0,
+      "total_additions": 889,
+      "merged": true,
+      "closed": true,
+      "comments": {
+        "total_comments": 0,
+        "comments": []
+      },
+      "files": {
+        "files_changed": [
+          {
+            "path": "_updates/2022-05-31-update-78.md",
+            "additions": 883,
+            "deletions": 0
+          },
+          {
+            "path": "assets/css/styles.css",
+            "additions": 6,
+            "deletions": 0
+          },
+          {
+            "path": "assets/img/posts/farming.jpeg",
+            "additions": 0,
+            "deletions": 0
+          },
+          {
+            "path": "assets/img/posts/thisisfine.gif",
+            "additions": 0,
+            "deletions": 0
+          }
+        ]
+      },
+      "reviews": {
+        "reviews": [
+          {
+            "total_comments": 0,
+            "author": {
+              "name": "stringhandler",
+              "login": "stringhandler"
+            }
+          },
+          {
+            "total_comments": 4,
+            "author": {
+              "name": "Brian Pearce",
+              "login": "brianp"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          },
+          {
+            "total_comments": 1,
+            "author": {
+              "name": "Cayle Sharrock",
+              "login": "CjS77"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

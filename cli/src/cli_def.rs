@@ -72,6 +72,11 @@ pub enum Commands {
     /// List contributors to the repo
     #[clap(alias = "users")]
     Contributors,
+    /// Query an organisation
+    Organization {
+        #[clap(subcommand)]
+        sub_command: OrganizationCommand,
+    },
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -216,6 +221,23 @@ pub struct MergeArgs {
     /// Specify the merge method. Can be one of: merge, rebase, or squash. Default is merge.
     #[clap(short = 'm', long = "method")]
     pub merge_method: Option<MergeMethod>,
+}
+
+#[derive(Debug, Clone, Subcommand)]
+pub enum OrganizationCommand {
+    /// Compile a report on the activity for this organisation between the given dates. Pull requests and comments
+    /// are analysed by user to generate a set of engagement metrics
+    Activity(OrgActivityArgs),
+}
+
+#[derive(Debug, Clone, Args)]
+pub struct OrgActivityArgs {
+    /// The start date for the analysis
+    #[clap(long, short = 'f')]
+    pub from: Option<String>,
+    /// The end date for the analysis
+    #[clap(long, short = 't')]
+    pub to: Option<String>,
 }
 
 #[cfg(test)]

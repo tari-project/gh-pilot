@@ -14,6 +14,10 @@ pub type Timestamp = chrono::DateTime<Utc>;
 pub struct DateTime(#[serde(deserialize_with = "to_datetime")] Timestamp);
 
 impl DateTime {
+    pub fn new(ts: Timestamp) -> Self {
+        DateTime(ts)
+    }
+
     pub fn into_datetime(self) -> Timestamp {
         self.0
     }

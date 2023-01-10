@@ -1,8 +1,9 @@
+use log::debug;
 use reqwest::StatusCode;
 
 use crate::{
     api::{error::ErrorItem, ClientProxy, GithubApiError},
-    models::{Contributor, Label, Repository, UserType},
+    models::{Contributor, DateTime, Event, Label, Repository, UserType},
     wrappers::NewLabel,
 };
 
@@ -101,4 +102,21 @@ impl RepoRequest {
             .collect::<Vec<Contributor>>();
         Ok(contributors)
     }
+
+    pub async fn fetch_events(&self, proxy: &ClientProxy, since: DateTime) -> Result<Vec<Event>, GithubApiError> {
+        let filter = |ev: &Event| {
+            if let Some(ts) = &ev.info.created_at {
+                *ts >= since
+            } else {
+                debug!("Repo event did not have a created_at timestamp. Skipping. {ev:?}");
+                false
+            }
+        };
+        let url = format!("/repos/{}/{}/events", self.owner, self.repo);
+        let req = proxy.get(url.as_str(), false);
+        proxy.fetch_pages(req, filter, 100).await
+    }
 }
+
+// <https://api.github.com/repositories/136459099/events?per_page=50&page=5>; rel="prev",
+// <https://api.github.com/repositories/136459099/events?per_page=50&page=1>; rel="first"

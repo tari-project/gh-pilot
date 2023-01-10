@@ -1,0 +1,2365 @@
+{
+  "search": {
+    "issueCount": 355,
+    "pageInfo": {
+      "startCursor": "Y3Vyc29yOjE2",
+      "endCursor": "Y3Vyc29yOjQw",
+      "hasNextPage": true,
+      "hasPreviousPage": true
+    },
+    "edges": [
+      {
+        "cursor": "Y3Vyc29yOjE2",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "title": "Check median timestamp validation is done on wrong section",
+          "number": 4870,
+          "url": "https://github.com/tari-project/tari/issues/4870",
+          "comments": {
+            "totalCount": 6,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "Is it currently checked on both orphans and the main chain, or orphans only?"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "both"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "Ok, so not a chronic trainsmash. The issue is to remove the unnecessary check on orphan blocks."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "It's not even consensus-changing, iiuc."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "Yeah.\nIt can happen that an orphan block fails validation because it's looking at the wrong data. Thats the only issue here"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "bodyText": "Adding the consensus breaking label because it could result in two nodes validating the block differently"
+              }
+            ]
+          },
+          "bodyText": "Currently, the validation check_median_timestamp is done on orphan headers, which should only be on full main headers added to the main chain.\nOn Tari, we use two types of validators, one for orphans, and one for the main chain. Orphan validators only check rudimentary data, like does the block balance equation work out, does the block have one coinbase etc. Main validation checks all validation steps that are dependent on previous chain blocks, like if each input is a valid out, is the PoW valid, etc.\ncheck_median_timestamp is dependent on previous chain headers. In order to ensure the blockchain moves forward in time, there is a median timestamp rule that specifies that the header's timestamp must be greater than the median timestamp of the previous 11 blocks.\nThis check has no meaning on the orphan blocks, we need to check this as a main check on the validation",
+          "closed": true,
+          "createdAt": "2022-10-31T07:20:38Z",
+          "repository": {
+            "name": "tari"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjE3",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 164,
+          "title": "fix: off by one for proposal already committed check",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Stan Bondi",
+            "login": "sdbondi"
+          },
+          "createdAt": "2022-10-31T05:45:22Z",
+          "changedFiles": 4,
+          "deletions": 22,
+          "additions": 26,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 12,
+                "deletions": 6,
+                "path": "applications/tari_validator_node/src/p2p/services/mempool/service.rs"
+              },
+              {
+                "additions": 0,
+                "deletions": 2,
+                "path": "applications/tari_validator_node/src/payload_processor.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 2,
+                "path": "dan_layer/core/src/workers/hotstuff_error.rs"
+              },
+              {
+                "additions": 11,
+                "deletions": 12,
+                "path": "dan_layer/core/src/workers/hotstuff_waiter.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjE4",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "title": "Investigate: Block sync large transactions",
+          "number": 4869,
+          "url": "https://github.com/tari-project/tari/issues/4869",
+          "comments": {
+            "totalCount": 3,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "We need large blocks in the current testnet to investigate this"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "Failing to verify this on the newest chain.\nBase nodes sync without any issues even with large blocks present"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "Going to close this issue for now, we can re-open it if and when we get this again with more information.\nThe issue was not critical when it occurred. If this happened, the base node will just continue syncing from a new node and continue o its way as if nothing was wrong."
+              }
+            ]
+          },
+          "bodyText": "Encountered this error while syncing an archival node:\n[c::bn::block_sync] [ccca4bedf4a3f3ff23e7f753bfc6acbe111d50fe600a9f4028ba2b34a00d0119,0b05c96dea82cdb5e82bd0a275] WARN  Block sync failed: Chain storage error: DB transaction was too large (3 operations) // base_layer/core/src/base_node/state_machine_service/states/block_sync.rs:118",
+          "closed": true,
+          "createdAt": "2022-10-31T05:44:02Z",
+          "repository": {
+            "name": "tari"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjE5",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 163,
+          "title": "fix: fix pledges",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "stringhandler",
+            "login": "stringhandler"
+          },
+          "createdAt": "2022-10-28T19:29:50Z",
+          "changedFiles": 6,
+          "deletions": 35,
+          "additions": 60,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 6,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/log4rs_sample.yml"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "applications/tari_validator_node/src/base_layer_scanner.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "applications/tari_validator_node/src/json_rpc/server.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "applications/tari_validator_node_cli/src/command/transaction.rs"
+              },
+              {
+                "additions": 49,
+                "deletions": 32,
+                "path": "dan_layer/core/src/workers/hotstuff_waiter.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 1,
+                "path": "dan_layer/storage_sqlite/src/sqlite_shard_store_factory.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjIw",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 162,
+          "title": "fix: add a high qc unique index",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "stringhandler",
+            "login": "stringhandler"
+          },
+          "createdAt": "2022-10-28T15:35:46Z",
+          "changedFiles": 3,
+          "deletions": 8,
+          "additions": 25,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 0,
+                "deletions": 0,
+                "path": "dan_layer/storage_sqlite/migrations/2022-10-28-121212_update_high_qcs/down.sql"
+              },
+              {
+                "additions": 4,
+                "deletions": 0,
+                "path": "dan_layer/storage_sqlite/migrations/2022-10-28-121212_update_high_qcs/up.sql"
+              },
+              {
+                "additions": 21,
+                "deletions": 8,
+                "path": "dan_layer/storage_sqlite/src/sqlite_shard_store_factory.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": []
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjIx",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4868,
+          "title": "fix: delete orphans if they exist",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "createdAt": "2022-10-28T15:10:08Z",
+          "changedFiles": 2,
+          "deletions": 0,
+          "additions": 7,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "ACK\nDid a basic rewind and sync test"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 2,
+                "deletions": 0,
+                "path": "base_layer/core/src/base_node/sync/block_sync/synchronizer.rs"
+              },
+              {
+                "additions": 5,
+                "deletions": 0,
+                "path": "base_layer/core/src/chain_storage/async_db.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjIy",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "title": "Base_node sync, should remove blocks from orphan db it syncs and not leave them in the orphan db",
+          "number": 4867,
+          "url": "https://github.com/tari-project/tari/issues/4867",
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "bodyText": "base-node.zip\nKinda linked to #4866 , but not fully. As the title says block sync should clear from orphan db if they exist.\nThis is the example of it happening:\nERROR Failed to handle incoming block message: Comms interface error: `Chain storage error: The requested Orphan accumulated data was not found via hash:642b34efbcd590e08769219738e86cf95da2a1280be671a365ebc882c181e801 in the database",
+          "closed": true,
+          "createdAt": "2022-10-28T14:17:05Z",
+          "repository": {
+            "name": "tari"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjIz",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 161,
+          "title": "feat: save payload on first message",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Martin Stefcek",
+            "login": "Cifko"
+          },
+          "createdAt": "2022-10-28T12:44:41Z",
+          "changedFiles": 1,
+          "deletions": 0,
+          "additions": 3,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 3,
+                "deletions": 0,
+                "path": "dan_layer/core/src/workers/hotstuff_waiter.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI0",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 795,
+          "title": "Release/0.16.1",
+          "baseRepository": {
+            "name": "wallet-ios"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Adrian Truszczyński",
+            "login": "TruszczynskiA"
+          },
+          "createdAt": "2022-10-28T12:43:42Z",
+          "changedFiles": 16,
+          "deletions": 43,
+          "additions": 1557,
+          "merged": false,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "Cartfile"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "Cartfile.resolved"
+              },
+              {
+                "additions": 6,
+                "deletions": 6,
+                "path": "MobileWallet.xcodeproj/project.pbxproj"
+              },
+              {
+                "additions": 1,
+                "deletions": 6,
+                "path": "MobileWallet/TariLib/Core/FFI/TransactionValidationData.swift"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "MobileWallet/TariLib/Core/FFI/TransactionValidationStatus.swift"
+              },
+              {
+                "additions": 5,
+                "deletions": 4,
+                "path": "MobileWallet/TariLib/Core/FFI/Wallet.swift"
+              },
+              {
+                "additions": 9,
+                "deletions": 10,
+                "path": "MobileWallet/TariLib/Core/Services/TariValidationService.swift"
+              },
+              {
+                "additions": 2,
+                "deletions": 4,
+                "path": "MobileWallet/TariLib/Core/Tari.swift"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "MobileWallet/TariLib/Core/WalletCallbacksManager.swift"
+              },
+              {
+                "additions": 339,
+                "deletions": 0,
+                "path": "MobileWallet/TariLib/TariLib.swift"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "MobileWallet/TariLib/Wrappers/Utils/Loggers/ConsoleLogger.swift"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "MobileWallet/TariLib/Wrappers/Utils/Loggers/LogFormatter.swift"
+              },
+              {
+                "additions": 119,
+                "deletions": 0,
+                "path": "MobileWallet/TariLib/Wrappers/Utils/WalletConnectivityManager.swift"
+              },
+              {
+                "additions": 1059,
+                "deletions": 0,
+                "path": "MobileWallet/TariLib/Wrappers/Wallet.swift"
+              },
+              {
+                "additions": 6,
+                "deletions": 2,
+                "path": "MobileWallet/TariLib/wallet.h"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dependencies.env"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": []
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI1",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "title": "Failed block sync might leave some sync data in the main chain database",
+          "number": 4866,
+          "url": "https://github.com/tari-project/tari/issues/4866",
+          "comments": {
+            "totalCount": 7,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "Rewind will store all the re-orged blocks in the orphan database.\nWe should just chose the highest VALID tip and make sure the main chain is that one"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "Initial reaction is to disagree. The chain metadata keeps track of the valid full block height. We already handle having a chain of valid headers but no/partial blocks. If we reset on an invalid header, we'll have to download valid headers all over again. Same for blocks. If a synced header/block is invalid after syncing others, the blocks that led up to them are still valid so why should we throw them away?\nI dont think the rewinding puts the removed blocks back in the orphan database, only updates the orphan tip hash after a reorg, which doesnt seem right. Ah I was mistaken, this happens inside rewind_to_height\n\n  \n    \n      tari/base_layer/core/src/chain_storage/blockchain_database.rs\n    \n    \n         Line 2004\n      in\n      09eda1b\n    \n  \n  \n    \n\n        \n          \n           if let Some(block) = removed_blocks.first() {"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "I dont think the rewinding puts the removed blocks back in the orphan database, only updates the orphan tip hash after a reorg, which doesnt seem right.\n\nIt happens in rewind, not reorganise\n\n  \n    \n      tari/base_layer/core/src/chain_storage/blockchain_database.rs\n    \n    \n         Line 1725\n      in\n      09eda1b\n    \n  \n  \n    \n\n        \n          \n           txn.insert_chained_orphan(block.clone());"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "Initial reaction is to disagree. The chain metadata keeps track of the valid full block height. We already handle having a chain of valid headers but no/partial blocks. If we reset on an invalid header, we'll have to download valid headers all over again. Same for blocks. If a synced header/block is invalid after syncing others, the blocks that led up to them are still valid so why should we throw them away?\n\nThe header sync does this correctly, it only \"swaps\" if the syncing chain has higher PoW and is Valid. It will even do that for a partial. Which is correct.\nBut going into a waiting state, can cause issues as now the database has incomplete state while accepting new blocks.\nAnd in LMDB, we have orphan blocks -> ref via hash. But in the Main Chain, we have header -> height.\nSo what can happen? A header sync attempts a sync of a few blocks, but fails on connection. No the BN goes back to waiting state meaning it can accept blocks again. Now it accepts new blocks, for those same heights again...\nAnd we have a broken state"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "bodyText": "The same problem can be said for the block sync. We might download 1000 block headers, and all are valid.\nBut if the first block in that header is invalid, that chain will always be invalid, and we need to revert back to our old chain"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "When propagated blocks is active again, and receives a block, it should recognise that the block as an orphan, and not base anything on the headers - This does fit with the error we were seeing so definitely could be a bug there.\nAgree with block sync that we need to remove invalid headers up to and after a failed block (mmrs are invalid). Maybe we need to restore the old state, but since we only change for a higher PoW I don't think that is critical."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "bodyText": "I don't really understand the problem or solution, but happy if you want to leave this issue open and make a PR against it, showing the problem"
+              }
+            ]
+          },
+          "bodyText": "Currently, syncing is handled by the BN state machine. If the node things its behind, the node will try header_sync to download headers.\nIf it has enough VALID headers, it will commit them as headers on the main chain, and continue do to so for as long it is provided VALID headers.\nIf this fails, the node goes to waiting state.\nIt should not, it should either try and sync the VALID blocks from a node, or delete the headers and on.\nBut most cases this will return Ok\nThe block sync has the same problem, after failing, we need to check and see if we need to reset back to our previous state.",
+          "closed": true,
+          "createdAt": "2022-10-28T12:09:35Z",
+          "repository": {
+            "name": "tari"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI2",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 188,
+          "title": "fix: small edit to id display",
+          "baseRepository": {
+            "name": "tari-launchpad"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Erika",
+            "login": "NovaT82"
+          },
+          "createdAt": "2022-10-28T12:06:44Z",
+          "changedFiles": 4,
+          "deletions": 13,
+          "additions": 6,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "ACK"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 7,
+                "path": "gui-react/src/components/CopyBox/index.tsx"
+              },
+              {
+                "additions": 1,
+                "deletions": 4,
+                "path": "gui-react/src/components/CopyBox/styles.ts"
+              },
+              {
+                "additions": 2,
+                "deletions": 0,
+                "path": "gui-react/src/containers/SettingsContainer/WalletSettings/WalletSettings.tsx"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "gui-react/src/containers/WalletContainer/TariWallet/TariId.tsx"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI3",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 160,
+          "title": "feat: execute payload to determine which vote to cast",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Stan Bondi",
+            "login": "sdbondi"
+          },
+          "createdAt": "2022-10-28T11:50:46Z",
+          "changedFiles": 21,
+          "deletions": 206,
+          "additions": 318,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/proto/dan/transaction.proto"
+              },
+              {
+                "additions": 23,
+                "deletions": 6,
+                "path": "applications/tari_validator_node/src/json_rpc/handlers.rs"
+              },
+              {
+                "additions": 24,
+                "deletions": 17,
+                "path": "applications/tari_validator_node/src/lib.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/src/p2p/proto/conversions/transaction.rs"
+              },
+              {
+                "additions": 7,
+                "deletions": 6,
+                "path": "applications/tari_validator_node/src/p2p/services/mempool/service.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/src/payload_processor.rs"
+              },
+              {
+                "additions": 16,
+                "deletions": 11,
+                "path": "applications/tari_validator_node_cli/src/command/transaction.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "clients/validator_node_client/src/types.rs"
+              },
+              {
+                "additions": 4,
+                "deletions": 0,
+                "path": "dan_layer/common_types/src/lib.rs"
+              },
+              {
+                "additions": 15,
+                "deletions": 7,
+                "path": "dan_layer/core/src/models/mod.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 7,
+                "path": "dan_layer/core/src/models/payload.rs"
+              },
+              {
+                "additions": 4,
+                "deletions": 4,
+                "path": "dan_layer/core/src/models/tari_dan_payload.rs"
+              },
+              {
+                "additions": 8,
+                "deletions": 0,
+                "path": "dan_layer/core/src/models/vote_message.rs"
+              },
+              {
+                "additions": 4,
+                "deletions": 4,
+                "path": "dan_layer/core/src/workers/events.rs"
+              },
+              {
+                "additions": 145,
+                "deletions": 74,
+                "path": "dan_layer/core/src/workers/hotstuff_waiter.rs"
+              },
+              {
+                "additions": 12,
+                "deletions": 19,
+                "path": "dan_layer/core/src/workers/tests/mod.rs"
+              },
+              {
+                "additions": 9,
+                "deletions": 6,
+                "path": "dan_layer/engine/src/runtime/id_provider.rs"
+              },
+              {
+                "additions": 28,
+                "deletions": 38,
+                "path": "dan_layer/engine/src/transaction/builder.rs"
+              },
+              {
+                "additions": 0,
+                "deletions": 1,
+                "path": "dan_layer/engine_types/src/commit_result.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "dan_layer/storage_sqlite/src/sqlite_shard_store_factory.rs"
+              },
+              {
+                "additions": 9,
+                "deletions": 5,
+                "path": "dan_layer/storage_sqlite/src/sqlite_transaction.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI4",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 794,
+          "title": "New Bug Reporting Scene",
+          "baseRepository": {
+            "name": "wallet-ios"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Adrian Truszczyński",
+            "login": "TruszczynskiA"
+          },
+          "createdAt": "2022-10-28T11:01:35Z",
+          "changedFiles": 25,
+          "deletions": 252,
+          "additions": 743,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 32,
+                "deletions": 16,
+                "path": "MobileWallet.xcodeproj/project.pbxproj"
+              },
+              {
+                "additions": 20,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Backgrounds/BackgroundsSecondary.colorset/Contents.json"
+              },
+              {
+                "additions": 6,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Backgrounds/Contents.json"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Black.colorset/Contents.json"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/DarkGrey.colorset/Contents.json"
+              },
+              {
+                "additions": 6,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Separators/Contents.json"
+              },
+              {
+                "additions": 20,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Separators/SeparatorsPrimary.colorset/Contents.json"
+              },
+              {
+                "additions": 6,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Text/Contents.json"
+              },
+              {
+                "additions": 20,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Text/TextBody.colorset/Contents.json"
+              },
+              {
+                "additions": 20,
+                "deletions": 0,
+                "path": "MobileWallet/Assets.xcassets/Color Palette/Text/TextHeading.colorset/Contents.json"
+              },
+              {
+                "additions": 11,
+                "deletions": 11,
+                "path": "MobileWallet/Assets.xcassets/Colors/ScannerTitle.colorset/Contents.json"
+              },
+              {
+                "additions": 102,
+                "deletions": 0,
+                "path": "MobileWallet/Common/Managers/BugReportService.swift"
+              },
+              {
+                "additions": 13,
+                "deletions": 0,
+                "path": "MobileWallet/Common/Theme.swift"
+              },
+              {
+                "additions": 0,
+                "deletions": 211,
+                "path": "MobileWallet/Screens/Debug/EmailFeedbackHandler.swift"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "MobileWallet/Screens/Debug/Logs/List/LogsListConstructor.swift"
+              },
+              {
+                "additions": 3,
+                "deletions": 2,
+                "path": "MobileWallet/Screens/Debug/UIViewController+DebugMenu.swift"
+              },
+              {
+                "additions": 47,
+                "deletions": 0,
+                "path": "MobileWallet/Screens/Settings/Bug Reporting/BugReportingConstructor.swift"
+              },
+              {
+                "additions": 64,
+                "deletions": 0,
+                "path": "MobileWallet/Screens/Settings/Bug Reporting/BugReportingModel.swift"
+              },
+              {
+                "additions": 217,
+                "deletions": 0,
+                "path": "MobileWallet/Screens/Settings/Bug Reporting/BugReportingView.swift"
+              },
+              {
+                "additions": 121,
+                "deletions": 0,
+                "path": "MobileWallet/Screens/Settings/Bug Reporting/BugReportingViewController.swift"
+              },
+              {
+                "additions": 6,
+                "deletions": 1,
+                "path": "MobileWallet/Screens/Settings/SettingsViewController.swift"
+              },
+              {
+                "additions": 3,
+                "deletions": 1,
+                "path": "MobileWallet/TariLib/Core/App Setup/AppConfigurator.swift"
+              },
+              {
+                "additions": 11,
+                "deletions": 0,
+                "path": "MobileWallet/en.lproj/Localizable.strings"
+              },
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "Podfile"
+              },
+              {
+                "additions": 7,
+                "deletions": 3,
+                "path": "Podfile.lock"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjI5",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4865,
+          "title": "feat: improve block_chain backend reliability",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "SW van Heerden",
+            "login": "SWvheerden"
+          },
+          "createdAt": "2022-10-28T10:35:19Z",
+          "changedFiles": 5,
+          "deletions": 91,
+          "additions": 252,
+          "merged": false,
+          "closed": false,
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "bodyText": "I'd be happier if there was a unit test showing that this works"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 5,
+                "deletions": 0,
+                "path": "base_layer/core/src/base_node/sync/block_sync/synchronizer.rs"
+              },
+              {
+                "additions": 102,
+                "deletions": 83,
+                "path": "base_layer/core/src/chain_storage/blockchain_database.rs"
+              },
+              {
+                "additions": 75,
+                "deletions": 6,
+                "path": "base_layer/core/src/test_helpers/blockchain.rs"
+              },
+              {
+                "additions": 40,
+                "deletions": 1,
+                "path": "base_layer/core/tests/chain_storage_tests/chain_storage.rs"
+              },
+              {
+                "additions": 30,
+                "deletions": 1,
+                "path": "base_layer/core/tests/helpers/sample_blockchains.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjMw",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "Aaron Feickert",
+            "login": "AaronFeickert"
+          },
+          "title": "Broken `wasm` tests on `tari`",
+          "number": 142,
+          "url": "https://github.com/tari-project/tari-crypto/issues/142",
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "Looks like the tari_crypto/wasm feature is missing from key manager.\nbase_layer/key_manager/Cargo.toml\n- wasm = [\"wasm-bindgen\", \"js\", \"tari_common_types\", \"console_error_panic_hook\"]\n+ wasm = [\"tari_crypto/wasm\", \"wasm-bindgen\", \"js\", \"tari_common_types\", \"console_error_panic_hook\"]"
+              }
+            ]
+          },
+          "bodyText": "PR 134 breaks wasm tests on the tari repository. Reverting the commit from that PR appears to solve the problem.",
+          "closed": true,
+          "createdAt": "2022-10-27T22:50:13Z",
+          "repository": {
+            "name": "tari-crypto"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjMx",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 141,
+          "title": "fix: make the formatter happy",
+          "baseRepository": {
+            "name": "tari-crypto"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Aaron Feickert",
+            "login": "AaronFeickert"
+          },
+          "createdAt": "2022-10-27T20:37:20Z",
+          "changedFiles": 5,
+          "deletions": 62,
+          "additions": 242,
+          "merged": false,
+          "closed": true,
+          "comments": {
+            "totalCount": 7,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "bodyText": "Looks like clippy is very unhappy with variables outside of format strings. Seems unhelpful."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "Looks like a change in rust, #138 uses latest nightly so that is probably why there is a sudden change in clippy.\n@stringhandler What do you think? Lock rust nightly down to 1.64 in CI or ignore the lint?\nProblem with adding the allow rule is that clippy lints will fail without >=1.65.\nallow = [\"clippy::uninlined_format_args\"]\nSo I think we have to lock down CI to <1.65"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Byron Hambly",
+                  "login": "delta1"
+                },
+                "bodyText": "Probably worth pinning the nightly version for fmt so you can upgrade it only when you want to"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "It's a really good lint, actually.\nBut better to make it a WARNING in lints.toml rather than hold the compiler version back. Then someone can come clean up after us."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "But better to make it a WARNING in lints.toml rather than hold the compiler version back. Then someone can come clean up after us.\n\nI agree, might be a problem that you require +nightly to run cargo lints, that is cargo +stable lints clippy won't work until stable is on rust 1.65 (uninlined_format_args isn't recignised by clippy < 1.65), maybe thats ok. Otherwise, we should probably fix these lints."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "I agree, might be a problem that you require +nightly to run cargo lints, that is cargo +stable lints clippy won't work until stable is on rust 1.65 (uninlined_format_args isn't recignised by clippy < 1.65), maybe thats ok. Otherwise, we should probably fix these lints.\n\nYes, just ran into this on #143, but I think we can live with this until these features are stabilised"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "#143 covers this plus a few other bits and bobs, incl updating the code coverage script, so going to close this."
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "src/ffi/keys.rs"
+              },
+              {
+                "additions": 10,
+                "deletions": 1,
+                "path": "src/ffi/mod.rs"
+              },
+              {
+                "additions": 39,
+                "deletions": 15,
+                "path": "src/ristretto/ristretto_com_and_pub_sig.rs"
+              },
+              {
+                "additions": 64,
+                "deletions": 24,
+                "path": "src/signatures/commitment_and_public_key_signature.rs"
+              },
+              {
+                "additions": 128,
+                "deletions": 21,
+                "path": "src/wasm/key_utils.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": []
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjMy",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 159,
+          "title": "fix: add hotstuff_rounds to consensus_constants (see issue #144)",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": null,
+            "login": "jorgeantonio21"
+          },
+          "createdAt": "2022-10-27T16:13:40Z",
+          "changedFiles": 8,
+          "deletions": 9,
+          "additions": 30,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "applications/tari_validator_node/src/base_layer_scanner.rs"
+              },
+              {
+                "additions": 4,
+                "deletions": 2,
+                "path": "applications/tari_validator_node/src/bootstrap.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 2,
+                "path": "applications/tari_validator_node/src/lib.rs"
+              },
+              {
+                "additions": 5,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/src/p2p/services/hotstuff/hotstuff_service.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 0,
+                "path": "dan_layer/core/src/consensus_constants.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "dan_layer/core/src/lib.rs"
+              },
+              {
+                "additions": 12,
+                "deletions": 4,
+                "path": "dan_layer/core/src/workers/hotstuff_waiter.rs"
+              },
+              {
+                "additions": 4,
+                "deletions": 0,
+                "path": "dan_layer/core/src/workers/tests/mod.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjMz",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 158,
+          "title": "feat!: add arguments to cli",
+          "baseRepository": {
+            "name": "tari-dan"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "stringhandler",
+            "login": "stringhandler"
+          },
+          "createdAt": "2022-10-27T15:26:43Z",
+          "changedFiles": 23,
+          "deletions": 91,
+          "additions": 261,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 0,
+                "path": "Cargo.lock"
+              },
+              {
+                "additions": 5,
+                "deletions": 0,
+                "path": "applications/tari_validator_node/log4rs_sample.yml"
+              },
+              {
+                "additions": 3,
+                "deletions": 1,
+                "path": "applications/tari_validator_node/src/json_rpc/handlers.rs"
+              },
+              {
+                "additions": 78,
+                "deletions": 11,
+                "path": "applications/tari_validator_node_cli/src/command/transaction.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/core/Cargo.toml"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/core/src/models/domain_events/consensus_worker_domain_event.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/core/src/models/node.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/core/src/models/vote_message.rs"
+              },
+              {
+                "additions": 6,
+                "deletions": 2,
+                "path": "dan_layer/core/src/storage/error.rs"
+              },
+              {
+                "additions": 5,
+                "deletions": 5,
+                "path": "dan_layer/engine/src/runtime/tracker.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/engine/src/wasm/environment.rs"
+              },
+              {
+                "additions": 7,
+                "deletions": 0,
+                "path": "dan_layer/engine/tests/templates/erc20/Cargo.lock"
+              },
+              {
+                "additions": 7,
+                "deletions": 0,
+                "path": "dan_layer/engine/tests/templates/hello_world/Cargo.lock"
+              },
+              {
+                "additions": 7,
+                "deletions": 0,
+                "path": "dan_layer/engine/tests/templates/private_function/Cargo.lock"
+              },
+              {
+                "additions": 7,
+                "deletions": 0,
+                "path": "dan_layer/engine/tests/templates/state/Cargo.lock"
+              },
+              {
+                "additions": 7,
+                "deletions": 0,
+                "path": "dan_layer/engine/tests/templates/tuples/Cargo.lock"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "dan_layer/storage_lmdb/src/engine_state_store.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "dan_layer/storage_sqlite/src/sqlite_db_factory.rs"
+              },
+              {
+                "additions": 88,
+                "deletions": 34,
+                "path": "dan_layer/storage_sqlite/src/sqlite_shard_store_factory.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "dan_layer/storage_sqlite/src/sqlite_transaction.rs"
+              },
+              {
+                "additions": 5,
+                "deletions": 2,
+                "path": "dan_layer/template_lib/Cargo.toml"
+              },
+              {
+                "additions": 20,
+                "deletions": 23,
+                "path": "dan_layer/template_lib/src/models/amount.rs"
+              },
+              {
+                "additions": 5,
+                "deletions": 3,
+                "path": "dan_layer/template_lib/src/models/metadata.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": []
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM0",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4864,
+          "title": "chore: replace manual implementation of char methods",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": null,
+            "login": "hnidoaht-101"
+          },
+          "createdAt": "2022-10-27T11:39:11Z",
+          "changedFiles": 1,
+          "deletions": 1,
+          "additions": 1,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 2,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "ACK"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "bodyText": "RE argon: Currently used for independent purposes (key manager password hash and wallet grpc password hash) - we should upgrade the keymanager\n\nAgreed. I updated the key manager version in PR 4860 already."
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "base_layer/core/src/consensus/emission.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM1",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4863,
+          "title": "chore: fix potentially buggy split of string into lines",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": null,
+            "login": "hnidoaht-101"
+          },
+          "createdAt": "2022-10-27T10:51:13Z",
+          "changedFiles": 2,
+          "deletions": 5,
+          "additions": 2,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 7,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "hnidoaht-101"
+                },
+                "bodyText": "Good one! Just need a cargo fmt --all\n\n@sdbondi DeepSource checked failed another one, do I need to fix it also?"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "@hnidoaht-101 that check is new and currently not required"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "bodyText": "utACK"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "hnidoaht-101"
+                },
+                "bodyText": "If its okay, please do me a favor label it as \"hacktoberfest-accepted\" 😄 thank you."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Byron Hambly",
+                  "login": "delta1"
+                },
+                "bodyText": "If its okay, please do me a favor label it as \"hacktoberfest-accepted\" 😄 thank you.\n\nThe repo already has the hacktoberfest topic label, so I think once your PR is merged  it will count towards it 👌"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "hnidoaht-101"
+                },
+                "bodyText": "If its okay, please do me a favor label it as \"hacktoberfest-accepted\" smile thank you.\n\nThe repo already has the hacktoberfest topic label, so I think once your PR is merged it will count towards it ok_hand\n\nAwesome! It seems I missed the label on repo 😅 , will continue looking for issues to resolve if possible"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Byron Hambly",
+                  "login": "delta1"
+                },
+                "bodyText": "Happy hacking @hnidoaht-101"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 1,
+                "deletions": 4,
+                "path": "applications/tari_console_wallet/src/ui/components/log_tab.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "comms/core/src/tor/control_client/parsers.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM2",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4862,
+          "title": "feat!: impl final tari pow algorithm",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Cayle Sharrock",
+            "login": "CjS77"
+          },
+          "createdAt": "2022-10-27T10:44:20Z",
+          "changedFiles": 9,
+          "deletions": 97,
+          "additions": 86,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 0,
+            "nodes": []
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "applications/tari_miner/src/difficulty.rs"
+              },
+              {
+                "additions": 43,
+                "deletions": 66,
+                "path": "base_layer/core/src/consensus/consensus_constants.rs"
+              },
+              {
+                "additions": 1,
+                "deletions": 1,
+                "path": "base_layer/core/src/proof_of_work/mod.rs"
+              },
+              {
+                "additions": 24,
+                "deletions": 12,
+                "path": "base_layer/core/src/proof_of_work/sha3_pow.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "base_layer/core/src/test_helpers/mod.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "base_layer/core/src/validation/helpers.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "base_layer/core/src/validation/mocks.rs"
+              },
+              {
+                "additions": 2,
+                "deletions": 2,
+                "path": "base_layer/core/tests/helpers/block_builders.rs"
+              },
+              {
+                "additions": 7,
+                "deletions": 7,
+                "path": "base_layer/tari_mining_helper_ffi/src/lib.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM3",
+        "node": {
+          "__typename": "Issue",
+          "author": {
+            "__typename": "User",
+            "name": "Stan Bondi",
+            "login": "sdbondi"
+          },
+          "title": "`Mnemonic::to_mnemonic` should wrap the seed words in Zeroizing",
+          "number": 4861,
+          "url": "https://github.com/tari-project/tari/issues/4861",
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Brian Pearce",
+                  "login": "brianp"
+                },
+                "bodyText": "I'll take a look at this one."
+              }
+            ]
+          },
+          "bodyText": "tari/base_layer/key_manager/src/mnemonic.rs\n    \n    \n         Line 254\n      in\n      5b0eb04\n    \n  \n  \n    \n\n        \n          \n           fn to_mnemonic( \n        \n    \n  \n\n\nThe TariSeedWords ffi struct may need to be updated, but I don't think this will cause a breaking change as it will not change the underlying representation",
+          "closed": true,
+          "createdAt": "2022-10-27T06:10:17Z",
+          "repository": {
+            "name": "tari"
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM4",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 4860,
+          "title": "fix!: refactor `CipherSeed`, zeroize, and fix key derivation",
+          "baseRepository": {
+            "name": "tari"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Aaron Feickert",
+            "login": "AaronFeickert"
+          },
+          "createdAt": "2022-10-26T22:12:49Z",
+          "changedFiles": 7,
+          "deletions": 195,
+          "additions": 193,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 4,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Hansie Odendaal",
+                  "login": "hansieodendaal"
+                },
+                "bodyText": "utACK"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "bodyText": "Nice. Please add a note on how existing seed phrases and wallets are affected"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "bodyText": "Nice. Please add a note on how existing seed phrases and wallets are affected\n\nDone. If you wanted an interesting test of the versioning system, we could bump the CipherSeed version number. This would allow for immediate detection of incompatible seeds that can be reported as such. Otherwise, existing seeds will generically fail as manipulated. But that seems a bit much in this case."
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "jorgeantonio21"
+                },
+                "bodyText": "Very cool ! Thanks for the detailed explanations as well.\nutACK"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 2,
+                "deletions": 1,
+                "path": "Cargo.lock"
+              },
+              {
+                "additions": 2,
+                "deletions": 1,
+                "path": "base_layer/key_manager/Cargo.toml"
+              },
+              {
+                "additions": 177,
+                "deletions": 181,
+                "path": "base_layer/key_manager/src/cipher_seed.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "base_layer/key_manager/src/wasm.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "base_layer/wallet/tests/output_manager_service_tests/service.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "base_layer/wallet/tests/wallet.rs"
+              },
+              {
+                "additions": 3,
+                "deletions": 3,
+                "path": "base_layer/wallet_ffi/src/lib.rs"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 6
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "jorgeantonio21"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": null,
+                  "login": "jorgeantonio21"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Aaron Feickert",
+                  "login": "AaronFeickert"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "stringhandler",
+                  "login": "stringhandler"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjM5",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 37,
+          "title": "feat: stabilise rfc-0203",
+          "baseRepository": {
+            "name": "rfcs"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Cayle Sharrock",
+            "login": "CjS77"
+          },
+          "createdAt": "2022-10-26T20:59:00Z",
+          "changedFiles": 1,
+          "deletions": 6,
+          "additions": 12,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 2,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "ACK"
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "bodyText": "ACK"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 12,
+                "deletions": 6,
+                "path": "src/RFC-0203_StealthAddresses.md"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "SW van Heerden",
+                  "login": "SWvheerden"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "cursor": "Y3Vyc29yOjQw",
+        "node": {
+          "__typename": "PullRequest",
+          "number": 36,
+          "title": "feat: stabilise rfc-0173",
+          "baseRepository": {
+            "name": "rfcs"
+          },
+          "author": {
+            "__typename": "User",
+            "name": "Cayle Sharrock",
+            "login": "CjS77"
+          },
+          "createdAt": "2022-10-26T20:25:33Z",
+          "changedFiles": 1,
+          "deletions": 14,
+          "additions": 34,
+          "merged": true,
+          "closed": true,
+          "comments": {
+            "totalCount": 1,
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "bodyText": "ACK"
+              }
+            ]
+          },
+          "files": {
+            "nodes": [
+              {
+                "additions": 34,
+                "deletions": 14,
+                "path": "src/RFC-0173_Versioning.md"
+              }
+            ]
+          },
+          "reviews": {
+            "nodes": [
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Cayle Sharrock",
+                  "login": "CjS77"
+                },
+                "comments": {
+                  "totalCount": 1
+                }
+              },
+              {
+                "author": {
+                  "__typename": "User",
+                  "name": "Stan Bondi",
+                  "login": "sdbondi"
+                },
+                "comments": {
+                  "totalCount": 0
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

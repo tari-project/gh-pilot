@@ -1,0 +1,95 @@
+# "query": "org:tari-project created:2022-10-01..2022-11-01"
+query OrgActivityQL($query: String!, $first: Int!, $after: String) {
+    search(query: $query, type: ISSUE, first: $first, after: $after) {
+        issueCount
+        pageInfo {...pageInfoFields}
+        edges {
+            cursor
+            node {
+                __typename
+                ...prFields
+                ...issueFields
+            }
+        }
+    }
+}
+
+fragment issueFields on Issue {
+    author {
+        __typename
+        ...userFields
+    }
+    title
+    number
+    url
+    comments(first:100) {
+        totalCount
+        nodes {
+            ...commentFields
+        }
+    }
+    bodyText
+    closed
+    createdAt
+    repository { name }
+}
+
+fragment commentFields on IssueComment {
+    author {
+        __typename
+        ...userFields
+    }
+    bodyText
+}
+
+fragment prFields on PullRequest {
+    number
+    title
+    baseRepository { name }
+    author {
+        __typename
+        ...userFields
+    }
+    createdAt
+    changedFiles
+    deletions
+    additions
+    merged
+    closed
+    comments(first:100) {
+        totalCount
+        nodes {
+            ...commentFields
+        }
+    }
+    files(first:100) {
+        nodes {
+            additions
+            deletions
+            path
+        }
+    }
+    reviews(first:100) {
+        nodes {
+            author {
+                __typename
+                ...userFields
+            }
+            comments {
+                totalCount
+            }
+        }
+    }
+}
+
+fragment userFields on User {
+    name
+    login
+}
+
+fragment pageInfoFields on PageInfo {
+    startCursor
+    endCursor
+    hasNextPage
+    hasPreviousPage
+}

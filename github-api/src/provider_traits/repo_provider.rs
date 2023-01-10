@@ -2,7 +2,7 @@ use async_trait::async_trait;
 
 use crate::{
     error::GithubProviderError,
-    models::{Contributor, Label, Repository},
+    models::{Contributor, DateTime, Event, Label, Repository},
     wrappers::NewLabel,
 };
 
@@ -26,6 +26,7 @@ pub trait RepoProvider {
         label: &str,
         new: &NewLabel,
     ) -> Result<bool, GithubProviderError>;
+    async fn fetch_events(&self, owner: &str, repo: &str, since: DateTime) -> Result<Vec<Event>, GithubProviderError>;
 }
 
 #[async_trait]

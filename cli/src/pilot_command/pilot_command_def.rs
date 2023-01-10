@@ -8,9 +8,10 @@ use crate::pilot_command::{
     labels::LabelCmd,
     pull_request::PrCmd,
     user::{run_contributor_cmd, run_user_cmd},
+    OrganizationCmd,
 };
 
-/// This is the final specification of the command to pass through to the API. All modifications to the request hasve
+/// This is the final specification of the command to pass through to the API. All modifications to the request have
 /// been processed, including, command-line arguments, environment variables, and UI prompts.
 ///
 /// The sub-commands get run in delegated functions in this module
@@ -26,6 +27,8 @@ pub enum PilotCommand {
     Labels(LabelCmd),
     /// List contributors to the repo
     Contributors(RepoId),
+    /// Query organisations
+    Organization(OrganizationCmd),
     /// Do Nothing
     NoOp,
 }
@@ -39,6 +42,7 @@ impl PilotCommand {
             PilotCommand::Labels(cmd) => cmd.execute(provider).await,
             PilotCommand::Contributors(ref id) => run_contributor_cmd(provider, id).await,
             PilotCommand::NoOp => Ok(()),
+            PilotCommand::Organization(cmd) => cmd.execute(provider).await,
         }
     }
 }

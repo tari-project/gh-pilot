@@ -8,4 +8,6 @@ github-api/swagger/rust
 github/swagger/*.jar
 github-api/swagger/.swagger-codegen-ignore
 
-**/node_modules
+**/node_modulesusers.txt
+users.txt
+/cli/org_activity.csv

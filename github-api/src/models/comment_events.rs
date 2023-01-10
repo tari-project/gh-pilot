@@ -33,6 +33,7 @@ pub struct IssueCommentEvent {
     pub info: CommonEventFields,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "action")]
 pub enum IssueCommentAction {

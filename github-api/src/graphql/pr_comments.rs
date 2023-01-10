@@ -114,7 +114,7 @@ mod test {
     use crate::graphql::PullRequestComments;
 
     #[test]
-    fn derserialization() {
+    fn deserialization() {
         let json = include_str!("data/sample_thread.json");
         let raw =
             serde_json::from_str::<super::pull_request_comments_ql::ResponseData>(json).expect("Failed to deserialize");
