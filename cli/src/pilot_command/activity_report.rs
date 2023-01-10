@@ -40,7 +40,7 @@ pub struct CodeVolume {
     total_deletions: u64,
     documentation_volume: u64,
     code_volume: u64,
-    files_ignored: Vec<PathBuf>,
+    files_ignored: HashSet<PathBuf>,
     volume_ignore: u64,
 }
 
@@ -123,6 +123,8 @@ impl ActivityReports {
     fn add_pull_request(&mut self, pr: &PullRequestActivity) {
         let user = pr.author.clone();
         let report = self.reports.entry(user).or_default();
+        let repo = pr.base_repository.as_deref().unwrap_or("Unknown");
+        self.repos.insert(repo.to_string());
         // Coding metrics
         report.coding_metrics.pull_requests_authored += 1;
         if pr.merged {
@@ -131,7 +133,7 @@ impl ActivityReports {
         if pr.closed && !pr.merged {
             report.coding_metrics.pull_requests_denied += 1;
         }
-        analyze_code_volume(pr, &mut report.coding_metrics.code_volume);
+        analyze_code_volume(pr, repo, &mut report.coding_metrics.code_volume);
     }
 
     fn check_time_bounds(&mut self, ts: &DateTime) {
@@ -168,6 +170,7 @@ const CODE_EXTENSIONS: &[&str] = &[
     "js",
     "sh",
     "ts",
+    "tsx",
     "py",
     "toml",
     "swift",
@@ -180,11 +183,12 @@ const CODE_EXTENSIONS: &[&str] = &[
     "Dockerfile",
     "yml",
     "toml",
+    "sql",
 ];
 const DOC_EXTENSIONS: &[&str] = &["md", "txt", "tex", "html"];
 const IGNORED_FILE: &[&str] = &["Cargo.lock", "package-lock.json"];
 
-fn analyze_code_volume(pr: &PullRequestActivity, volume: &mut CodeVolume) {
+fn analyze_code_volume(pr: &PullRequestActivity, repo: &str, volume: &mut CodeVolume) {
     volume.total_additions += pr.total_additions;
     volume.total_deletions += pr.total_deletions;
     pr.files
@@ -201,7 +205,9 @@ fn analyze_code_volume(pr: &PullRequestActivity, volume: &mut CodeVolume) {
             } else if DOC_EXTENSIONS.contains(&ext) {
                 volume.documentation_volume += file.additions + file.deletions;
             } else {
-                volume.files_ignored.push(file.path.clone());
+                let mut f = PathBuf::from(repo);
+                f.push(&file.path);
+                volume.files_ignored.insert(f);
                 volume.volume_ignore += file.additions + file.deletions;
             }
         })

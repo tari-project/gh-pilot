@@ -20,7 +20,7 @@ pub trait OrganizationProvider: Sync {
     async fn fetch_activities(&self, owner: &str, from: &str, to: &str) -> Result<OrgActivity, GithubProviderError> {
         let mut more = true;
         let mut result = OrgActivity::default();
-        const BATCH_SIZE: usize = 100;
+        const BATCH_SIZE: usize = 50;
         let mut page_info = None;
         while more {
             let search = self.fetch_activity(owner, from, to, BATCH_SIZE, page_info).await?;
