@@ -75,6 +75,8 @@ impl ClientProxy {
             .send()
             .await
             .map_err(|e| GithubApiError::HttpClientError(e.to_string()))?;
+        trace!("Response status: {}", response.status());
+        trace!("Response headers: {:?}", response.headers());
         match response.status() {
             StatusCode::OK |
             StatusCode::CREATED |
