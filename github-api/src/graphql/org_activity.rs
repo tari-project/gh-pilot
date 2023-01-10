@@ -1,6 +1,7 @@
 use std::{iter, path::PathBuf};
 
 use graphql_client::GraphQLQuery;
+use serde::{Deserialize, Serialize};
 
 use crate::models::{DateTime, Url};
 
@@ -33,7 +34,7 @@ use crate::graphql::org_activity::org_activity_ql::{
     ResponseData,
 };
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct OrgActivity {
     pub issues: Vec<IssueActivity>,
     pub pull_requests: Vec<PullRequestActivity>,
@@ -47,7 +48,7 @@ impl OrgActivity {
 }
 
 /// A user field. To [Self::display_name] to return the user's name, or if that is missing, their login
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize, Hash, PartialEq, Eq)]
 pub struct User {
     pub name: Option<String>,
     pub login: String,
@@ -78,7 +79,7 @@ impl ToString for User {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PullRequestActivity {
     pub number: u64,
     pub title: String,
@@ -95,7 +96,7 @@ pub struct PullRequestActivity {
     pub reviews: ReviewsSummary,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct IssueActivity {
     pub author: User,
     pub title: String,
@@ -108,36 +109,36 @@ pub struct IssueActivity {
     pub repository: String,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CommentSummary {
     pub total_comments: u64,
     pub comments: Vec<Comment>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Comment {
     pub author: User,
     pub text: String,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct FilesChangedSummary {
     pub files_changed: Vec<FileChange>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FileChange {
     pub path: PathBuf,
     pub additions: u64,
     pub deletions: u64,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ReviewsSummary {
     pub reviews: Vec<Review>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Review {
     pub total_comments: u64,
     pub author: User,

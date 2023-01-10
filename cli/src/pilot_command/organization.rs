@@ -40,6 +40,9 @@ impl OrganizationCmd {
 }
 
 fn print_org_activity(activity: OrgActivity) {
+    // let mut out = std::fs::File::create("./org_activity.json").unwrap();
+    // let json = serde_json::to_string(&activity).unwrap();
+    // let _ = out.write(json.as_bytes()).unwrap();
     let OrgActivity { issues, pull_requests } = activity;
     issues.into_iter().for_each(|iss| {
         println!("Issue {}#{} - {}", iss.repository, iss.number, iss.title);
