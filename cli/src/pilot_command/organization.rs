@@ -1,5 +1,7 @@
 use github_pilot_api::{graphql::org_activity::OrgActivity, provider_traits::OrganizationProvider};
 
+use crate::pilot_command::activity_report::ActivityReports;
+
 #[derive(Debug)]
 pub struct DateRange {
     from: String,
@@ -40,33 +42,9 @@ impl OrganizationCmd {
 }
 
 fn print_org_activity(activity: OrgActivity) {
-    // let mut out = std::fs::File::create("./org_activity.json").unwrap();
-    // let json = serde_json::to_string(&activity).unwrap();
-    // let _ = out.write(json.as_bytes()).unwrap();
-    let OrgActivity { issues, pull_requests } = activity;
-    issues.into_iter().for_each(|iss| {
-        println!("Issue {}#{} - {}", iss.repository, iss.number, iss.title);
-        println!(
-            "Created: {}. By {}. {} Comments\n",
-            iss.created_at,
-            iss.author.display_name(),
-            iss.comments.total_comments
-        )
-    });
-    pull_requests.into_iter().for_each(|pr| {
-        println!(
-            "PR {}#{} - {}",
-            pr.base_repository.as_deref().unwrap_or("None"),
-            pr.number,
-            pr.title
-        );
-        println!(
-            "Created: {}. By {}. {} Files changed. +{} -{}\n",
-            pr.created_at,
-            pr.author.display_name(),
-            pr.changed_file_count,
-            pr.total_additions,
-            pr.total_deletions
-        );
-    });
+    let report = ActivityReports::from(activity);
+    let mut std_out = std::io::stdout();
+    if let Err(e) = report.write_csv(&mut std_out) {
+        eprintln!("Error writing report: {e}");
+    }
 }

@@ -1,5 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
+    io::Write,
     path::PathBuf,
 };
 
@@ -7,6 +8,7 @@ use github_pilot_api::{
     graphql::org_activity::{IssueActivity, OrgActivity, PullRequestActivity, User},
     models::DateTime,
 };
+use itertools::Itertools;
 
 #[derive(Debug, Clone, Default)]
 pub struct ActivityReports {
@@ -20,7 +22,6 @@ pub struct ActivityReports {
 
 #[derive(Debug, Clone, Default)]
 pub struct ActivityReport {
-    user: String,
     coding_metrics: CodingMetrics,
     engagement_metrics: EngagementMetrics,
 }
@@ -53,10 +54,42 @@ pub struct EngagementMetrics {
     pr_comments: u64,
 }
 
+impl ActivityReport {
+    pub fn write_csv<W: Write>(&self, user: &User, f: &mut W) -> Result<(), std::io::Error> {
+        let ignored_files = self
+            .coding_metrics
+            .code_volume
+            .files_ignored
+            .iter()
+            .map(|p| p.to_str().unwrap_or_default())
+            .join(":");
+        writeln!(
+            f,
+            "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ignored_files}",
+            user.display_name(),
+            self.coding_metrics.pull_requests_authored,
+            self.coding_metrics.pull_requests_merged,
+            self.coding_metrics.pull_requests_denied,
+            self.coding_metrics.code_volume.total_additions,
+            self.coding_metrics.code_volume.total_deletions,
+            self.coding_metrics.code_volume.documentation_volume,
+            self.coding_metrics.code_volume.code_volume,
+            self.engagement_metrics.issues_created,
+            self.engagement_metrics.code_reviews,
+            self.engagement_metrics.issue_comments + self.engagement_metrics.pr_comments,
+            self.engagement_metrics.issue_buzz,
+            self.engagement_metrics.pr_buzz,
+            self.coding_metrics.code_volume.volume_ignore,
+        )
+    }
+}
+
 impl From<OrgActivity> for ActivityReports {
     fn from(activity: OrgActivity) -> Self {
-        let mut result = ActivityReports::default();
-        result.start = DateTime::now();
+        let mut result = ActivityReports {
+            start: DateTime::now(),
+            ..Default::default()
+        };
         let OrgActivity { issues, pull_requests } = activity;
         result.issue_count = issues.len();
         result.prs_count = pull_requests.len();
@@ -98,7 +131,7 @@ impl ActivityReports {
         if pr.closed && !pr.merged {
             report.coding_metrics.pull_requests_denied += 1;
         }
-        analyze_code_volume(&pr, &mut report.coding_metrics.code_volume);
+        analyze_code_volume(pr, &mut report.coding_metrics.code_volume);
     }
 
     fn check_time_bounds(&mut self, ts: &DateTime) {
@@ -108,6 +141,25 @@ impl ActivityReports {
         if *ts > self.end {
             self.end = ts.clone();
         }
+    }
+
+    pub fn write_csv<W: Write>(&self, f: &mut W) -> Result<(), std::io::Error> {
+        writeln!(f, "Start date,{},, End date,{}", self.start, self.end)?;
+        writeln!(f, "Total PRs, {},,Total Issues,{}", self.prs_count, self.issue_count)?;
+        let repo_list = self.repos.iter().join(",");
+        writeln!(f, "Repositories:,{repo_list}")?;
+        writeln!(f)?;
+        writeln!(f, ",Coding Metrics,,,,,,,Engagement Metrics,,,,,,Ignored,,")?;
+        writeln!(
+            f,
+            ",PRs,Merged,Ignored,Additions,Deletions,Docs,Code,Issues,Reviews,Comments,Issue buzz,PR \
+             buzz,Ignored,Ignored files"
+        )?;
+        self.reports
+            .iter()
+            .sorted_by(|(a, _), (b, _)| a.display_name().cmp(b.display_name()))
+            .try_for_each(|(user, report)| report.write_csv(user, f))?;
+        Ok(())
     }
 }
 
@@ -157,6 +209,8 @@ fn analyze_code_volume(pr: &PullRequestActivity, volume: &mut CodeVolume) {
 
 #[cfg(test)]
 mod test {
+    use std::fs::File;
+
     use github_pilot_api::graphql::org_activity::OrgActivity;
 
     use crate::pilot_command::activity_report::ActivityReports;
@@ -166,7 +220,7 @@ mod test {
         let s = include_str!("../test_data/org_activity.json");
         let activity: OrgActivity = serde_json::from_str(s).unwrap();
         let report = ActivityReports::from(activity);
-        println!("{report:?}");
-        panic!("Writing output");
+        let mut f = File::create("org_activity.csv").unwrap();
+        report.write_csv(&mut f).unwrap();
     }
 }

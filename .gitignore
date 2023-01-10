@@ -10,3 +10,4 @@ github-api/swagger/.swagger-codegen-ignore
 
 **/node_modulesusers.txt
 users.txt
+/cli/org_activity.csv

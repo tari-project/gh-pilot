@@ -1,5 +1,3 @@
-extern crate core;
-
 mod cli_def;
 mod cli_prompts;
 mod pilot_command;
