@@ -66,7 +66,7 @@ impl ActivityReport {
         writeln!(
             f,
             "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ignored_files}",
-            user.display_name(),
+            user.login_with_name(),
             self.coding_metrics.pull_requests_authored,
             self.coding_metrics.pull_requests_merged,
             self.coding_metrics.pull_requests_denied,
