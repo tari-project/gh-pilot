@@ -76,6 +76,7 @@ impl User {
         match &self.name {
             Some(n) => format!("{} ({n})", self.login),
             None => self.login.to_string()
+        }
     }
 }
 
