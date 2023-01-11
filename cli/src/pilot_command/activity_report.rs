@@ -62,7 +62,7 @@ impl ActivityReport {
             .files_ignored
             .iter()
             .map(|p| p.to_str().unwrap_or_default())
-            .join(":");
+            .join(";");
         writeln!(
             f,
             "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ignored_files}",
@@ -171,7 +171,7 @@ impl ActivityReports {
     pub fn write_csv<W: Write>(&self, f: &mut W) -> Result<(), std::io::Error> {
         writeln!(f, "Start date,{},, End date,{}", self.start, self.end)?;
         writeln!(f, "Total PRs, {},,Total Issues,{}", self.prs_count, self.issue_count)?;
-        let repo_list = self.repos.iter().join(",");
+        let repo_list = self.repos.iter().join(";");
         writeln!(f, "Repositories:,{repo_list}")?;
         writeln!(f)?;
         writeln!(f, ",Coding Metrics,,,,,,,Engagement Metrics,,,,,,Ignored,,")?;
@@ -200,6 +200,7 @@ const CODE_EXTENSIONS: &[&str] = &[
     "kt",
     "java",
     "c",
+    "cpp",
     "h",
     "strings",
     "proto",
@@ -212,6 +213,7 @@ const CODE_EXTENSIONS: &[&str] = &[
     "less",
     "html",
     "lua",
+    "sol",
 ];
 const DOC_EXTENSIONS: &[&str] = &["md", "txt", "tex"];
 const IGNORED_FILE: &[&str] = &["Cargo.lock", "package-lock.json"];
