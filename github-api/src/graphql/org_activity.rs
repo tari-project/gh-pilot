@@ -75,7 +75,7 @@ impl User {
     pub fn login_with_name(&self) -> String {
         match &self.name {
             Some(n) => format!("{} ({n})", self.login),
-            None => self.login.to_string()
+            None => self.login.to_string(),
         }
     }
 }
