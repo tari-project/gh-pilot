@@ -62,11 +62,11 @@ impl ActivityReport {
             .files_ignored
             .iter()
             .map(|p| p.to_str().unwrap_or_default())
-            .join(":");
+            .join(";");
         writeln!(
             f,
             "{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ignored_files}",
-            user.display_name(),
+            user.login_with_name(),
             self.coding_metrics.pull_requests_authored,
             self.coding_metrics.pull_requests_merged,
             self.coding_metrics.pull_requests_denied,
@@ -122,18 +122,41 @@ impl ActivityReports {
 
     fn add_pull_request(&mut self, pr: &PullRequestActivity) {
         let user = pr.author.clone();
-        let report = self.reports.entry(user).or_default();
+        let pr_author = self.reports.entry(user).or_default();
         let repo = pr.base_repository.as_deref().unwrap_or("Unknown");
         self.repos.insert(repo.to_string());
         // Coding metrics
-        report.coding_metrics.pull_requests_authored += 1;
+        pr_author.coding_metrics.pull_requests_authored += 1;
         if pr.merged {
-            report.coding_metrics.pull_requests_merged += 1;
+            pr_author.coding_metrics.pull_requests_merged += 1;
         }
         if pr.closed && !pr.merged {
-            report.coding_metrics.pull_requests_denied += 1;
+            pr_author.coding_metrics.pull_requests_denied += 1;
         }
-        analyze_code_volume(pr, repo, &mut report.coding_metrics.code_volume);
+        pr_author.engagement_metrics.pr_buzz += pr.comments.total_comments;
+        analyze_code_volume(pr, repo, &mut pr_author.coding_metrics.code_volume);
+        self.tally_code_reviews(pr);
+        self.tally_pr_comments(pr);
+    }
+
+    // Code reviews get added to pr_reviews, and the comments you make in the review get added to pr_comments.
+    // These get accrued to the pr _review_ author, not the PR author (they will get buzz).
+    fn tally_code_reviews(&mut self, pr: &PullRequestActivity) {
+        pr.reviews.reviews.iter().for_each(|r| {
+            let user = r.author.clone();
+            let review_author = self.reports.entry(user).or_default();
+            review_author.engagement_metrics.code_reviews += 1;
+            review_author.engagement_metrics.pr_comments += r.total_comments;
+        })
+    }
+
+    // Attribute comments to comment authors
+    fn tally_pr_comments(&mut self, pr: &PullRequestActivity) {
+        pr.comments.comments.iter().for_each(|c| {
+            let user = c.author.clone();
+            let comment_author = self.reports.entry(user).or_default();
+            comment_author.engagement_metrics.pr_comments += 1;
+        })
     }
 
     fn check_time_bounds(&mut self, ts: &DateTime) {
@@ -148,7 +171,7 @@ impl ActivityReports {
     pub fn write_csv<W: Write>(&self, f: &mut W) -> Result<(), std::io::Error> {
         writeln!(f, "Start date,{},, End date,{}", self.start, self.end)?;
         writeln!(f, "Total PRs, {},,Total Issues,{}", self.prs_count, self.issue_count)?;
-        let repo_list = self.repos.iter().join(",");
+        let repo_list = self.repos.iter().join(";");
         writeln!(f, "Repositories:,{repo_list}")?;
         writeln!(f)?;
         writeln!(f, ",Coding Metrics,,,,,,,Engagement Metrics,,,,,,Ignored,,")?;
@@ -177,6 +200,7 @@ const CODE_EXTENSIONS: &[&str] = &[
     "kt",
     "java",
     "c",
+    "cpp",
     "h",
     "strings",
     "proto",
@@ -184,8 +208,14 @@ const CODE_EXTENSIONS: &[&str] = &[
     "yml",
     "toml",
     "sql",
+    "css",
+    "scss",
+    "less",
+    "html",
+    "lua",
+    "sol",
 ];
-const DOC_EXTENSIONS: &[&str] = &["md", "txt", "tex", "html"];
+const DOC_EXTENSIONS: &[&str] = &["md", "txt", "tex"];
 const IGNORED_FILE: &[&str] = &["Cargo.lock", "package-lock.json"];
 
 fn analyze_code_volume(pr: &PullRequestActivity, repo: &str, volume: &mut CodeVolume) {

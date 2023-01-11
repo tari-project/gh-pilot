@@ -71,6 +71,13 @@ impl User {
     pub fn display_name(&self) -> &str {
         self.name.as_ref().unwrap_or(&self.login).as_str()
     }
+
+    pub fn login_with_name(&self) -> String {
+        match &self.name {
+            Some(n) => format!("{} ({n})", self.login),
+            None => self.login.to_string(),
+        }
+    }
 }
 
 impl ToString for User {
