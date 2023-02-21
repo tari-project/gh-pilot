@@ -6,7 +6,7 @@ Github pilot server enables granular and complex workflows for Github projects t
 possible in Github Actions.
 
 The server process is straightforward and extensible:
-1. Github webooks make a POST call to the server `github/webhook` endpoint.
+1. Github's webhook service makes a POST call to the server `github/webhook` endpoint.
 2. The data from the Github event is compared against the set of Github Pilot rules (defined in `rules.yml`).
 3. For any rule that _matches_, the corresponding Actions are executed.
 
