@@ -1,0 +1,84 @@
+---
+name: Build docker image
+
+'on':
+  push:
+    paths-ignore:
+      - '**/*.md'
+    branches:
+      - 'main'
+      - 'build*'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]*'
+
+env:
+  SREGISTRY: quay.io
+  SREPOSITORY: tarilabs
+  SIMAGE_NAME: gh-pilot
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            ${{ env.SREGISTRY }}/${{ env.SREPOSITORY }}/${{ env.SIMAGE_NAME }}
+            # name/${{ env.SIMAGE_NAME }}
+          flavor: latest=true
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          #username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to ${{ env.SREGISTRY }}
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.SREGISTRY }}
+          username: ${{ secrets.SDOCKER_USERNAME }}
+          password: ${{ secrets.SDOCKER_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.dual
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
