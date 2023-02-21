@@ -1,0 +1,78 @@
+# syntax = docker/dockerfile:1.3
+
+ARG RUST_VERSION=1.67
+
+# rust source compile with cross platform build support
+FROM --platform=$BUILDPLATFORM rust:$RUST_VERSION-bullseye as builder
+
+ARG BUILDPLATFORM
+ARG BUILDOS
+ARG BUILDARCH
+ARG BUILDVARIANT
+ARG TARGETPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG RUST_TOOLCHAIN
+ARG VERSION=0.0.1
+ARG CARGO_FLAGS="--release --locked"
+
+COPY . .
+
+RUN if [ "${TARGETARCH}" = "arm64" ] && [ "${BUILDARCH}" != "${TARGETARCH}" ] ; then \
+      # Hardcoded ARM64 envs for cross-compiling - FixMe soon
+      export BUILD_TARGET="aarch64-unknown-linux-gnu/" && \
+      export RUST_TARGET="--target=aarch64-unknown-linux-gnu" && \
+      export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc && \
+      export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc && \
+      export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ && \
+      export PKG_CONFIG_SYSROOT_DIR=/usr/aarch64-linux-gnu/ && \
+      dpkg --add-architecture arm64 && \
+      apt-get update && apt-get install -y \
+        apt-transport-https \
+        openssl \
+        libssl-dev:arm64 \
+        pkg-config:arm64 \
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu && \
+      rustup target add aarch64-unknown-linux-gnu && \
+      rustup toolchain install stable-aarch64-unknown-linux-gnu --force-non-host ; \
+    fi && \
+    if [ -n "${RUST_TOOLCHAIN}" ] ; then \
+      # Install a non-standard toolchain if it has been requested.
+      # By default we use the toolchain specified in rust-toolchain.toml
+      rustup toolchain install ${RUST_TOOLCHAIN} ; \
+    fi && \
+    rustup target list --installed && \
+    rustup toolchain list && \
+    cargo build ${RUST_TARGET} ${CARGO_FLAGS} && \
+    # Copy executable out of the cache so it is available in the runtime image.
+    mkdir -p /tmp/gh-pilot && \
+    find target -type f \( -name "ghp-server" -o -name "ghp" \) -exec cp -v {} /tmp/gh-pilot/ \;
+
+# Create runtime base minimal image for the target platform executables
+FROM --platform=$TARGETPLATFORM bitnami/minideb:bullseye as runtime
+
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+ARG VERSION
+
+ENV dockerfile_version=$VERSION
+ENV dockerfile_build_arch=$BUILDPLATFORM
+
+RUN groupadd --gid 10001 gh-pilot && \
+    useradd --create-home --no-log-init \
+      --uid 10000 --gid 10001 gh-pilot
+
+USER gh-pilot:gh-pilot
+
+COPY --from=builder /tmp/gh-pilot/ghp-server /usr/local/bin/ghp-server
+COPY --from=builder /tmp/gh-pilot/ghp /usr/local/bin/ghp-cli
+
+EXPOSE 8330
+
+ENTRYPOINT [ "ghp-server" ]
+#CMD [ "--non-interactive-mode" ]
