@@ -13,7 +13,7 @@ name: Build docker image
 
 env:
   SREGISTRY: quay.io
-  SREPOSITORY_DEFAULT: tarilabs
+  SREPOSITORY_DEFAULT: tari-project
   SIMAGE_NAME: gh-pilot
 
 concurrency:
