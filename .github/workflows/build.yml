@@ -12,9 +12,11 @@ name: Build docker image
       - 'v[0-9]+.[0-9]+.[0-9]*'
 
 env:
-  SREGISTRY: quay.io
-  SREPOSITORY_DEFAULT: tari-project
-  SIMAGE_NAME: gh-pilot
+  # Secondary Container Registory Defaults
+  # Can be override as repo envs/vars
+  SREGISTRY_DEFAULT: quay.io
+  SREPOSITORY_DEFAULT: tarilabs
+  SIMAGE_NAME_DEFAULT: gh-pilot
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,8 +44,12 @@ jobs:
         id: envs_setup
         shell: bash
         run: |
-          SREPOSITORY=${{ vars.SREPOSITORY_FROM_REPO }}
+          SREGISTRY=${{ vars.SREGISTRY }}
+          echo "SREGISTRY=${SREGISTRY:-${{ env.SREGISTRY_DEFAULT }}}" >> $GITHUB_ENV
+          SREPOSITORY=${{ vars.SREPOSITORY }}
           echo "SREPOSITORY=${SREPOSITORY:-${{ env.SREPOSITORY_DEFAULT }}}" >> $GITHUB_ENV
+          SIMAGE_NAME=${{ vars.SIMAGE_NAME }}
+          echo "SIMAGE_NAME=${SIMAGE_NAME:-${{ env.SIMAGE_NAME_DEFAULT }}}" >> $GITHUB_ENV
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
