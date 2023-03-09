@@ -16,7 +16,7 @@ fn display_readme() {
 
 fn display_envs() {
     // Be explicit about which envars to print, so as to avoid accidentally exposing secrets
-    const DISPLAY_ENVS: [&str; 3] = ["GH_PILOT_HOST", "GH_PILOT_PORT", "GH_PILOT_RULESET_PATH"];
+    const DISPLAY_ENVS: [&str; 4] = ["GH_PILOT_HOST", "GH_PILOT_PORT", "GH_PILOT_RULESET_PATH", "RUST_LOG"];
 
     println!("Current environment values:");
     DISPLAY_ENVS.iter().for_each(|&name| {
